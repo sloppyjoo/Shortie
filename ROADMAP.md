@@ -14,21 +14,25 @@ We build one piece at a time and save a git checkpoint after each piece works.
    (e.g. click green to maximise without full screen). New window and app commands: close, minimise,
    full screen, close or minimise all windows, hide, hide others, quit.
 7. **Polish** – windows glide into place with Apple's spring; steadier dashboard sidebar.
+8. **Trackpad gestures** – about 70: taps, double taps, tap and hold, TipTaps, swipes, edge swipes,
+   pinches, rotation, multi-finger and corner clicks, force click. Gesture recorder, Gesture Lab,
+   warnings where macOS uses the same gesture.
+9. **Many more actions** – mouse clicks; System & Media (media keys, volume, brightness, Control Centre,
+   Notification Centre, Mission Control, Show Desktop, screenshots, lock, sleep…); Press Keys with
+   common shortcuts (also remaps keys).
 
-## Next
+## Next ideas
 
-Possible scrolling extras: per-device settings, pointer speed and acceleration.
-
-8. **Trackpad and mouse gestures** – multi-finger taps, swipes and clicks; Magic Mouse; extra mouse buttons.
-   Includes a gesture recorder: do the gesture rather than picking it from a list.
+- **Mouse buttons and Magic Mouse** – extra mouse buttons and Magic Mouse gestures as triggers.
+- **Scrolling extras** – per-device settings, pointer speed and acceleration.
 
 ## Later: the rest of BetterTouchTool
 
 - **Only in certain apps** – make any trigger work only in chosen apps.
 - **More triggers** – key sequences, typed-word triggers (text expansion), Caps Lock as a "Hyper" key,
   app launched/quit, Mac wakes or sleeps, a device connected, Wi-Fi changed.
-- **More actions** – volume, brightness, media keys, lock screen, sleep, screenshots, Do Not Disturb,
-  click a menu item, AppleScript and shell scripts, chains of several actions.
+- **More actions** – Do Not Disturb, click a menu item, AppleScript and shell scripts,
+  chains of several actions.
 - **More window tools** – drag a window to a screen edge to snap, move or resize with a modifier key plus the mouse,
   a window switcher.
 - **Clipboard history**.
