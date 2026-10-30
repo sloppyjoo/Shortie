@@ -13,9 +13,11 @@ nonisolated enum ShortcutAction: Codable, Hashable {
     case moveWindow(position: WindowPosition)
     /// Closes, minimises, hides or quits a window or app.
     case appCommand(command: AppCommand)
+    /// Clicks wherever the pointer is.
+    case mouseClick(click: MouseAction)
 
     enum Kind: CaseIterable, Identifiable {
-        case openApp, runShortcut, open, typeText, moveWindow, appCommand
+        case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick
         var id: Self { self }
     }
 
@@ -27,6 +29,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .typeText: .typeText
         case .moveWindow: .moveWindow
         case .appCommand: .appCommand
+        case .mouseClick: .mouseClick
         }
     }
 
@@ -39,6 +42,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .typeText(let text): text
         case .moveWindow(let position): position.rawValue
         case .appCommand(let command): command.rawValue
+        case .mouseClick(let click): click.rawValue
         }
     }
 
@@ -50,6 +54,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .typeText: .typeText(text: payload)
         case .moveWindow: .moveWindow(position: WindowPosition(rawValue: payload) ?? .maximize)
         case .appCommand: .appCommand(command: AppCommand(rawValue: payload) ?? .closeWindow)
+        case .mouseClick: .mouseClick(click: MouseAction(rawValue: payload) ?? .rightClick)
         }
     }
 
@@ -72,6 +77,8 @@ nonisolated enum ShortcutAction: Codable, Hashable {
             position.title
         case .appCommand(let command):
             command.title
+        case .mouseClick(let click):
+            click.title
         }
     }
 
@@ -126,6 +133,8 @@ enum ActionRunner {
             if let target = target ?? ActionTarget.frontmost {
                 AppCommandRunner.run(command, on: target)
             }
+        case .mouseClick(let click):
+            MouseClicker.perform(click)
         }
     }
 }

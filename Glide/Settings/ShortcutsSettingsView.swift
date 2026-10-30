@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
-            kinds: [.openApp, .runShortcut, .open, .typeText],
+            kinds: [.openApp, .runShortcut, .open, .typeText, .mouseClick],
             emptyTitle: "No Shortcuts Yet",
             emptySymbol: "command",
             emptyDescription: "Press a few keys from anywhere on your Mac to open an app, run a Shortcut, open a website or type some text."
@@ -131,6 +131,12 @@ struct ShortcutListView<Extra: View>: View {
                             ForEach(group) { position in
                                 Button(position.title) { save(.moveWindow(position: position), to: nil) }
                             }
+                        }
+                    }
+                } else if kind == .mouseClick {
+                    Section {
+                        ForEach(MouseAction.allCases) { click in
+                            Button(click.title, systemImage: click.systemImage) { save(.mouseClick(click: click), to: nil) }
                         }
                     }
                 } else if kind == .appCommand {
@@ -262,29 +268,14 @@ struct ShortcutRow: View {
 
 /// The orange warning shown when another shortcut uses the same keys.
 /// Hovering shows which one straight away, with a button to switch it off.
-///
-/// macOS's standard tooltips wait about a second before appearing, so this
-/// uses a popover that opens the moment the pointer arrives instead.
 struct ConflictBadge: View {
     let conflicts: [Shortcut]
     let disable: (Shortcut.ID) -> Void
 
-    @State private var isHoveringBadge = false
-    @State private var isHoveringDetails = false
-    @State private var isShowingDetails = false
-
     var body: some View {
-        Image(systemName: "exclamationmark.triangle.fill")
-            .foregroundStyle(.orange)
-            .padding(4)
-            .contentShape(.rect)
-            .onHover { isHoveringBadge = $0; updateDetails() }
-            .onTapGesture { isShowingDetails = true }
-            .accessibilityLabel(accessibilityText)
-            .popover(isPresented: $isShowingDetails, arrowEdge: .bottom) {
-                details
-                    .onHover { isHoveringDetails = $0; updateDetails() }
-            }
+        HoverBadge(systemImage: "exclamationmark.triangle.fill", color: .orange, accessibilityText: accessibilityText) {
+            details
+        }
     }
 
     private var details: some View {
@@ -316,21 +307,6 @@ struct ConflictBadge: View {
         .frame(width: 340)
     }
 
-    /// Opens straight away; closes shortly after the pointer leaves both the
-    /// triangle and the popover. The short wait gives you time to move across.
-    private func updateDetails() {
-        if isHoveringBadge || isHoveringDetails {
-            isShowingDetails = true
-            return
-        }
-        Task {
-            try? await Task.sleep(for: .milliseconds(300))
-            if !isHoveringBadge && !isHoveringDetails {
-                isShowingDetails = false
-            }
-        }
-    }
-
     private var accessibilityText: String {
         let names = conflicts.map { "“\($0.action.title)” in \($0.sectionName)" }
         return "Same keys as " + names.joined(separator: ", ")
@@ -354,6 +330,9 @@ struct ActionIcon: View {
         case .appCommand(let command):
             SettingsIcon(systemImage: command.systemImage, color: action.kind.color)
                 .padding(2)
+        case .mouseClick(let click):
+            SettingsIcon(systemImage: click.systemImage, color: action.kind.color)
+                .padding(2)
         default:
             SettingsIcon(systemImage: action.kind.systemImage, color: action.kind.color)
                 .padding(2)
@@ -370,6 +349,7 @@ extension ShortcutAction.Kind {
         case .typeText: "Type Text…"
         case .moveWindow: "Move Window…"
         case .appCommand: "Window or App Command…"
+        case .mouseClick: "Mouse Click…"
         }
     }
 
@@ -386,6 +366,7 @@ extension ShortcutAction.Kind {
         case .typeText: "text.cursor"
         case .moveWindow: "macwindow"
         case .appCommand: "macwindow.badge.plus"
+        case .mouseClick: "cursorarrow.click"
         }
     }
 
@@ -397,6 +378,7 @@ extension ShortcutAction.Kind {
         case .typeText: .indigo
         case .moveWindow: .blue
         case .appCommand: .gray
+        case .mouseClick: .orange
         }
     }
 
@@ -408,6 +390,7 @@ extension ShortcutAction.Kind {
         case .typeText: .typeText(text: "")
         case .moveWindow: .moveWindow(position: .maximize)
         case .appCommand: .appCommand(command: .closeWindow)
+        case .mouseClick: .mouseClick(click: .rightClick)
         }
     }
 }
@@ -415,6 +398,53 @@ extension ShortcutAction.Kind {
 extension Shortcut {
     /// The dashboard section this shortcut lives in.
     var sectionName: String {
-        trafficLightClick != nil ? "Traffic Lights" : action.kind.sectionName
+        if trafficLightClick != nil { return "Traffic Lights" }
+        if gesture != nil { return "Gestures" }
+        return action.kind.sectionName
+    }
+}
+
+/// A small icon that shows a popover the moment you hover over it.
+///
+/// macOS's standard tooltips wait about a second before appearing, so this
+/// uses a popover that opens as soon as the pointer arrives, and stays open
+/// while you move into it to click something.
+struct HoverBadge<Details: View>: View {
+    let systemImage: String
+    let color: Color
+    let accessibilityText: String
+    @ViewBuilder let details: Details
+
+    @State private var isHoveringBadge = false
+    @State private var isHoveringDetails = false
+    @State private var isShowingDetails = false
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .foregroundStyle(color)
+            .padding(4)
+            .contentShape(.rect)
+            .onHover { isHoveringBadge = $0; updateDetails() }
+            .onTapGesture { isShowingDetails = true }
+            .accessibilityLabel(accessibilityText)
+            .popover(isPresented: $isShowingDetails, arrowEdge: .bottom) {
+                details
+                    .onHover { isHoveringDetails = $0; updateDetails() }
+            }
+    }
+
+    /// Opens straight away; closes shortly after the pointer leaves both the
+    /// icon and the popover. The short wait gives you time to move across.
+    private func updateDetails() {
+        if isHoveringBadge || isHoveringDetails {
+            isShowingDetails = true
+            return
+        }
+        Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            if !isHoveringBadge && !isHoveringDetails {
+                isShowingDetails = false
+            }
+        }
     }
 }

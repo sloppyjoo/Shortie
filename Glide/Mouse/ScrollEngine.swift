@@ -35,9 +35,6 @@ enum WheelDirection: String, CaseIterable, Identifiable {
 final class ScrollEngine: NSObject {
     static let shared = ScrollEngine()
 
-    /// Stamped on the scroll events Glide posts itself, so our tap lets them through.
-    nonisolated static let syntheticMarker: Int64 = 0x474C_4944
-
     /// How far one wheel click glides at normal speed, in points.
     private static let pointsPerClick = 50.0
 
@@ -178,7 +175,7 @@ final class ScrollEngine: NSObject {
         ) else { return }
         event.setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1, value: move.dy)
         event.setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2, value: move.dx)
-        event.setIntegerValueField(.eventSourceUserData, value: Self.syntheticMarker)
+        event.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
         // "Continuous" tells apps this is precise, pixel-by-pixel scrolling.
         event.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
         event.post(tap: .cgSessionEventTap)
@@ -207,7 +204,7 @@ private nonisolated func handleScrollEvent(
         return Unmanaged.passUnretained(event)
     }
     guard type == .scrollWheel,
-          event.getIntegerValueField(.eventSourceUserData) != ScrollEngine.syntheticMarker
+          event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker
     else { return Unmanaged.passUnretained(event) }
 
     // Trackpads (and the Magic Mouse) scroll "continuously" and in phases as your

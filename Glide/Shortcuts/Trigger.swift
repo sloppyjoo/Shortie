@@ -1,10 +1,11 @@
 import Foundation
 
-/// What sets a shortcut off: some keys, a click on a window button, and
-/// (soon) trackpad gestures.
+/// What sets a shortcut off: some keys, a click on a window button, or a
+/// trackpad gesture.
 nonisolated enum Trigger: Codable, Hashable {
     case keys(combo: KeyCombo)
     case trafficLight(click: TrafficLightClick)
+    case gesture(gesture: Gesture)
 
     /// Whether two triggers would fire on the same thing.
     func clashes(with other: Trigger) -> Bool {
@@ -12,6 +13,8 @@ nonisolated enum Trigger: Codable, Hashable {
         case let (.keys(a), .keys(b)):
             a.matches(keyCode: b.keyCode, modifiers: b.modifiers)
         case let (.trafficLight(a), .trafficLight(b)):
+            a == b
+        case let (.gesture(a), .gesture(b)):
             a == b
         default:
             false

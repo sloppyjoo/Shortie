@@ -85,6 +85,10 @@ struct ActionFields: View {
                     }
                 }
             }
+        case .mouseClick:
+            Picker("Click", selection: payload) {
+                ForEach(MouseAction.allCases) { Text($0.title).tag($0.rawValue) }
+            }
         case .appCommand:
             Picker("Command", selection: payload) {
                 ForEach(AppCommand.groups, id: \.self) { group in
@@ -152,6 +156,7 @@ extension ShortcutAction.Kind {
         case .typeText: "Type Text"
         case .moveWindow: "Move Window"
         case .appCommand: "Window or App Command"
+        case .mouseClick: "Mouse Click"
         }
     }
 }

@@ -129,6 +129,10 @@ fileprivate nonisolated struct MouseClick {
 private nonisolated func handleClickEvent(
     proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, userInfo: UnsafeMutableRawPointer?
 ) -> Unmanaged<CGEvent>? {
+    // Let through the clicks Glide itself makes (like a gesture's Right Click action).
+    guard event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker else {
+        return Unmanaged.passUnretained(event)
+    }
     let click = MouseClick(
         type: type,
         mouseButton: MouseButton(number: event.getIntegerValueField(.mouseEventButtonNumber)),

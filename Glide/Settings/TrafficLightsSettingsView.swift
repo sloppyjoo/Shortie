@@ -130,12 +130,30 @@ struct TrafficLightRow: View {
     let disable: (Shortcut.ID) -> Void
 
     var body: some View {
+        TriggerRow(shortcut: $shortcut, conflicts: conflicts, edit: edit, delete: delete, disable: disable) {
+            TrafficLightDots(highlighted: click.button)
+            Text(click.clickDescription)
+                .frame(minWidth: 110, alignment: .leading)
+        }
+    }
+}
+
+/// One "trigger → action" row, with its warnings, on/off switch and menu.
+/// Used for traffic lights and gestures.
+struct TriggerRow<Trigger: View>: View {
+    @Binding var shortcut: Shortcut
+    let conflicts: [Shortcut]
+    var warning: String?
+    let edit: () -> Void
+    let delete: () -> Void
+    let disable: (Shortcut.ID) -> Void
+    @ViewBuilder let trigger: Trigger
+
+    var body: some View {
         HStack(spacing: 12) {
             Button(action: edit) {
                 HStack(spacing: 10) {
-                    TrafficLightDots(highlighted: click.button)
-                    Text(click.clickDescription)
-                        .frame(minWidth: 110, alignment: .leading)
+                    trigger
                     Image(systemName: "arrow.right")
                         .foregroundStyle(.secondary)
                     ActionIcon(action: shortcut.action)
@@ -149,6 +167,9 @@ struct TrafficLightRow: View {
             .buttonStyle(.plain)
             .opacity(shortcut.isEnabled ? 1 : 0.45)
 
+            if let warning {
+                SystemWarningBadge(text: warning)
+            }
             if !conflicts.isEmpty {
                 ConflictBadge(conflicts: conflicts, disable: disable)
             }
@@ -234,13 +255,7 @@ struct TrafficLightEditor: View {
                 }
                 GridRow {
                     Text("Action")
-                    Picker("Action", selection: kind) {
-                        ForEach(Self.kindOrder) { kind in
-                            Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
-                        }
-                    }
-                    .labelsHidden()
-                    .fixedSize()
+                    ActionKindPicker(action: $action)
                 }
             }
 
@@ -268,15 +283,27 @@ struct TrafficLightEditor: View {
         .padding(20)
         .frame(width: 480)
     }
+}
 
-    /// Window commands first, since they're what you'll usually want here.
-    private static let kindOrder: [ShortcutAction.Kind] = [.appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText]
+/// Chooses what kind of action to run. Changing it starts that kind afresh.
+struct ActionKindPicker: View {
+    @Binding var action: ShortcutAction
 
-    private var kind: Binding<ShortcutAction.Kind> {
-        Binding(
+    /// Clicks and window commands first, since they're what you'll usually want
+    /// from a gesture or window button.
+    private static let order: [ShortcutAction.Kind] = [.mouseClick, .appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText]
+
+    var body: some View {
+        Picker("Action", selection: Binding(
             get: { action.kind },
             set: { if $0 != action.kind { action = $0.emptyAction } }
-        )
+        )) {
+            ForEach(Self.order) { kind in
+                Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
+            }
+        }
+        .labelsHidden()
+        .fixedSize()
     }
 }
 

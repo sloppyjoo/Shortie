@@ -35,6 +35,11 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
         if case .trafficLight(let click) = trigger { click } else { nil }
     }
 
+    /// The gesture, for gesture actions.
+    var gesture: Gesture? {
+        if case .gesture(let gesture) = trigger { gesture } else { nil }
+    }
+
     var isKeyboardShortcut: Bool {
         trigger == nil || keyCombo != nil
     }
