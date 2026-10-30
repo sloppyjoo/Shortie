@@ -14,9 +14,12 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #000;
-  --paper: #fff;
-  --muted: #444;
+  --ink: #1d1838;
+  --paper: #fffdf7;
+  --muted: #5b5670;
+  --violet: #6c5cff;
+  --violet-dark: #4b3fd1;
+  --desk: #d8d3ff;
   --pixel: "Pixelify Sans", "Chicago", "Geneva", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
@@ -28,9 +31,9 @@ body {
   color: var(--ink);
   font: 15px/1.6 var(--mono);
   overflow-x: clip;
-  /* The classic desktop: a 25% dither of 2-pixel dots. */
-  background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.55'/%3E%3C/svg%3E");
+  /* The desktop: a dither of 2-pixel violet dots, like a colour Mac desktop pattern. */
+  background-color: var(--desk);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%236c5cff' fill-opacity='.45'/%3E%3C/svg%3E");
   background-size: 4px 4px;
 }
 a { color: var(--ink); }
@@ -49,7 +52,7 @@ p { margin: 0; }
   font: 600 15px var(--pixel);
 }
 .menubar a { text-decoration: none; padding: 3px 8px; margin: 0 -8px; }
-.menubar a:hover, .menubar a:focus-visible { background: var(--ink); color: var(--paper); outline: none; }
+.menubar a:hover, .menubar a:focus-visible { background: var(--violet); color: #fff; outline: none; }
 .menubar .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
 .menubar .brand .px { width: 20px; height: 20px; }
 .menubar .brand:hover .px svg path, .menubar .brand:focus-visible .px svg path { fill: var(--paper); }
@@ -70,7 +73,7 @@ p { margin: 0; }
 }
 .titlebar::before {
   content: ""; position: absolute; inset: 6px 6px;
-  background: repeating-linear-gradient(var(--ink) 0 2px, transparent 2px 4px);
+  background: repeating-linear-gradient(var(--violet) 0 2px, transparent 2px 4px);
 }
 .titlebar .close {
   position: absolute; left: 14px; top: 4px; width: 16px; height: 16px; z-index: 1;
@@ -96,8 +99,10 @@ section { padding: 72px 0 0; }
   background: var(--paper); color: var(--ink); text-decoration: none;
   font: 700 17px var(--pixel);
 }
-.btn.default { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); margin: 6px; }
-.btn:hover, .btn:focus-visible { background: var(--ink); color: var(--paper); outline: none; }
+.btn.default { background: var(--violet); color: #fff; box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); margin: 6px; }
+.btn.default .px svg path { fill: #fff; }
+.btn.default:hover, .btn.default:focus-visible { background: var(--violet-dark); }
+.btn:hover, .btn:focus-visible { background: var(--ink); color: #fff; outline: none; }
 .btn:hover .px svg path, .btn:focus-visible .px svg path { fill: var(--paper); }
 .btn .px { width: 20px; height: 20px; }
 
@@ -116,7 +121,7 @@ section { padding: 72px 0 0; }
 .desk-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px; text-decoration: none; }
 .desk-icon .px { width: 48px; height: 48px; background: var(--paper); }
 .desk-icon b { font: 400 14px var(--pixel); background: var(--paper); padding: 0 4px; }
-.desk-icon:hover b, .desk-icon:focus-visible b { background: var(--ink); color: var(--paper); }
+.desk-icon:hover b, .desk-icon:focus-visible b { background: var(--violet); color: #fff; }
 .desk-icon:focus-visible { outline: none; }
 @media (max-width: 1220px) { .desk-icons { display: none; } }
 
@@ -136,8 +141,8 @@ section { padding: 72px 0 0; }
 .list td.name { width: 300px; }
 .list .name div { display: flex; align-items: center; gap: 14px; font: 600 18px var(--pixel); }
 .list .px { width: 32px; height: 32px; }
-.list tbody tr:hover { background: var(--ink); color: var(--paper); }
-.list tbody tr:hover .px svg path { fill: var(--paper); }
+.list tbody tr:hover { background: var(--violet); color: #fff; }
+.list tbody tr:hover .px svg path { fill: #fff; }
 
 /* Screenshot rows */
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 64px; }
@@ -147,16 +152,16 @@ section { padding: 72px 0 0; }
 .row h3 { font-size: 30px; line-height: 1.1; margin-bottom: 12px; }
 .row ul { margin: 16px 0 0; padding: 0; list-style: none; }
 .row li { padding: 4px 0 4px 22px; position: relative; }
-.row li::before { content: ""; position: absolute; left: 2px; top: 12px; width: 8px; height: 8px; background: var(--ink); }
+.row li::before { content: ""; position: absolute; left: 2px; top: 12px; width: 8px; height: 8px; background: var(--violet); }
 
 /* Full list */
 .cols { display: grid; grid-template-columns: repeat(3, 1fr); }
 .cols > div { border-right: 2px solid var(--ink); }
 .cols > div:last-child { border-right: 0; }
-.cols h4 { font-size: 16px; padding: 6px 14px; background: var(--ink); color: var(--paper); }
+.cols h4 { font-size: 16px; padding: 6px 14px; background: var(--violet); color: #fff; }
 .cols ul { list-style: none; margin: 0; padding: 12px 14px 16px; }
 .cols li { padding: 3px 0 3px 18px; position: relative; }
-.cols li::before { content: "◆"; position: absolute; left: 0; font-size: 10px; top: 6px; }
+.cols li::before { content: "◆"; position: absolute; left: 0; font-size: 10px; top: 6px; color: var(--violet); }
 
 /* About box */
 .about { display: grid; grid-template-columns: 120px 1fr; gap: 28px; align-items: start; }
@@ -179,7 +184,7 @@ section { padding: 72px 0 0; }
 .readme .fine { margin-top: 16px; font-size: 13px; color: var(--muted); }
 pre {
   margin: 12px 0; padding: 12px 14px; overflow-x: auto;
-  background: var(--ink); color: var(--paper); font: 13px/1.6 var(--mono);
+  background: var(--ink); color: #e9e6ff; font: 13px/1.6 var(--mono);
 }
 
 /* Footer */
@@ -249,14 +254,14 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 
 <header class="hero" id="top">
   <div class="desk-icons">
-    <a class="desk-icon" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><span class="px" data-icon="disk"></span><b>Shortie.dmg</b></a>
+    <a class="desk-icon" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><span class="px" data-icon="disk" data-color="#6c5cff"></span><b>Shortie.dmg</b></a>
     <a class="desk-icon" href="#install"><span class="px" data-icon="doc"></span><b>Read Me</b></a>
   </div>
   <div class="wrap">
     <div class="win reveal">
       <div class="titlebar"><i class="close"></i><span>Shortie</span></div>
       <div class="body">
-        <span class="px logo" data-icon="hand"></span>
+        <span class="px logo" data-icon="hand" data-color="#6c5cff"></span>
         <h1>Make your Mac do what you want.</h1>
         <p class="lede">Customise your keyboard shortcuts, trackpad gestures and mouse buttons.</p>
         <div class="actions">
@@ -302,15 +307,15 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
       <table class="list">
         <thead><tr><th>Name</th><th>What it does</th></tr></thead>
         <tbody>
-          <tr><td class="name"><div><span class="px" data-icon="key"></span>Keyboard shortcuts</div></td><td>Any key combination can run any action. Caps Lock can also work as a Hyper key: hold it for ⌃⌥⇧⌘, tap it for Caps Lock.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="layout"></span>Window layouts</div></td><td>Save the position of every open window under a name, then put them all back with one shortcut.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="mouse"></span>Mouse buttons</div></td><td>Assign actions to extra mouse buttons. Set the scroll direction for the mouse separately from the trackpad, and turn on smooth scrolling.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="abc"></span>Text shortcuts</div></td><td>Type an abbreviation like ;email and it is replaced with the full text. An abbreviation can also run an action.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="clipboard"></span>Clipboard history</div></td><td>Search and paste anything you copied earlier, and pin what you use often. Password manager items are skipped, and the history stays on your Mac.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="menu"></span>Custom menus</div></td><td>Build your own menus of actions and show them in the menu bar or at the pointer.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="select"></span>Selected text</div></td><td>Change the case of selected text, sort lines, search the web for it, have it read aloud, or paste as plain text.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="bolt"></span>Automations</div></td><td>Run actions when an app opens or quits, or when your Mac wakes, sleeps, locks or is plugged in.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="notch"></span>Black menu bar</div></td><td>Turns the menu bar black so the notch blends in. Set it for each screen.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="key" data-color="#6c5cff"></span>Keyboard shortcuts</div></td><td>Any key combination can run any action. Caps Lock can also work as a Hyper key: hold it for ⌃⌥⇧⌘, tap it for Caps Lock.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="layout" data-color="#2f7bff"></span>Window layouts</div></td><td>Save the position of every open window under a name, then put them all back with one shortcut.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="mouse" data-color="#139c8f"></span>Mouse buttons</div></td><td>Assign actions to extra mouse buttons. Set the scroll direction for the mouse separately from the trackpad, and turn on smooth scrolling.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="abc" data-color="#f0602d"></span>Text shortcuts</div></td><td>Type an abbreviation like ;email and it is replaced with the full text. An abbreviation can also run an action.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="clipboard" data-color="#e2408f"></span>Clipboard history</div></td><td>Search and paste anything you copied earlier, and pin what you use often. Password manager items are skipped, and the history stays on your Mac.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="menu" data-color="#6c5cff"></span>Custom menus</div></td><td>Build your own menus of actions and show them in the menu bar or at the pointer.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="select" data-color="#2f7bff"></span>Selected text</div></td><td>Change the case of selected text, sort lines, search the web for it, have it read aloud, or paste as plain text.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="bolt" data-color="#e3a600"></span>Automations</div></td><td>Run actions when an app opens or quits, or when your Mac wakes, sleeps, locks or is plugged in.</td></tr>
+          <tr><td class="name"><div><span class="px" data-icon="notch" data-color="#1d1838"></span>Black menu bar</div></td><td>Turns the menu bar black so the notch blends in. Set it for each screen.</td></tr>
         </tbody>
       </table>
     </div>
@@ -485,7 +490,7 @@ for (const el of document.querySelectorAll('.px[data-icon]')) {
   if (!rows) continue;
   let d = '';
   rows.forEach((row, y) => [...row].forEach((c, x) => { if (c === '#') d += `M${x} ${y}h1v1h-1z`; }));
-  el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d}" fill="#000"/></svg>`;
+  el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d}" fill="${el.dataset.color || '#1d1838'}"/></svg>`;
 }
 
 // The menu bar clock.
