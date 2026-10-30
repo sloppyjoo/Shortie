@@ -83,7 +83,7 @@ struct ClipboardPanelView: View {
                     .foregroundStyle(.secondary)
                 TextField("Search clipboard", text: $state.query)
                     .textFieldStyle(.plain)
-                    .font(.title2)
+                    .font(.system(size: 20))
                     .focused($searchFocused)
                     .onSubmit { state.selected.map(paste) }
                     .onKeyPress(.upArrow) { state.moveSelection(by: -1); return .handled }
@@ -162,14 +162,14 @@ private struct ClipboardRow: View {
             Spacer(minLength: 8)
             if entry.isPinned {
                 Image(systemName: "pin.fill")
-                    .font(.caption)
+                    .font(.callout)
                     .foregroundStyle(.secondary)
             }
             Text(entry.date, format: .relative(presentation: .named))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .font(.callout)
+                .foregroundStyle(.secondary)
             if let source = entry.sourceBundleID {
-                AppIcon(bundleID: source, size: 18)
+                AppIcon(bundleID: source, size: 20)
             }
         }
         .padding(.horizontal, 10)
@@ -186,6 +186,7 @@ private struct ClipboardRow: View {
         switch entry.content {
         case .text(let text):
             Text(text.trimmingCharacters(in: .whitespacesAndNewlines))
+                .font(.system(size: 14))
                 .lineLimit(2)
                 .truncationMode(.tail)
         case .image(let fileName):
@@ -204,6 +205,7 @@ private struct ClipboardRow: View {
                     .resizable()
                     .frame(width: 24, height: 24)
                 Text(paths.count == 1 ? (paths[0] as NSString).lastPathComponent : "\(paths.count) files")
+                    .font(.system(size: 14))
                     .lineLimit(1)
             }
         }
@@ -218,12 +220,12 @@ private struct KeyHint: View {
     var body: some View {
         HStack(spacing: 5) {
             Text(keys)
-                .font(.caption.monospaced())
+                .font(.callout.monospaced())
                 .padding(.horizontal, 5)
                 .padding(.vertical, 1)
                 .background(.quaternary, in: .rect(cornerRadius: 4))
             Text(label)
-                .font(.caption)
+                .font(.callout)
                 .foregroundStyle(.secondary)
         }
     }
