@@ -16,6 +16,9 @@ final class Permissions {
 
     private(set) var accessibility = AXIsProcessTrusted()
 
+    /// Whether we've already shown macOS's Accessibility prompt once.
+    private(set) var hasAskedForAccessibility = UserDefaults.standard.bool(forKey: DefaultsKey.didPromptForAccessibility)
+
     var allGranted: Bool { accessibility }
 
     private init() {
@@ -38,11 +41,11 @@ final class Permissions {
     /// own prompt. macOS only shows that prompt once, so after that we open the
     /// right page of System Settings directly.
     func requestAccessibility() {
-        let defaults = UserDefaults.standard
-        if defaults.bool(forKey: DefaultsKey.didPromptForAccessibility) {
+        if hasAskedForAccessibility {
             openAccessibilitySettings()
         } else {
-            defaults.set(true, forKey: DefaultsKey.didPromptForAccessibility)
+            hasAskedForAccessibility = true
+            UserDefaults.standard.set(true, forKey: DefaultsKey.didPromptForAccessibility)
             // "AXTrustedCheckOptionPrompt" is the value of kAXTrustedCheckOptionPrompt.
             let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
             AXIsProcessTrustedWithOptions(options)

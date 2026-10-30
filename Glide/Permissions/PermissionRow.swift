@@ -7,6 +7,8 @@ struct PermissionRow: View {
     let explanation: String
     let systemImage: String
     let isGranted: Bool
+    /// Extra help shown while the permission is still missing.
+    var hint: String? = nil
     let grant: () -> Void
 
     var body: some View {
@@ -24,6 +26,13 @@ struct PermissionRow: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let hint, !isGranted {
+                    Label(hint, systemImage: "info.circle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 4)
+                }
             }
 
             Spacer(minLength: 12)
@@ -49,6 +58,11 @@ extension PermissionRow {
             explanation: "Lets Glide respond to your gestures and shortcuts, and move windows for you.",
             systemImage: "accessibility",
             isGranted: permissions.accessibility,
+            // macOS sometimes keeps an old, stale entry for Glide (for example after
+            // an update), which looks switched on but doesn't count.
+            hint: permissions.hasAskedForAccessibility
+                ? "Already switched on? Select Glide in the list, click −, then click Allow… again."
+                : nil,
             grant: permissions.requestAccessibility
         )
     }
