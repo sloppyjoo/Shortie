@@ -75,10 +75,19 @@ p { margin: 0; }
   content: ""; position: absolute; inset: 6px 6px;
   background: repeating-linear-gradient(var(--violet) 0 2px, transparent 2px 4px);
 }
-.titlebar .close {
-  position: absolute; left: 14px; top: 4px; width: 16px; height: 16px; z-index: 1;
+/* The corner box rolls the window up to its title bar, like the classic Mac "window shade". */
+.titlebar .box {
+  position: absolute; left: 14px; top: 4px; width: 16px; height: 16px; z-index: 1; padding: 0;
   background: var(--paper); border: 2px solid var(--ink); box-shadow: 0 0 0 3px var(--paper);
+  cursor: pointer; appearance: none;
 }
+.titlebar .box:active { background: var(--ink); }
+.titlebar .box:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.win.collapsed > :not(.titlebar) { display: none; }
+.win.collapsed > .titlebar { border-bottom: 0; }
+/* A rolled-up window shows a line in its box. */
+.win.collapsed .box::after { content: ""; position: absolute; left: 2px; right: 2px; top: 5px; height: 2px; background: var(--ink); }
+.titlebar { user-select: none; }
 .titlebar span {
   position: relative; z-index: 1; padding: 0 10px;
   background: var(--paper); font: 700 15px var(--pixel); white-space: nowrap;
@@ -141,8 +150,6 @@ section { padding: 72px 0 0; }
 .list td.name { width: 300px; }
 .list .name div { display: flex; align-items: center; gap: 14px; font: 600 18px var(--pixel); }
 .list .px { width: 32px; height: 32px; }
-.list tbody tr:hover { background: var(--violet); color: #fff; }
-.list tbody tr:hover .px svg path { fill: #fff; }
 
 /* Screenshot rows */
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 64px; }
@@ -162,6 +169,24 @@ section { padding: 72px 0 0; }
 .cols ul { list-style: none; margin: 0; padding: 12px 14px 16px; }
 .cols li { padding: 3px 0 3px 18px; position: relative; }
 .cols li::before { content: "◆"; position: absolute; left: 0; font-size: 10px; top: 6px; color: var(--violet); }
+
+/* The disclosure triangle under the full list. */
+.everything { border-top: 2px solid var(--ink); }
+.everything summary {
+  list-style: none; cursor: pointer; padding: 12px 16px;
+  font: 700 16px var(--pixel); display: flex; align-items: center; gap: 10px;
+}
+.everything summary::-webkit-details-marker { display: none; }
+.everything summary::before {
+  content: ""; width: 0; height: 0;
+  border-left: 9px solid var(--ink); border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+}
+.everything[open] summary::before { transform: rotate(90deg); }
+.everything summary:focus-visible { outline: 2px solid var(--violet); outline-offset: -4px; }
+.groups { columns: 2 320px; column-gap: 32px; padding: 4px 16px 20px 36px; }
+.groups > div { break-inside: avoid; margin-bottom: 16px; }
+.groups h5 { margin: 0 0 4px; font: 700 15px var(--pixel); color: var(--violet-dark); }
+.groups p { font-size: 14px; }
 
 /* About box */
 .about { display: grid; grid-template-columns: 120px 1fr; gap: 28px; align-items: start; }
@@ -259,7 +284,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
   </div>
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><i class="close"></i><span>Shortie</span></div>
+      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Shortie</span></div>
       <div class="body">
         <span class="px logo" data-icon="hand" data-color="#6c5cff"></span>
         <h1>Make your Mac do what you want.</h1>
@@ -277,7 +302,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="how">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><i class="close"></i><span>How it works</span></div>
+      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>How it works</span></div>
       <p class="intro">Each rule has a trigger, an action, and the apps it applies to. Any trigger can run any action.</p>
       <div class="steps3">
         <div class="step">
@@ -302,7 +327,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="features">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><i class="close"></i><span>Features</span></div>
+      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Features</span></div>
       <div class="infobar"><span>9 items</span><span>macOS 15 or later</span></div>
       <table class="list">
         <thead><tr><th>Name</th><th>What it does</th></tr></thead>
@@ -330,7 +355,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         </ul>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><i class="close"></i><span>Trackpad Gesture</span></div>
+        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Trackpad Gesture</span></div>
         <img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052" loading="lazy">
       </div>
     </div>
@@ -346,7 +371,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         </ul>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><i class="close"></i><span>Window Snapping</span></div>
+        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Window Snapping</span></div>
         <img src="images/windows-light.png" alt="The Window Snapping page, with dragging settings and shortcuts for each half of the screen" width="1086" height="1100" loading="lazy">
       </div>
     </div>
@@ -361,7 +386,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         </ul>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><i class="close"></i><span>Keyboard Shortcut</span></div>
+        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Keyboard Shortcut</span></div>
         <img src="images/steps-editor-light.png" alt="A keyboard shortcut that presses ⌘C, waits 0.3 seconds, then opens google.com" width="1040" height="1284" loading="lazy">
       </div>
     </div>
@@ -376,7 +401,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         </ul>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><i class="close"></i><span>Window Buttons</span></div>
+        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Window Buttons</span></div>
         <img src="images/window-buttons-light.png" alt="The Window Buttons page: clicking green maximises, clicking red quits the app" width="1086" height="720" loading="lazy">
       </div>
     </div>
@@ -386,34 +411,47 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="list">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><i class="close"></i><span>Full list</span></div>
+      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Full list</span></div>
       <div class="cols">
         <div>
           <h4>Trackpad</h4>
           <ul>
-            <li>2–5 finger taps</li><li>Double taps</li><li>Tap and hold</li><li>TipTap left and right</li>
-            <li>3–5 finger swipes</li><li>Swipe in from any edge</li><li>Pinch in and out</li><li>Rotate</li>
-            <li>2–5 finger clicks</li><li>Corner clicks</li><li>Force click</li>
+            <li>Taps with 2 to 5 fingers</li><li>3, 4 and 5 finger swipes</li><li>Swipe in from an edge</li><li>Pinch and rotate</li><li>Force click</li>
           </ul>
         </div>
         <div>
           <h4>Other triggers</h4>
           <ul>
-            <li>Keyboard shortcuts</li><li>Hyper key</li><li>Typed abbreviations</li><li>Mouse buttons with modifiers</li>
-            <li>Window buttons</li><li>App opens, quits or comes forward</li><li>Wake, sleep, lock, unlock</li><li>Charger in or out</li>
+            <li>Keyboard shortcuts</li><li>Typed abbreviations</li><li>Mouse buttons</li><li>Window buttons</li><li>An app opening</li>
           </ul>
         </div>
         <div>
-          <h4>Some of the actions</h4>
+          <h4>Actions</h4>
           <ul>
-            <li>Open apps, files, websites</li><li>Run a Shortcut</li><li>Type text, press keys</li><li>Media keys, volume, brightness</li>
-            <li>Switch sound output</li><li>Microphone on/off</li><li>Control Centre, Mission Control</li><li>Screenshots</li>
-            <li>Dark mode on/off</li><li>Hide the Dock</li><li>Lock, sleep, restart</li><li>Snap and resize windows</li>
-            <li>Restore a layout</li><li>Quit other apps</li><li>Change selected text</li><li>Speak text</li>
-            <li>AppleScript and shell</li><li>Choose a menu item</li>
+            <li>Open an app or website</li><li>Snap and resize windows</li><li>Media keys and volume</li><li>Change selected text</li><li>Run a script</li>
           </ul>
         </div>
       </div>
+      <details class="everything">
+        <summary>Show every trigger and action</summary>
+        <div class="groups">
+          <div><h5>Trackpad gestures</h5><p>Tap, double tap and tap and hold with 2, 3, 4 or 5 fingers. TipTap left or right, with 1 or 2 fingers resting. Swipe up, down, left or right with 3, 4 or 5 fingers. Swipe in from the top, bottom, left or right edge with 1 or 2 fingers. Pinch in or out with 3, 4 or 5 fingers. Rotate left or right. Click with 2, 3, 4 or 5 fingers. Click in any corner. Force click.</p></div>
+          <div><h5>Keyboard and typing</h5><p>Any key combination, including with the Hyper key (Caps Lock held as ⌃⌥⇧⌘). Typed abbreviations, such as ;email.</p></div>
+          <div><h5>Mouse</h5><p>Middle, back, forward and higher buttons, alone or with ⌃, ⌥, ⇧ or ⌘.</p></div>
+          <div><h5>Window buttons</h5><p>Click or right-click a window's red, yellow or green button, alone or with ⌃, ⌥, ⇧ or ⌘.</p></div>
+          <div><h5>Events</h5><p>An app opens, quits or comes to the front. The Mac wakes, sleeps, locks or unlocks. The charger is connected or disconnected.</p></div>
+          <div><h5>Basic actions</h5><p>Open App, Open Website or File, Run a Shortcut, Type Text, Press Keys, Choose Menu Item, Run AppleScript, Run Shell Script, Several Actions (with Wait between them), Show Custom Menu, Show Message, Speak Text.</p></div>
+          <div><h5>Mouse clicks</h5><p>Left Click, Right Click, Middle Click, Double Click.</p></div>
+          <div><h5>Window positions</h5><p>Left, Right, Top and Bottom Half. Top Left, Top Right, Bottom Left and Bottom Right. Left, Centre and Right Third. Left and Right Two Thirds. First, Second, Third and Last Fourth. Maximise, Almost Maximise, Maximise Height, Maximise Width. Centre, Restore. Make Larger, Make Smaller. Move to the Left, Right, Top or Bottom Edge. Next Display, Previous Display. Restore Window Layout.</p></div>
+          <div><h5>Window and app commands</h5><p>Close Window, Minimise Window, Enter or Exit Full Screen, Close All of the App's Windows, Minimise All of the App's Windows, Hide App, Hide Other Apps, Quit App, Quit Other Apps.</p></div>
+          <div><h5>Media and sound</h5><p>Play or Pause, Next Track, Previous Track, Volume Up, Volume Down, Mute, Set Volume, Sound Output, Microphone On or Off.</p></div>
+          <div><h5>Display and keyboard</h5><p>Brightness Up, Brightness Down, Keyboard Backlight Up, Keyboard Backlight Down, Dark Mode On or Off, Turn Display Off.</p></div>
+          <div><h5>macOS</h5><p>Control Centre, Notification Centre, Mission Control, App Exposé, Show Desktop, Show Apps, Spotlight, Emoji &amp; Symbols, Screenshot Tool, Screenshot of Selection, Screenshot of Screen, Hide or Show the Dock, Hide or Show the Menu Bar, Show or Hide Hidden Files, Show or Hide Desktop Icons, Start Screen Saver, Force Quit, Eject All Disks.</p></div>
+          <div><h5>Power</h5><p>Lock Screen, Sleep, Log Out, Restart, Shut Down.</p></div>
+          <div><h5>Selected text</h5><p>Make UPPERCASE, Make lowercase, Make Title Case, Make Sentence case, Trim Spaces, Join Lines, Sort Lines, Remove Duplicate Lines, URL-Encode, URL-Decode, Search the Web, Speak Selection, Count Words, Paste as Plain Text.</p></div>
+          <div><h5>Shortie</h5><p>Window Switcher, Clipboard History, Open Shortie Settings, Pause or Resume Shortie.</p></div>
+        </div>
+      </details>
     </div>
   </div>
 </section>
@@ -421,7 +459,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="about">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><i class="close"></i><span>About Shortie</span></div>
+      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>About Shortie</span></div>
       <div class="body about">
         <span class="px" data-icon="hand"></span>
         <div>
@@ -443,7 +481,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="install">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><i class="close"></i><span>Read Me</span></div>
+      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Read Me</span></div>
       <div class="readme">
         <div>
           <h3>Download</h3>
@@ -491,6 +529,21 @@ for (const el of document.querySelectorAll('.px[data-icon]')) {
   let d = '';
   rows.forEach((row, y) => [...row].forEach((c, x) => { if (c === '#') d += `M${x} ${y}h1v1h-1z`; }));
   el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d}" fill="${el.dataset.color || '#1d1838'}"/></svg>`;
+}
+
+// The corner box (or a double-click on the title bar) rolls a window up to its title bar.
+for (const win of document.querySelectorAll('.win')) {
+  const titlebar = win.querySelector('.titlebar');
+  const box = titlebar.querySelector('.box');
+  const name = titlebar.querySelector('span').textContent;
+  const toggle = () => {
+    const collapsed = win.classList.toggle('collapsed');
+    box.setAttribute('aria-expanded', String(!collapsed));
+    box.setAttribute('aria-label', (collapsed ? 'Expand ' : 'Collapse ') + name);
+  };
+  box.setAttribute('aria-label', 'Collapse ' + name);
+  box.addEventListener('click', toggle);
+  titlebar.addEventListener('dblclick', (event) => { if (event.target !== box) toggle(); });
 }
 
 // The menu bar clock.
