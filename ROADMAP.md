@@ -21,6 +21,8 @@ We build one piece at a time and save a git checkpoint after each piece works.
    Notification Centre, Mission Control, Show Desktop, screenshots, lock, sleep…); Press Keys with
    common shortcuts (also remaps keys).
 10. **Mouse buttons** – middle, back, forward and more (with ⌃⌥⇧⌘) run any action; Back/Forward suggestions.
+11. **Renamed to BestTouchTool.**
+12. **Per-app rules** – any trigger can work in all apps, only some, or all but some; app-specific rules win.
 
 ## Next ideas
 
@@ -30,7 +32,6 @@ We build one piece at a time and save a git checkpoint after each piece works.
 
 ## Later: the rest of BetterTouchTool
 
-- **Only in certain apps** – make any trigger work only in chosen apps.
 - **More triggers** – key sequences, typed-word triggers (text expansion), Caps Lock as a "Hyper" key,
   app launched/quit, Mac wakes or sleeps, a device connected, Wi-Fi changed.
 - **More actions** – Do Not Disturb, click a menu item, AppleScript and shell scripts,
