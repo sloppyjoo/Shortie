@@ -56,6 +56,14 @@ struct ActionEditor: View {
                 .padding(6)
                 .background(.background, in: .rect(cornerRadius: 6))
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
+        case .moveWindow:
+            Picker("Move the front window to", selection: payload) {
+                ForEach(WindowPosition.groups, id: \.self) { group in
+                    Section {
+                        ForEach(group) { Text($0.title).tag($0.rawValue) }
+                    }
+                }
+            }
         case .openApp:
             EmptyView()
         }
@@ -103,6 +111,7 @@ extension ShortcutAction.Kind {
         case .runShortcut: "Run a Shortcut"
         case .open: "Open Website or File"
         case .typeText: "Type Text"
+        case .moveWindow: "Move Window"
         }
     }
 }

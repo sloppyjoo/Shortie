@@ -9,9 +9,11 @@ nonisolated enum ShortcutAction: Codable, Hashable {
     /// A website (`apple.com`) or a file or folder (`~/Documents/notes.txt`).
     case open(target: String)
     case typeText(text: String)
+    /// Snaps the front window somewhere, like the left half of the screen.
+    case moveWindow(position: WindowPosition)
 
     enum Kind: CaseIterable, Identifiable {
-        case openApp, runShortcut, open, typeText
+        case openApp, runShortcut, open, typeText, moveWindow
         var id: Self { self }
     }
 
@@ -21,6 +23,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .runShortcut: .runShortcut
         case .open: .open
         case .typeText: .typeText
+        case .moveWindow: .moveWindow
         }
     }
 
@@ -31,6 +34,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .runShortcut(let name): name
         case .open(let target): target
         case .typeText(let text): text
+        case .moveWindow(let position): position.rawValue
         }
     }
 
@@ -40,6 +44,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .runShortcut: .runShortcut(name: payload)
         case .open: .open(target: payload)
         case .typeText: .typeText(text: payload)
+        case .moveWindow: .moveWindow(position: WindowPosition(rawValue: payload) ?? .maximize)
         }
     }
 
@@ -58,6 +63,8 @@ nonisolated enum ShortcutAction: Codable, Hashable {
             "Open \(Self.shortName(for: target))"
         case .typeText(let text):
             "Type “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
+        case .moveWindow(let position):
+            position.title
         }
     }
 
@@ -104,6 +111,8 @@ enum ActionRunner {
             }
         case .typeText(let text):
             Task { await TextTyper.type(text) }
+        case .moveWindow(let position):
+            WindowMover.shared.move(position)
         }
     }
 }

@@ -31,7 +31,7 @@ struct SettingsView: View {
         case .shortcuts:
             ShortcutsSettingsView()
         case .windows:
-            ComingSoonView(pane: pane, description: "Snap, tile and move windows between displays.")
+            WindowsSettingsView()
         case .gestures:
             ComingSoonView(pane: pane, description: "Custom trackpad and mouse gestures.")
         case .permissions:
