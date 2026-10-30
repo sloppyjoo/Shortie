@@ -27,7 +27,7 @@ final class ShortcutEngine {
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
-            eventsOfInterest: CGEventMask(1 << CGEventType.keyDown.rawValue),
+            eventsOfInterest: CGEventMask(1 << CGEventType.keyDown.rawValue) | CGEventMask(1 << CGEventType.keyUp.rawValue),
             callback: handleTapEvent,
             userInfo: nil
         ) else { return }
@@ -91,14 +91,31 @@ private nonisolated func handleTapEvent(
     guard event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker else {
         return Unmanaged.passUnretained(event)
     }
+    // Caps Lock as Hyper: Caps Lock itself is swallowed, and keys pressed while
+    // it's held get ⌃⌥⇧⌘ added before anything else sees them.
+    let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+    let isRepeat = event.getIntegerValueField(.keyboardEventAutorepeat) != 0
+    let hyper = MainActor.assumeIsolated { () -> (isCapsLock: Bool, isHeld: Bool) in
+        let hyperKey = HyperKey.shared
+        guard hyperKey.isEnabled, type == .keyDown || type == .keyUp else { return (false, false) }
+        if keyCode == HyperKey.keyCode {
+            hyperKey.capsLock(isDown: type == .keyDown, isRepeat: isRepeat)
+            return (true, true)
+        }
+        if hyperKey.isHeld, type == .keyDown { hyperKey.noteUsed() }
+        return (false, hyperKey.isHeld)
+    }
+    if hyper.isCapsLock { return nil }
+    if hyper.isHeld { event.flags.formUnion(HyperKey.flags) }
+
     var length = 0
     var characters = [UniChar](repeating: 0, count: 8)
     event.keyboardGetUnicodeString(maxStringLength: characters.count, actualStringLength: &length, unicodeString: &characters)
     let keyPress = KeyPress(
         type: type,
-        keyCode: UInt16(event.getIntegerValueField(.keyboardEventKeycode)),
+        keyCode: keyCode,
         flags: event.flags,
-        isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
+        isRepeat: isRepeat,
         characters: String(utf16CodeUnits: characters, count: length)
     )
     let swallow = MainActor.assumeIsolated { ShortcutEngine.shared.handle(keyPress) }

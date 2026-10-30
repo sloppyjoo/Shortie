@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = ShortcutStore.shared
         InputEngines.start()
         AutomationEngine.shared.start()
+        if HyperKey.shared.isEnabled { HyperKey.shared.apply() }
         NotchBar.shared.update()
 
         // Show the welcome window until Glide has everything it needs.
@@ -36,7 +37,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Opening Glide again (from Finder or Spotlight) while it's already running
+    /// Caps Lock only becomes Hyper while BestTouchTool is running.
+    func applicationWillTerminate(_ notification: Notification) {
+        HyperKey.shared.restoreCapsLock()
+    }
+
+    /// Opening BestTouchTool again (from Finder or Spotlight) while it's already running
     /// shows the dashboard, so it never feels like nothing happened.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         WindowManager.shared.show(.settings)
@@ -65,4 +71,6 @@ enum DefaultsKey {
     static let smoothScrolling = "smoothScrolling"
     static let scrollSpeed = "scrollSpeed"
     static let notchBarScreens = "notchBarScreens"
+    static let hyperKey = "hyperKey"
+    static let hyperTapAction = "hyperTapAction"
 }

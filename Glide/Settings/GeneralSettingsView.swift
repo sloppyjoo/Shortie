@@ -3,6 +3,8 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     @AppStorage(DefaultsKey.isPaused) private var isPaused = false
+    @AppStorage(DefaultsKey.hyperKey) private var hyperKey = false
+    @AppStorage(DefaultsKey.hyperTapAction) private var hyperTapAction = HyperTapAction.capsLock
 
     var body: some View {
         Form {
@@ -11,6 +13,19 @@ struct GeneralSettingsView: View {
                 Toggle("Pause BestTouchTool", isOn: $isPaused)
             } footer: {
                 Text("While paused, BestTouchTool ignores all gestures and shortcuts.")
+            }
+
+            Section {
+                Toggle("Use Caps Lock as a Hyper key", isOn: $hyperKey)
+                    .onChange(of: hyperKey) { HyperKey.shared.apply() }
+                Picker("Tapping Caps Lock on its own", selection: $hyperTapAction) {
+                    ForEach(HyperTapAction.allCases) { Text($0.title).tag($0) }
+                }
+                .disabled(!hyperKey)
+            } header: {
+                Text("Hyper Key")
+            } footer: {
+                Text("Hold Caps Lock and press a key to get ⌃⌥⇧⌘ plus that key. No app uses that combination, so it's perfect for your own shortcuts: record one by holding Caps Lock. Tap it quickly and it's still Caps Lock. It goes back to plain Caps Lock whenever BestTouchTool isn't running.")
             }
 
             Section {

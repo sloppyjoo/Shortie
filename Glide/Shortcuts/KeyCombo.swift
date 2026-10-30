@@ -48,8 +48,10 @@ nonisolated struct Modifiers: OptionSet, Hashable {
         if flags.contains(.maskCommand) { insert(.command) }
     }
 
-    /// In the order Apple always shows them: ⌃⌥⇧⌘.
+    /// In the order Apple always shows them: ⌃⌥⇧⌘. All four together is the
+    /// Hyper key (Caps Lock), shown as "Hyper ".
     var symbols: String {
+        if self == [.control, .option, .shift, .command] { return "Hyper " }
         var result = ""
         if contains(.control) { result += "⌃" }
         if contains(.option) { result += "⌥" }
