@@ -27,7 +27,7 @@ struct GeneralSettingsView: View {
                     }
                 }
             } header: {
-                Text("Hyper Key")
+                SectionTitle("Hyper Key")
             }
 
             Section {

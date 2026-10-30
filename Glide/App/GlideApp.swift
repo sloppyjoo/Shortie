@@ -22,6 +22,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusBar: StatusBarController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        // A development-only mode that draws every page to image files, to check layouts.
+        if Snapshots.runIfRequested() { return }
+        #endif
         statusBar = StatusBarController()
         // Load your shortcuts now, so the first key press or gesture doesn't wait on the file.
         _ = ShortcutStore.shared

@@ -71,7 +71,7 @@ struct GesturesSettingsView: View {
             }
         } header: {
             HStack {
-                Text("Gestures")
+                SectionTitle("Gestures")
                 Spacer()
                 Button("Add", systemImage: "plus") {
                     editing = GestureEditorRequest(
@@ -168,9 +168,9 @@ struct GestureEditor: View {
                 }
             }
             if let warning = SystemGestures.warning(for: gesture) {
-                HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 6) {
                     Label(warning, systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
+                        .font(.callout)
                         .foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                     if case .click = gesture {} else {

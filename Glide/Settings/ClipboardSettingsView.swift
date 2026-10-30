@@ -30,20 +30,21 @@ struct ClipboardSettingsView: View {
             if isEnabled {
                 Section {
                     FlowRow {
-                        ForEach(excludedApps, id: \.self) { bundleID in
+                        // Apps that aren't installed are still excluded, just not shown.
+                        ForEach(excludedApps.filter(AppInfo.isInstalled), id: \.self) { bundleID in
                             AppChip(bundleID: bundleID) { setExcluded(excludedApps.filter { $0 != bundleID }) }
                         }
                         addAppMenu
                     }
                 } header: {
                     HStack {
-                        Text("Never Keep Copies From")
+                        SectionTitle("Never Keep Copies From")
                         InfoButton("Passwords are never kept anyway: password managers mark them as secret, and BestTouchTool skips anything marked that way. History stays on your Mac and is never sent anywhere.")
                     }
                 }
 
                 Section {
-                    LabeledContent("\(history.entries.count) items saved") {
+                    LabeledContent(history.entries.count == 1 ? "1 item saved" : "\(history.entries.count) items saved") {
                         Button("Clear History", role: .destructive) { history.clearUnpinned() }
                             .disabled(history.entries.allSatisfy(\.isPinned))
                     }

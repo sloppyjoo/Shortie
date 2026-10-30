@@ -22,7 +22,7 @@ struct CustomMenusSettingsView: View {
                 }
             } header: {
                 HStack {
-                    Text("Menus")
+                    SectionTitle("Menus")
                     InfoButton("Switch on Menu Bar to give a menu its own icon there. To open a menu at the pointer instead, give any trigger the Show Custom Menu action.")
                     Spacer()
                     Button("Add", systemImage: "plus") {
@@ -173,13 +173,15 @@ struct CustomMenuEditor: View {
                 TextField("Title", text: $menu.items[index].title, prompt: Text(menu.items[index].action.title))
                     .textFieldStyle(.roundedBorder)
                 ActionKindPicker(action: $menu.items[index].action, forSteps: true)
-                Button { move(index, by: -1) } label: { Image(systemName: "chevron.up") }
-                    .disabled(index == 0)
-                Button { move(index, by: 1) } label: { Image(systemName: "chevron.down") }
-                    .disabled(index == menu.items.count - 1)
-                Button { menu.items.remove(at: index) } label: { Image(systemName: "minus.circle") }
+                Group {
+                    Button { move(index, by: -1) } label: { Image(systemName: "chevron.up") }
+                        .disabled(index == 0)
+                    Button { move(index, by: 1) } label: { Image(systemName: "chevron.down") }
+                        .disabled(index == menu.items.count - 1)
+                    Button { menu.items.remove(at: index) } label: { Image(systemName: "minus.circle") }
+                }
+                .buttonStyle(.borderless)
             }
-            .buttonStyle(.borderless)
             ActionFields(action: $menu.items[index].action)
                 .padding(.leading, 4)
         }

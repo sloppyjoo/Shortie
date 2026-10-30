@@ -90,6 +90,8 @@ struct ActionFields: View {
                     }
                 }
             }
+            .labelsHidden()
+            .fixedSize()
         case .system:
             Picker("Action", selection: payload) {
                 ForEach(SystemAction.groups, id: \.self) { group in
@@ -98,6 +100,8 @@ struct ActionFields: View {
                     }
                 }
             }
+            .labelsHidden()
+            .fixedSize()
         case .pressKeys:
             HStack {
                 Menu("Common Shortcuts") {
@@ -153,12 +157,15 @@ struct ActionFields: View {
                         Label(menu.name, systemImage: menu.symbol).tag(UUID?.some(menu.id))
                     }
                 }
+                .labelsHidden()
                 .fixedSize()
             }
         case .mouseClick:
             Picker("Click", selection: payload) {
                 ForEach(MouseAction.allCases) { Text($0.title).tag($0.rawValue) }
             }
+            .labelsHidden()
+            .fixedSize()
         case .appCommand:
             Picker("Command", selection: payload) {
                 ForEach(AppCommand.groups, id: \.self) { group in
@@ -167,6 +174,8 @@ struct ActionFields: View {
                     }
                 }
             }
+            .labelsHidden()
+            .fixedSize()
         }
     }
 
@@ -221,6 +230,15 @@ enum AppChooser {
 }
 
 extension ShortcutAction.Kind {
+    /// Actions whose only detail is one menu (which window position, which
+    /// command…), so it can sit right beside the action type.
+    var isSingleChoice: Bool {
+        switch self {
+        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu: true
+        default: false
+        }
+    }
+
     var editorTitle: String {
         switch self {
         case .openApp: "Open App"
@@ -264,8 +282,16 @@ struct TriggerEditor<When: View>: View {
             EditorCard("When") { when }
 
             EditorCard("Do") {
-                ActionKindPicker(action: $action)
-                ActionFields(action: $action)
+                if action.kind.isSingleChoice {
+                    HStack {
+                        ActionKindPicker(action: $action)
+                        ActionFields(action: $action)
+                        Spacer(minLength: 0)
+                    }
+                } else {
+                    ActionKindPicker(action: $action)
+                    ActionFields(action: $action)
+                }
             }
 
             if let apps {
@@ -340,13 +366,15 @@ struct StepsEditor: View {
                             .frame(width: 18)
                         ActionKindPicker(action: step(index), forSteps: true)
                         Spacer()
-                        Button { move(index, by: -1) } label: { Image(systemName: "chevron.up") }
-                            .disabled(index == 0)
-                        Button { move(index, by: 1) } label: { Image(systemName: "chevron.down") }
-                            .disabled(index == steps.count - 1)
-                        Button { remove(index) } label: { Image(systemName: "minus.circle") }
+                        Group {
+                            Button { move(index, by: -1) } label: { Image(systemName: "chevron.up") }
+                                .disabled(index == 0)
+                            Button { move(index, by: 1) } label: { Image(systemName: "chevron.down") }
+                                .disabled(index == steps.count - 1)
+                            Button { remove(index) } label: { Image(systemName: "minus.circle") }
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    .buttonStyle(.borderless)
                     // A step's own details (wrapped so a list of steps can hold more steps' fields).
                     AnyView(ActionFields(action: step(index)))
                         .padding(.leading, 26)

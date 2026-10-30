@@ -90,7 +90,7 @@ struct ShortcutListView<Extra: View, Top: View>: View {
             }
         } header: {
             HStack {
-                Text("Shortcuts")
+                SectionTitle("Shortcuts")
                 if let info { InfoButton(info) }
                 Spacer()
                 extraActions

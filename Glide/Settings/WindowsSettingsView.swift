@@ -115,7 +115,7 @@ struct WindowDraggingSettings: View {
             modifierRow("Resize from Anywhere", isOn: $resizes, keys: $resizeKeys)
         } header: {
             HStack {
-                Text("Dragging")
+                SectionTitle("Dragging")
                 InfoButton("Drag a window to the left or right edge for half the screen, the top to maximise, or right into a corner for a quarter. Hold the keys and drag inside any window to move or resize it.")
             }
         }

@@ -3,7 +3,11 @@ import SwiftUI
 /// The dashboard, laid out like System Settings: a sidebar of sections grouped
 /// under plain headings, and the chosen section on the right.
 struct SettingsView: View {
-    @State private var selection: SettingsPane? = .general
+    @State private var selection: SettingsPane?
+
+    init(initialPane: SettingsPane = .general) {
+        _selection = State(initialValue: initialPane)
+    }
     @State private var columns = NavigationSplitViewVisibility.all
 
     /// Like System Settings, the sidebar is always shown at one fixed width.
@@ -151,7 +155,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .automations: .indigo
         case .clipboard: .cyan
         case .menus: .mint
-        case .menuBar: .black
+        case .menuBar: Color(white: 0.3)
         case .gestures: .orange
         case .permissions: .green
         }
@@ -193,9 +197,26 @@ struct PaneHeader: View {
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             .padding(.top, 4)
-            .padding(.bottom, 2)
+            .padding(.bottom, 10)
             .textCase(nil)
         }
+    }
+}
+
+/// A section's heading. Set explicitly so every heading looks the same:
+/// left alone, macOS styles the first one on a page differently.
+struct SectionTitle: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title)
+            .font(.headline)
+            .foregroundStyle(.primary)
+            .textCase(nil)
     }
 }
 
@@ -227,7 +248,7 @@ struct TrafficLightsSidebarIcon: View {
             }
         }
         .frame(width: size, height: size)
-        .background(Color(white: 0.22).gradient, in: .rect(cornerRadius: size * 0.25, style: .continuous))
+        .background(Color(white: 0.3).gradient, in: .rect(cornerRadius: size * 0.25, style: .continuous))
     }
 }
 

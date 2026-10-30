@@ -58,7 +58,7 @@ struct MouseSettingsView: View {
                     .foregroundStyle(.secondary)
                 }
             } header: {
-                Text("Scrolling")
+                SectionTitle("Scrolling")
             }
         }
         .formStyle(.grouped)
@@ -102,7 +102,7 @@ struct MouseSettingsView: View {
             }
         } header: {
             HStack {
-                Text("Buttons")
+                SectionTitle("Buttons")
                 Spacer()
                 Button("Back & Forward", action: addSuggestions)
                     .help("Make the thumb buttons go Back and Forward in every app")
@@ -146,8 +146,7 @@ struct MouseSettingsView: View {
 
     private func refresh() {
         linearMouse = NSRunningApplication.runningApplications(withBundleIdentifier: "com.lujjjh.LinearMouse").first
-        systemIsNatural = UserDefaults(suiteName: UserDefaults.globalDomain)?
-            .object(forKey: "com.apple.swipescrolldirection") as? Bool ?? true
+        systemIsNatural = UserDefaults.standard.object(forKey: "com.apple.swipescrolldirection") as? Bool ?? true
     }
 
 }

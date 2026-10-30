@@ -28,7 +28,7 @@ struct MenuBarSettingsView: View {
                     }
                 }
             } header: {
-                Text("Black Menu Bar")
+                SectionTitle("Black Menu Bar")
             }
         }
         .formStyle(.grouped)

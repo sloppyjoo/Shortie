@@ -31,7 +31,7 @@ struct TrafficLightsSettingsView: View {
                 }
             } header: {
                 HStack {
-                    Text("Window Buttons")
+                    SectionTitle("Window Buttons")
                     Spacer()
                     Button("Suggestions", action: addSuggestions)
                         .help("Add a handy starting set, like click green to maximise")

@@ -37,7 +37,7 @@ struct TextShortcutsSettingsView: View {
                 }
             } header: {
                 HStack {
-                    Text("Text Shortcuts")
+                    SectionTitle("Text Shortcuts")
                     InfoButton("Only the last few characters you type are kept, in memory, to spot abbreviations. Nothing is saved or sent anywhere, and password fields are never seen.")
                     Spacer()
                     Button("Add", systemImage: "plus") {

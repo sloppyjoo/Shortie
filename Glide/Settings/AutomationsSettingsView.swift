@@ -40,7 +40,7 @@ struct AutomationsSettingsView: View {
                 }
             } header: {
                 HStack {
-                    Text("Automations")
+                    SectionTitle("Automations")
                     Spacer()
                     Button("Add", systemImage: "plus") {
                         editing = AutomationEditorRequest(shortcutID: nil, event: .macWoke, action: .openApp(path: ""))
