@@ -7,6 +7,8 @@ struct MenuBarSettingsView: View {
 
     var body: some View {
         Form {
+            PaneHeader(pane: .menuBar)
+
             Section {
                 ForEach(screens, id: \.stableID) { screen in
                     Toggle(isOn: Binding(
@@ -16,7 +18,7 @@ struct MenuBarSettingsView: View {
                         Label {
                             Text(screen.localizedName)
                             if screen.menuBarFrame == nil {
-                                Text("The menu bar hides automatically on this screen, so there's nothing to cover.")
+                                Text("Menu bar hides itself here")
                             } else if screen.hasNotch {
                                 Text("Has a notch")
                             }
@@ -27,8 +29,6 @@ struct MenuBarSettingsView: View {
                 }
             } header: {
                 Text("Black Menu Bar")
-            } footer: {
-                Text("Paints the menu bar black so the notch disappears into it. Your menus, clock and icons stay on top.")
             }
         }
         .formStyle(.grouped)

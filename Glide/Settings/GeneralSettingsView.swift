@@ -8,30 +8,38 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
+            PaneHeader(pane: .general)
+
             Section {
                 LaunchAtLoginToggle()
-                Toggle("Pause BestTouchTool", isOn: $isPaused)
-            } footer: {
-                Text("While paused, BestTouchTool ignores all gestures and shortcuts.")
+                Toggle("Pause All Shortcuts and Gestures", isOn: $isPaused)
             }
 
             Section {
-                Toggle("Use Caps Lock as a Hyper key", isOn: $hyperKey)
-                    .onChange(of: hyperKey) { HyperKey.shared.apply() }
-                Picker("Tapping Caps Lock on its own", selection: $hyperTapAction) {
-                    ForEach(HyperTapAction.allCases) { Text($0.title).tag($0) }
+                HStack {
+                    Toggle("Caps Lock as Hyper Key", isOn: $hyperKey)
+                        .onChange(of: hyperKey) { HyperKey.shared.apply() }
+                    InfoButton("Hold Caps Lock with another key for ⌃⌥⇧⌘ plus that key, a combination no app uses. Record a Hyper shortcut by holding Caps Lock. Caps Lock is back to normal whenever BestTouchTool isn't running.")
                 }
-                .disabled(!hyperKey)
+                if hyperKey {
+                    Picker("When Tapped", selection: $hyperTapAction) {
+                        ForEach(HyperTapAction.allCases) { Text($0.title).tag($0) }
+                    }
+                }
             } header: {
                 Text("Hyper Key")
-            } footer: {
-                Text("Hold Caps Lock and press a key to get ⌃⌥⇧⌘ plus that key. No app uses that combination, so it's perfect for your own shortcuts: record one by holding Caps Lock. Tap it quickly and it's still Caps Lock. It goes back to plain Caps Lock whenever BestTouchTool isn't running.")
             }
 
             Section {
                 LabeledContent("Version", value: Self.version)
+                LabeledContent("Your Shortcuts") {
+                    Button("Show in Finder") {
+                        NSWorkspace.shared.activateFileViewerSelecting([ShortcutStore.shared.fileURL])
+                    }
+                }
             }
         }
+        .animation(.smooth(duration: 0.2), value: hyperKey)
         .formStyle(.grouped)
     }
 
@@ -67,10 +75,10 @@ struct PermissionsSettingsView: View {
 
     var body: some View {
         Form {
+            PaneHeader(pane: .permissions)
+
             Section {
                 PermissionRow.accessibility(permissions)
-            } footer: {
-                Text("BestTouchTool never records or sends anything you type.")
             }
         }
         .formStyle(.grouped)

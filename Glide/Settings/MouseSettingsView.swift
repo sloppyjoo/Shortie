@@ -11,13 +11,12 @@ struct MouseSettingsView: View {
 
     var body: some View {
         Form {
+            PaneHeader(pane: .mouse)
+
             if let linearMouse {
                 Section {
                     HStack {
-                        Label(
-                            "LinearMouse is running, so it may also flip your scrolling. Quit it to stop the two apps fighting.",
-                            systemImage: "exclamationmark.triangle.fill"
-                        )
+                        Label("LinearMouse is also changing your scrolling.", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                         Spacer()
                         Button("Quit LinearMouse") {
@@ -31,7 +30,10 @@ struct MouseSettingsView: View {
             buttons
 
             Section {
-                Toggle("Smooth scrolling", isOn: $smoothScrolling)
+                HStack {
+                    Toggle("Smooth Scrolling", isOn: $smoothScrolling)
+                    InfoButton("Each click of the wheel glides to a stop, like a trackpad. Scrolling with ⌘ ⌥ ⌃ or ⇧ held isn't smoothed, so zooming still works.")
+                }
                 if smoothScrolling {
                     Slider(value: $scrollSpeed, in: 0.5...3) {
                         Text("Speed")
@@ -41,38 +43,26 @@ struct MouseSettingsView: View {
                         Image(systemName: "hare")
                     }
                 }
-            } header: {
-                Text("Mouse Wheel")
-            } footer: {
-                Text("Each click of the wheel glides and eases to a stop, like scrolling on a trackpad. Scrolling with ⌘, ⌥, ⌃ or ⇧ held isn't smoothed, so zooming and sideways scrolling still work as apps expect.")
-            }
-
-            Section {
-                Picker("Mouse wheel", selection: $wheelDirection) {
+                Picker("Wheel Direction", selection: $wheelDirection) {
                     ForEach(WheelDirection.allCases) { direction in
                         Text(direction.title).tag(direction)
                     }
                 }
-                .pickerStyle(.inline)
-            } header: {
-                Text("Scroll Direction")
-            } footer: {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(footer)
-                    if !systemIsNatural {
-                        // Glide only changes the wheel, so the trackpad's direction comes from macOS.
-                        HStack(spacing: 4) {
-                            Text("Natural scrolling is off in System Settings, so your trackpad scrolls traditionally.")
-                            Button("Open Trackpad Settings") {
-                                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Trackpad-Settings.extension")!)
-                            }
-                            .buttonStyle(.link)
+                // BestTouchTool only changes the wheel; the trackpad's direction comes from macOS.
+                if !systemIsNatural {
+                    LabeledContent("Trackpad natural scrolling is off") {
+                        Button("Trackpad Settings…") {
+                            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Trackpad-Settings.extension")!)
                         }
                     }
+                    .foregroundStyle(.secondary)
                 }
+            } header: {
+                Text("Scrolling")
             }
         }
         .formStyle(.grouped)
+        .animation(.smooth(duration: 0.2), value: smoothScrolling)
         .sheet(item: $editing) { request in
             MouseButtonEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in
                 save(click: click, action: action, apps: apps, to: request.shortcutID)
@@ -89,7 +79,7 @@ struct MouseSettingsView: View {
 
         Section {
             if !store.shortcuts.contains(where: { $0.mouseButtonClick != nil }) {
-                Text("Give your mouse's extra buttons something to do, like Back and Forward in every app (Safari ignores them on its own).")
+                Text("No button actions yet.")
                     .foregroundStyle(.secondary)
             }
             ForEach($store.shortcuts) { $shortcut in
@@ -112,8 +102,9 @@ struct MouseSettingsView: View {
             HStack {
                 Text("Buttons")
                 Spacer()
-                Button("Add Suggestions", action: addSuggestions)
-                Button("Add Button Action", systemImage: "plus") {
+                Button("Back & Forward", action: addSuggestions)
+                    .help("Make the thumb buttons go Back and Forward in every app")
+                Button("Add", systemImage: "plus") {
                     editing = MouseButtonEditorRequest(
                         shortcutID: nil,
                         click: MouseButtonClick(button: 3, modifiers: []),
@@ -157,14 +148,6 @@ struct MouseSettingsView: View {
             .object(forKey: "com.apple.swipescrolldirection") as? Bool ?? true
     }
 
-    private var footer: String {
-        let detail = switch wheelDirection {
-        case .system: "The wheel scrolls the same way as your trackpad."
-        case .traditional: "Rolling the wheel down moves the page down."
-        case .natural: "Rolling the wheel down moves the page up, like dragging it."
-        }
-        return detail + " Your trackpad follows System Settings › Trackpad › Natural scrolling."
-    }
 }
 
 private struct MouseButtonEditorRequest: Identifiable {

@@ -10,9 +10,11 @@ struct TextShortcutsSettingsView: View {
         @Bindable var store = store
 
         Form {
+            PaneHeader(pane: .textShortcuts)
+
             Section {
                 if !store.shortcuts.contains(where: { $0.abbreviation != nil }) {
-                    Text("Type an abbreviation like ;email anywhere and it's replaced with your full email address. It can also run any other action.")
+                    Text("No text shortcuts yet. Try ;email for your address.")
                         .foregroundStyle(.secondary)
                 }
                 ForEach($store.shortcuts) { $shortcut in
@@ -36,13 +38,12 @@ struct TextShortcutsSettingsView: View {
             } header: {
                 HStack {
                     Text("Text Shortcuts")
+                    InfoButton("Only the last few characters you type are kept, in memory, to spot abbreviations. Nothing is saved or sent anywhere, and password fields are never seen.")
                     Spacer()
-                    Button("Add Text Shortcut", systemImage: "plus") {
+                    Button("Add", systemImage: "plus") {
                         editing = TextShortcutEditorRequest(shortcutID: nil, abbreviation: ";", action: .typeText(text: ""))
                     }
                 }
-            } footer: {
-                Text("Only the last few characters you type are kept, in memory, to spot abbreviations. Nothing is saved or sent anywhere, and password fields are never seen.")
             }
         }
         .formStyle(.grouped)
@@ -112,7 +113,7 @@ struct TextShortcutEditor: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
-                Text("Tip: start abbreviations with a symbol like ; so they never turn up in ordinary writing.")
+                Text("Starting with ; keeps it out of ordinary writing.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

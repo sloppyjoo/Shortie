@@ -6,13 +6,13 @@ struct WindowsSettingsView: View {
 
     var body: some View {
         ShortcutListView(
+            pane: .windows,
             kinds: [.moveWindow, .appCommand],
-            emptyTitle: "Snap Windows with Your Keyboard",
-            emptySymbol: "macwindow",
-            emptyDescription: "Move the front window to a half, corner or third of the screen. Start with the standard set, or add your own.",
-            footnote: "Press a half or corner shortcut again to cycle its width: ½ → ⅓ → ⅔."
+            emptyText: "No window shortcuts yet.",
+            info: "Press a half or corner shortcut again to cycle its width: ½ → ⅓ → ⅔."
         ) {
-            Button("Add Standard Shortcuts", action: addStandardShortcuts)
+            Button("Standard Set", action: addStandardShortcuts)
+                .help("Add the usual ⌃⌥ arrow-key shortcuts for halves, corners and thirds")
         } topSections: {
             WindowDraggingSettings()
         }
@@ -110,13 +110,14 @@ struct WindowDraggingSettings: View {
 
     var body: some View {
         Section {
-            Toggle("Drag windows to screen edges to snap them", isOn: $snaps)
-            modifierRow("Hold to move a window from anywhere", isOn: $moves, keys: $moveKeys)
-            modifierRow("Hold to resize a window from anywhere", isOn: $resizes, keys: $resizeKeys)
+            Toggle("Snap at Screen Edges", isOn: $snaps)
+            modifierRow("Move from Anywhere", isOn: $moves, keys: $moveKeys)
+            modifierRow("Resize from Anywhere", isOn: $resizes, keys: $resizeKeys)
         } header: {
-            Text("Dragging Windows")
-        } footer: {
-            Text("Snap: drag a window to the left or right edge for half the screen, the top to maximise, or right into a corner for a quarter. Move and resize: hold the keys and drag anywhere inside a window; resizing moves the corner nearest where you grabbed.")
+            HStack {
+                Text("Dragging")
+                InfoButton("Drag a window to the left or right edge for half the screen, the top to maximise, or right into a corner for a quarter. Hold the keys and drag inside any window to move or resize it.")
+            }
         }
     }
 

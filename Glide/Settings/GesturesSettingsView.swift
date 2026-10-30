@@ -10,6 +10,8 @@ struct GesturesSettingsView: View {
 
     var body: some View {
         Form {
+            PaneHeader(pane: .gestures)
+
             switch engine.status {
             case .unavailable:
                 Section {
@@ -45,7 +47,7 @@ struct GesturesSettingsView: View {
 
         Section {
             if !store.shortcuts.contains(where: { $0.gesture != nil }) {
-                Text("No gestures yet. Add one, then just do it on your trackpad to set it up. Try a two-finger tap for Right Click, or a three-finger tap for Middle Click.")
+                Text("No gestures yet. Try a two-finger tap for Right Click.")
                     .foregroundStyle(.secondary)
             }
             ForEach($store.shortcuts) { $shortcut in
@@ -69,7 +71,7 @@ struct GesturesSettingsView: View {
             HStack {
                 Text("Gestures")
                 Spacer()
-                Button("Add Gesture", systemImage: "plus") {
+                Button("Add", systemImage: "plus") {
                     editing = GestureEditorRequest(
                         shortcutID: nil,
                         gesture: .tap(fingers: 3),
@@ -105,8 +107,6 @@ struct GesturesSettingsView: View {
                     }
                 }
             }
-        } footer: {
-            Text("See your fingers live and every gesture BestTouchTool recognises, to check how your gestures are being read.")
         }
         .animation(.smooth(duration: 0.25), value: engine.recentGestures.map(\.id))
     }

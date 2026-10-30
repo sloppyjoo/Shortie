@@ -11,9 +11,11 @@ struct AutomationsSettingsView: View {
         @Bindable var store = store
 
         Form {
+            PaneHeader(pane: .automations)
+
             Section {
                 if !store.shortcuts.contains(where: { $0.event != nil }) {
-                    Text("Run an action when something happens: when Zoom opens, mute the sound; when the charger's unplugged, dim the screen; when your Mac wakes, open your to-do list.")
+                    Text("No automations yet.")
                         .foregroundStyle(.secondary)
                 }
                 ForEach($store.shortcuts) { $shortcut in
@@ -40,12 +42,10 @@ struct AutomationsSettingsView: View {
                 HStack {
                     Text("Automations")
                     Spacer()
-                    Button("Add Automation", systemImage: "plus") {
+                    Button("Add", systemImage: "plus") {
                         editing = AutomationEditorRequest(shortcutID: nil, event: .macWoke, action: .openApp(path: ""))
                     }
                 }
-            } footer: {
-                Text("Several automations can share the same event; they run in the order listed.")
             }
         }
         .formStyle(.grouped)

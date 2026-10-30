@@ -7,44 +7,16 @@ struct TrafficLightsSettingsView: View {
     @State private var editing: TrafficLightEditorRequest?
 
     var body: some View {
-        Group {
-            if store.shortcuts.contains(where: { $0.trafficLightClick != nil }) {
-                list
-            } else {
-                emptyState
-            }
-        }
-        .sheet(item: $editing) { request in
-            TrafficLightEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in
-                save(click: click, action: action, apps: apps, to: request.shortcutID)
-            }
-        }
-    }
-
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label {
-                Text("Make the Window Buttons Do More")
-            } icon: {
-                TrafficLightDots(highlighted: nil)
-                    .scaleEffect(2.2)
-                    .frame(height: 40)
-            }
-        } description: {
-            Text("Click, right-click or ⌥-click a window's red, yellow or green button to quit an app, hide it, maximise the window without going full screen, and more.")
-        } actions: {
-            HStack {
-                Button("Add Suggestions", action: addSuggestions)
-                addButton
-            }
-        }
-    }
-
-    private var list: some View {
         @Bindable var store = store
 
-        return Form {
+        Form {
+            PaneHeader(pane: .trafficLights)
+
             Section {
+                if !store.shortcuts.contains(where: { $0.trafficLightClick != nil }) {
+                    Text("No window button actions yet.")
+                        .foregroundStyle(.secondary)
+                }
                 ForEach($store.shortcuts) { $shortcut in
                     if let click = shortcut.trafficLightClick {
                         TrafficLightRow(
@@ -59,26 +31,25 @@ struct TrafficLightsSettingsView: View {
                 }
             } header: {
                 HStack {
+                    Text("Window Buttons")
                     Spacer()
-                    Button("Add Suggestions", action: addSuggestions)
-                    addButton
+                    Button("Suggestions", action: addSuggestions)
+                        .help("Add a handy starting set, like click green to maximise")
+                    Button("Add", systemImage: "plus") {
+                        editing = TrafficLightEditorRequest(
+                            shortcutID: nil,
+                            click: TrafficLightClick(button: .close, mouseButton: .right, modifiers: []),
+                            action: .appCommand(command: .quitApp)
+                        )
+                    }
                 }
-            } footer: {
-                Text("Clicks you haven't given an action keep working as normal.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-    }
-
-    private var addButton: some View {
-        Button("Add Action", systemImage: "plus") {
-            editing = TrafficLightEditorRequest(
-                shortcutID: nil,
-                click: TrafficLightClick(button: .close, mouseButton: .right, modifiers: []),
-                action: .appCommand(command: .quitApp)
-            )
+        .sheet(item: $editing) { request in
+            TrafficLightEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in
+                save(click: click, action: action, apps: apps, to: request.shortcutID)
+            }
         }
     }
 

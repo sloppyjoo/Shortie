@@ -1,27 +1,27 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The Shortcuts section of the dashboard: shortcuts that open things or type text.
+/// The Keyboard Shortcuts section of the dashboard.
 struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
+            pane: .shortcuts,
             kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick],
-            emptyTitle: "No Shortcuts Yet",
-            emptySymbol: "command",
-            emptyDescription: "Press a few keys from anywhere on your Mac to open an app, run a Shortcut, open a website or type some text."
+            emptyText: "No shortcuts yet."
         )
     }
 }
 
-/// A list of shortcuts, each with its keys and an on/off switch. Shows only
-/// shortcuts whose action is one of `kinds`, so each dashboard section can have its own.
+/// A page of keyboard shortcuts, each with its keys and an on/off switch.
+/// Shows only shortcuts whose action is one of `kinds`, so each dashboard
+/// section can have its own.
 struct ShortcutListView<Extra: View, Top: View>: View {
+    let pane: SettingsPane
     let kinds: [ShortcutAction.Kind]
-    let emptyTitle: String
-    let emptySymbol: String
-    let emptyDescription: String
-    var footnote: String?
-    /// Extra buttons shown next to "Add Shortcut".
+    let emptyText: String
+    /// A detail worth knowing, behind an ⓘ next to the list's heading.
+    var info: String?
+    /// Extra buttons shown next to "Add".
     @ViewBuilder var extraActions: Extra
     /// Extra settings shown above the list.
     @ViewBuilder var topSections: Top
@@ -33,31 +33,26 @@ struct ShortcutListView<Extra: View, Top: View>: View {
     @State private var editing: EditorRequest?
 
     init(
+        pane: SettingsPane,
         kinds: [ShortcutAction.Kind],
-        emptyTitle: String,
-        emptySymbol: String,
-        emptyDescription: String,
-        footnote: String? = nil,
+        emptyText: String,
+        info: String? = nil,
         @ViewBuilder extraActions: () -> Extra = { EmptyView() },
         @ViewBuilder topSections: () -> Top = { EmptyView() }
     ) {
+        self.pane = pane
         self.kinds = kinds
-        self.emptyTitle = emptyTitle
-        self.emptySymbol = emptySymbol
-        self.emptyDescription = emptyDescription
-        self.footnote = footnote
+        self.emptyText = emptyText
+        self.info = info
         self.extraActions = extraActions()
         self.topSections = topSections()
     }
 
     var body: some View {
         Form {
+            PaneHeader(pane: pane)
             topSections
-            if store.shortcuts.contains(where: belongsHere) {
-                list
-            } else {
-                Section { emptyState }
-            }
+            list
         }
         .formStyle(.grouped)
         .sheet(item: $editing) { request in
@@ -71,23 +66,14 @@ struct ShortcutListView<Extra: View, Top: View>: View {
         shortcut.isKeyboardShortcut && kinds.contains(shortcut.action.kind)
     }
 
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label(emptyTitle, systemImage: emptySymbol)
-        } description: {
-            Text(emptyDescription)
-        } actions: {
-            HStack {
-                extraActions
-                addMenu
-            }
-        }
-    }
-
     private var list: some View {
         @Bindable var store = store
 
         return Section {
+            if !store.shortcuts.contains(where: belongsHere) {
+                Text(emptyText)
+                    .foregroundStyle(.secondary)
+            }
             ForEach($store.shortcuts) { $shortcut in
                 if belongsHere(shortcut) {
                     ShortcutRow(
@@ -102,30 +88,17 @@ struct ShortcutListView<Extra: View, Top: View>: View {
             }
         } header: {
             HStack {
+                Text("Shortcuts")
+                if let info { InfoButton(info) }
                 Spacer()
                 extraActions
                 addMenu
             }
-        } footer: {
-            VStack(alignment: .leading, spacing: 6) {
-                if let footnote {
-                    Text(footnote)
-                }
-                HStack(spacing: 4) {
-                    Text("Saved in shortcuts.json.")
-                    Button("Show in Finder") {
-                        NSWorkspace.shared.activateFileViewerSelecting([store.fileURL])
-                    }
-                    .buttonStyle(.link)
-                }
-            }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
         }
     }
 
     private var addMenu: some View {
-        Menu("Add Shortcut", systemImage: "plus") {
+        Menu("Add", systemImage: "plus") {
             ForEach(kinds) { kind in
                 if kind == .moveWindow {
                     // Window positions go straight into the menu, grouped.
@@ -477,6 +450,25 @@ struct HoverBadge<Details: View>: View {
             if !isHoveringBadge && !isHoveringDetails {
                 isShowingDetails = false
             }
+        }
+    }
+}
+
+/// A small ⓘ that shows a short explanation the moment you hover over it.
+/// Details live here instead of in paragraphs on the page.
+struct InfoButton: View {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+
+    var body: some View {
+        HoverBadge(systemImage: "info.circle", color: .secondary, accessibilityText: text) {
+            Text(text)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(14)
+                .frame(width: 290, alignment: .leading)
         }
     }
 }
