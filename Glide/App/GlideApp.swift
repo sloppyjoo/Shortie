@@ -28,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         InputEngines.start()
         AutomationEngine.shared.start()
         ClipboardHistory.shared.start()
+        MenuBarMenus.shared.refresh()
         if HyperKey.shared.isEnabled { HyperKey.shared.apply() }
         NotchBar.shared.update()
 

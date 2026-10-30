@@ -248,7 +248,7 @@ struct ActionKindPicker: View {
     /// from a gesture or window button.
     private static let order: [ShortcutAction.Kind] = [
         .mouseClick, .system, .pressKeys, .appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText,
-        .menuItem, .appleScript, .shellScript, .steps,
+        .menuItem, .appleScript, .shellScript, .steps, .showMenu,
     ]
 
     /// What a single step can be.

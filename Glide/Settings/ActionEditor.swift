@@ -138,6 +138,23 @@ struct ActionFields: View {
             .fixedSize()
         case .steps:
             StepsEditor(action: $action)
+        case .showMenu:
+            let menus = CustomMenuStore.shared.menus
+            if menus.isEmpty {
+                Text("Make a menu in Custom Menus first.")
+                    .foregroundStyle(.secondary)
+            } else {
+                Picker("Menu", selection: Binding(
+                    get: { if case .showMenu(let id, _) = action { id } else { nil } },
+                    set: { newID in action = .showMenu(id: newID, name: CustomMenuStore.shared.menu(id: newID)?.name ?? "") }
+                )) {
+                    Text("Choose a Menu").tag(UUID?.none)
+                    ForEach(menus) { menu in
+                        Label(menu.name, systemImage: menu.symbol).tag(UUID?.some(menu.id))
+                    }
+                }
+                .fixedSize()
+            }
         case .mouseClick:
             Picker("Click", selection: payload) {
                 ForEach(MouseAction.allCases) { Text($0.title).tag($0.rawValue) }
@@ -220,6 +237,7 @@ extension ShortcutAction.Kind {
         case .shellScript: "Run Shell Script"
         case .wait: "Wait"
         case .steps: "Several Actions"
+        case .showMenu: "Show Custom Menu"
         }
     }
 }

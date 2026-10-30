@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick, .menuItem, .appleScript, .shellScript, .steps],
+            kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick, .menuItem, .appleScript, .shellScript, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         )
     }
@@ -352,6 +352,7 @@ extension ShortcutAction.Kind {
         case .shellScript: "Run Shell Script…"
         case .wait: "Wait…"
         case .steps: "Several Actions…"
+        case .showMenu: "Show Custom Menu…"
         }
     }
 
@@ -376,6 +377,7 @@ extension ShortcutAction.Kind {
         case .shellScript: "terminal"
         case .wait: "hourglass"
         case .steps: "list.number"
+        case .showMenu: "list.bullet.rectangle"
         }
     }
 
@@ -395,6 +397,7 @@ extension ShortcutAction.Kind {
         case .shellScript: .black
         case .wait: .gray
         case .steps: .green
+        case .showMenu: .mint
         }
     }
 
@@ -414,6 +417,7 @@ extension ShortcutAction.Kind {
         case .shellScript: .shellScript(source: "")
         case .wait: .wait(seconds: 0.5)
         case .steps: .steps(actions: [])
+        case .showMenu: .showMenu(id: nil, name: "")
         }
     }
 }

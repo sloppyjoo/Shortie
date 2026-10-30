@@ -27,10 +27,13 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     case wait(seconds: Double)
     /// Several actions, one after another.
     case steps(actions: [ShortcutAction])
+    /// Opens one of your custom menus at the pointer. The name is kept for
+    /// showing in lists; it's updated if you rename the menu.
+    case showMenu(id: UUID?, name: String)
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
-        case menuItem, appleScript, shellScript, wait, steps
+        case menuItem, appleScript, shellScript, wait, steps, showMenu
         var id: Self { self }
     }
 
@@ -50,6 +53,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .shellScript: .shellScript
         case .wait: .wait
         case .steps: .steps
+        case .showMenu: .showMenu
         }
     }
 
@@ -70,6 +74,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .shellScript(let source): source
         case .wait(let seconds): String(seconds)
         case .steps(let actions): actions.isEmpty ? "" : "steps"
+        case .showMenu(let id, _): id?.uuidString ?? ""
         }
     }
 
@@ -88,7 +93,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .shellScript: .shellScript(source: payload)
         case .wait: .wait(seconds: Double(payload) ?? 0.5)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
-        case .pressKeys, .steps: self
+        case .pressKeys, .steps, .showMenu: self
         }
     }
 
@@ -132,6 +137,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Wait \(seconds.formatted()) s"
         case .steps(let actions):
             actions.map(\.title).joined(separator: ", then ")
+        case .showMenu(_, let name):
+            name.isEmpty ? "Show Custom Menu" : "Show “\(name)” Menu"
         }
     }
 
@@ -201,6 +208,8 @@ enum ActionRunner {
             ScriptRunner.runShellScript(source)
         case .wait:
             break // Only means something between steps.
+        case .showMenu(let id, _):
+            FloatingMenu.shared.show(id)
         case .steps(let actions):
             Task {
                 for step in actions {
