@@ -8,9 +8,9 @@ struct GeneralSettingsView: View {
         Form {
             Section {
                 LaunchAtLoginToggle()
-                Toggle("Pause Glide", isOn: $isPaused)
+                Toggle("Pause BestTouchTool", isOn: $isPaused)
             } footer: {
-                Text("While paused, Glide ignores all gestures and shortcuts.")
+                Text("While paused, BestTouchTool ignores all gestures and shortcuts.")
             }
 
             Section {
@@ -55,7 +55,7 @@ struct PermissionsSettingsView: View {
             Section {
                 PermissionRow.accessibility(permissions)
             } footer: {
-                Text("Glide never records or sends anything you type.")
+                Text("BestTouchTool never records or sends anything you type.")
             }
         }
         .formStyle(.grouped)

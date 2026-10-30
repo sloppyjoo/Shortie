@@ -14,14 +14,14 @@ struct GesturesSettingsView: View {
             case .unavailable:
                 Section {
                     Label(
-                        "Glide couldn't connect to your trackpad. A macOS update may have changed how trackpads report touches.",
+                        "BestTouchTool couldn't connect to your trackpad. A macOS update may have changed how trackpads report touches.",
                         systemImage: "exclamationmark.triangle.fill"
                     )
                     .foregroundStyle(.orange)
                 }
             case .notStarted:
                 Section {
-                    Text("Gestures start once Glide has Accessibility permission.")
+                    Text("Gestures start once BestTouchTool has Accessibility permission.")
                         .foregroundStyle(.secondary)
                 }
             case .running:
@@ -106,7 +106,7 @@ struct GesturesSettingsView: View {
                 }
             }
         } footer: {
-            Text("See your fingers live and every gesture Glide recognises, to check how your gestures are being read.")
+            Text("See your fingers live and every gesture BestTouchTool recognises, to check how your gestures are being read.")
         }
         .animation(.smooth(duration: 0.25), value: engine.recentGestures.map(\.id))
     }

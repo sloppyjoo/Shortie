@@ -12,7 +12,7 @@ enum SystemGestures {
         guard let use = systemUse(of: gesture) else { return nil }
         switch gesture {
         case .click, .cornerClick:
-            return "This is normally a right-click. Glide's action will replace it."
+            return "This is normally a right-click. BestTouchTool's action will replace it."
         default:
             break
         }

@@ -55,13 +55,13 @@ extension PermissionRow {
     static func accessibility(_ permissions: Permissions) -> PermissionRow {
         PermissionRow(
             title: "Accessibility",
-            explanation: "Lets Glide respond to your gestures and shortcuts, and move windows for you.",
+            explanation: "Lets BestTouchTool respond to your gestures and shortcuts, and move windows for you.",
             systemImage: "accessibility",
             isGranted: permissions.accessibility,
             // macOS sometimes keeps an old, stale entry for Glide (for example after
             // an update), which looks switched on but doesn't count.
             hint: permissions.hasAskedForAccessibility
-                ? "Already switched on? Select Glide in the list, click −, then click Allow… again."
+                ? "Already switched on? Select BestTouchTool in the list, click −, then click Allow… again."
                 : nil,
             grant: permissions.requestAccessibility
         )

@@ -23,6 +23,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusBar = StatusBarController()
+        // Load your shortcuts now, so the first key press or gesture doesn't wait on the file.
+        _ = ShortcutStore.shared
         InputEngines.start()
         NotchBar.shared.update()
 

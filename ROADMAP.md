@@ -1,4 +1,4 @@
-# Glide roadmap
+# BestTouchTool roadmap
 
 The goal is everything BetterTouchTool does, plus more, built to feel like Apple made it.
 We build one piece at a time and save a git checkpoint after each piece works.
