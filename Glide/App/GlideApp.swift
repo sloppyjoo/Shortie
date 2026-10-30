@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusBar = StatusBarController()
         ShortcutEngine.shared.start()
+        ScrollEngine.shared.start()
 
         // Show the welcome window until Glide has everything it needs.
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: DefaultsKey.hasCompletedOnboarding)
@@ -45,4 +46,7 @@ enum DefaultsKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let isPaused = "isPaused"
     static let didPromptForAccessibility = "didPromptForAccessibility"
+    static let wheelDirection = "wheelDirection"
+    static let smoothScrolling = "smoothScrolling"
+    static let scrollSpeed = "scrollSpeed"
 }

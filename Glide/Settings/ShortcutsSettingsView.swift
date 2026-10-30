@@ -80,7 +80,6 @@ struct ShortcutListView<Extra: View>: View {
 
     private var list: some View {
         @Bindable var store = store
-        let duplicates = duplicateCombos
 
         return Form {
             Section {
@@ -89,9 +88,14 @@ struct ShortcutListView<Extra: View>: View {
                         ShortcutRow(
                             shortcut: $shortcut,
                             isRecording: recordingBinding(for: shortcut.id),
-                            isDuplicate: shortcut.keyCombo.map(duplicates.contains) ?? false,
+                            conflicts: conflicts(with: shortcut),
                             edit: { edit(shortcut) },
-                            delete: { store.delete(id: shortcut.id) }
+                            delete: { store.delete(id: shortcut.id) },
+                            disable: { id in
+                                if let index = store.shortcuts.firstIndex(where: { $0.id == id }) {
+                                    store.shortcuts[index].isEnabled = false
+                                }
+                            }
                         )
                     }
                 }
@@ -141,14 +145,13 @@ struct ShortcutListView<Extra: View>: View {
         .fixedSize()
     }
 
-    /// Key combos used by more than one shortcut (in any section), so we can warn about them.
-    private var duplicateCombos: Set<KeyCombo> {
-        var seen = Set<KeyCombo>()
-        var duplicates = Set<KeyCombo>()
-        for combo in store.shortcuts.compactMap(\.keyCombo) where !seen.insert(combo).inserted {
-            duplicates.insert(combo)
+    /// Other switched-on shortcuts (in any section) that use the same keys.
+    private func conflicts(with shortcut: Shortcut) -> [Shortcut] {
+        guard shortcut.isEnabled, let combo = shortcut.keyCombo else { return [] }
+        return store.shortcuts.filter { other in
+            other.id != shortcut.id && other.isEnabled
+                && other.keyCombo?.matches(keyCode: combo.keyCode, modifiers: combo.modifiers) == true
         }
-        return duplicates
     }
 
     private func recordingBinding(for id: Shortcut.ID) -> Binding<Bool> {
@@ -212,9 +215,12 @@ private struct EditorRequest: Identifiable {
 struct ShortcutRow: View {
     @Binding var shortcut: Shortcut
     @Binding var isRecording: Bool
-    let isDuplicate: Bool
+    /// Other switched-on shortcuts using the same keys.
+    let conflicts: [Shortcut]
     let edit: () -> Void
     let delete: () -> Void
+    /// Switches off another shortcut, by ID.
+    let disable: (Shortcut.ID) -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -231,10 +237,8 @@ struct ShortcutRow: View {
             .buttonStyle(.plain)
             .opacity(shortcut.isEnabled ? 1 : 0.45)
 
-            if isDuplicate {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-                    .help("Another shortcut uses the same keys. Only the first one will run.")
+            if !conflicts.isEmpty {
+                ConflictBadge(conflicts: conflicts, disable: disable)
             }
 
             ShortcutRecorder(keyCombo: $shortcut.keyCombo, isRecording: $isRecording)
@@ -258,6 +262,83 @@ struct ShortcutRow: View {
             Button("Edit…", action: edit)
             Button("Delete", role: .destructive, action: delete)
         }
+    }
+}
+
+/// The orange warning shown when another shortcut uses the same keys.
+/// Hovering shows which one straight away, with a button to switch it off.
+///
+/// macOS's standard tooltips wait about a second before appearing, so this
+/// uses a popover that opens the moment the pointer arrives instead.
+struct ConflictBadge: View {
+    let conflicts: [Shortcut]
+    let disable: (Shortcut.ID) -> Void
+
+    @State private var isHoveringBadge = false
+    @State private var isHoveringDetails = false
+    @State private var isShowingDetails = false
+
+    var body: some View {
+        Image(systemName: "exclamationmark.triangle.fill")
+            .foregroundStyle(.orange)
+            .padding(4)
+            .contentShape(.rect)
+            .onHover { isHoveringBadge = $0; updateDetails() }
+            .onTapGesture { isShowingDetails = true }
+            .accessibilityLabel(accessibilityText)
+            .popover(isPresented: $isShowingDetails, arrowEdge: .bottom) {
+                details
+                    .onHover { isHoveringDetails = $0; updateDetails() }
+            }
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Same keys as")
+                .font(.headline)
+
+            ForEach(conflicts) { other in
+                HStack(spacing: 10) {
+                    ActionIcon(action: other.action)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(other.action.title)
+                            .lineLimit(1)
+                        Text("In \(other.action.kind.sectionName)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 12)
+                    Button("Turn Off") { disable(other.id) }
+                }
+            }
+
+            Text("Only one shortcut can use the same keys. Until you fix it, the one higher in the list runs.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(width: 340)
+    }
+
+    /// Opens straight away; closes shortly after the pointer leaves both the
+    /// triangle and the popover. The short wait gives you time to move across.
+    private func updateDetails() {
+        if isHoveringBadge || isHoveringDetails {
+            isShowingDetails = true
+            return
+        }
+        Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            if !isHoveringBadge && !isHoveringDetails {
+                isShowingDetails = false
+            }
+        }
+    }
+
+    private var accessibilityText: String {
+        let names = conflicts.map { "“\($0.action.title)” in \($0.action.kind.sectionName)" }
+        return "Same keys as " + names.joined(separator: ", ")
     }
 }
 
@@ -291,6 +372,11 @@ extension ShortcutAction.Kind {
         case .typeText: "Type Text…"
         case .moveWindow: "Move Window…"
         }
+    }
+
+    /// The dashboard section this kind of shortcut lives in.
+    var sectionName: String {
+        self == .moveWindow ? "Windows" : "Shortcuts"
     }
 
     var systemImage: String {

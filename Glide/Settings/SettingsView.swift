@@ -32,6 +32,8 @@ struct SettingsView: View {
             ShortcutsSettingsView()
         case .windows:
             WindowsSettingsView()
+        case .mouse:
+            MouseSettingsView()
         case .gestures:
             ComingSoonView(pane: pane, description: "Custom trackpad and mouse gestures.")
         case .permissions:
@@ -41,7 +43,7 @@ struct SettingsView: View {
 }
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, shortcuts, windows, gestures, permissions
+    case general, shortcuts, windows, mouse, gestures, permissions
 
     var id: Self { self }
 
@@ -50,6 +52,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "General"
         case .shortcuts: "Shortcuts"
         case .windows: "Windows"
+        case .mouse: "Mouse & Scrolling"
         case .gestures: "Gestures"
         case .permissions: "Permissions"
         }
@@ -60,6 +63,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "gearshape.fill"
         case .shortcuts: "command"
         case .windows: "macwindow"
+        case .mouse: "computermouse.fill"
         case .gestures: "hand.draw.fill"
         case .permissions: "lock.fill"
         }
@@ -70,6 +74,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: .gray
         case .shortcuts: .purple
         case .windows: .blue
+        case .mouse: .teal
         case .gestures: .orange
         case .permissions: .green
         }
