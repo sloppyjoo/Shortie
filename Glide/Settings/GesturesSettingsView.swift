@@ -33,8 +33,8 @@ struct GesturesSettingsView: View {
         .onAppear { engine.isWatching = true }
         .onDisappear { engine.isWatching = false }
         .sheet(item: $editing) { request in
-            GestureEditor(gesture: request.gesture, action: request.action) { gesture, action in
-                save(gesture: gesture, action: action, to: request.shortcutID)
+            GestureEditor(gesture: request.gesture, action: request.action, apps: request.apps) { gesture, action, apps in
+                save(gesture: gesture, action: action, apps: apps, to: request.shortcutID)
             }
         }
     }
@@ -54,7 +54,7 @@ struct GesturesSettingsView: View {
                         shortcut: $shortcut,
                         conflicts: store.conflicts(with: shortcut),
                         warning: SystemGestures.warning(for: gesture),
-                        edit: { editing = GestureEditorRequest(shortcutID: shortcut.id, gesture: gesture, action: shortcut.action) },
+                        edit: { editing = GestureEditorRequest(shortcutID: shortcut.id, gesture: gesture, action: shortcut.action, apps: shortcut.apps) },
                         delete: { store.delete(id: shortcut.id) },
                         disable: { store.setEnabled(false, id: $0) }
                     ) {
@@ -111,13 +111,14 @@ struct GesturesSettingsView: View {
         .animation(.smooth(duration: 0.25), value: engine.recentGestures.map(\.id))
     }
 
-    private func save(gesture: Gesture, action: ShortcutAction, to id: Shortcut.ID?) {
+    private func save(gesture: Gesture, action: ShortcutAction, apps: AppScope?, to id: Shortcut.ID?) {
         if let id, var shortcut = store.shortcuts.first(where: { $0.id == id }) {
             shortcut.trigger = .gesture(gesture: gesture)
             shortcut.action = action
+            shortcut.apps = apps
             store.update(shortcut)
         } else {
-            store.shortcuts.append(Shortcut(trigger: .gesture(gesture: gesture), action: action))
+            store.shortcuts.append(Shortcut(trigger: .gesture(gesture: gesture), action: action, apps: apps))
         }
     }
 }
@@ -128,13 +129,15 @@ private struct GestureEditorRequest: Identifiable {
     let shortcutID: Shortcut.ID?
     let gesture: Gesture
     let action: ShortcutAction
+    var apps: AppScope?
 }
 
 /// The sheet for setting up one gesture action.
 struct GestureEditor: View {
     @State var gesture: Gesture
     @State var action: ShortcutAction
-    let onSave: (Gesture, ShortcutAction) -> Void
+    @State var apps: AppScope?
+    let onSave: (Gesture, ShortcutAction, AppScope?) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
@@ -180,6 +183,8 @@ struct GestureEditor: View {
             ActionFields(action: $action)
                 .padding(.leading, 4)
 
+            AppScopePicker(scope: $apps)
+
             if let warning = SystemGestures.warning(for: gesture) {
                 HStack(alignment: .firstTextBaseline) {
                     Label(warning, systemImage: "exclamationmark.triangle.fill")
@@ -198,11 +203,11 @@ struct GestureEditor: View {
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
-                    onSave(gesture, action)
+                    onSave(gesture, action, apps)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete)
+                .disabled(!action.isComplete || apps?.isValid == false)
             }
         }
         .padding(20)

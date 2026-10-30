@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import Observation
 
 /// One shortcut: what sets it off, and what it does.
@@ -8,12 +8,15 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
     var trigger: Trigger?
     var action: ShortcutAction
     var isEnabled = true
+    /// Which apps it works in; `nil` means everywhere.
+    var apps: AppScope?
 
-    init(id: UUID = UUID(), trigger: Trigger? = nil, action: ShortcutAction, isEnabled: Bool = true) {
+    init(id: UUID = UUID(), trigger: Trigger? = nil, action: ShortcutAction, isEnabled: Bool = true, apps: AppScope? = nil) {
         self.id = id
         self.trigger = trigger
         self.action = action
         self.isEnabled = isEnabled
+        self.apps = apps
     }
 
     init(keyCombo: KeyCombo?, action: ShortcutAction) {
@@ -52,7 +55,7 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
     // Saved files from before triggers existed have a plain "keyCombo" instead of
     // a "trigger", so read either.
     private enum CodingKeys: String, CodingKey {
-        case id, trigger, action, isEnabled, keyCombo
+        case id, trigger, action, isEnabled, apps, keyCombo
     }
 
     init(from decoder: Decoder) throws {
@@ -60,6 +63,7 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
         id = try container.decode(UUID.self, forKey: .id)
         action = try container.decode(ShortcutAction.self, forKey: .action)
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        apps = try container.decodeIfPresent(AppScope.self, forKey: .apps)
         trigger = try container.decodeIfPresent(Trigger.self, forKey: .trigger)
             ?? container.decodeIfPresent(KeyCombo.self, forKey: .keyCombo).map { .keys(combo: $0) }
     }
@@ -70,6 +74,38 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
         try container.encodeIfPresent(trigger, forKey: .trigger)
         try container.encode(action, forKey: .action)
         try container.encode(isEnabled, forKey: .isEnabled)
+        try container.encodeIfPresent(apps, forKey: .apps)
+    }
+}
+
+/// Limits a shortcut to some apps, or to every app but some.
+nonisolated struct AppScope: Codable, Hashable {
+    enum Mode: String, Codable {
+        /// Only in these apps.
+        case only
+        /// Everywhere except these apps.
+        case except
+    }
+
+    var mode: Mode
+    /// The apps, by their permanent IDs (like "com.apple.Safari").
+    var bundleIDs: [String]
+
+    func includes(_ bundleID: String?) -> Bool {
+        let listed = bundleID.map(bundleIDs.contains) ?? false
+        return mode == .only ? listed : !listed
+    }
+
+    /// "Only in" with no apps chosen would never work.
+    var isValid: Bool {
+        mode == .except || !bundleIDs.isEmpty
+    }
+}
+
+/// The app you're using right now.
+enum FrontmostApp {
+    static var bundleID: String? {
+        NSWorkspace.shared.frontmostApplication?.bundleIdentifier
     }
 }
 
@@ -113,11 +149,37 @@ final class ShortcutStore {
         }
     }
 
-    /// Other switched-on shortcuts set off by the same thing.
+    /// The shortcut to run for this trigger in this app, if any.
+    ///
+    /// A shortcut set to work only in certain apps wins over one that works
+    /// everywhere, so you can make the same gesture or keys do something
+    /// different in just one app.
+    func match(_ trigger: Trigger, in app: String?) -> Shortcut? {
+        let candidates = shortcuts.filter {
+            $0.isEnabled && $0.trigger?.clashes(with: trigger) == true && ($0.apps?.includes(app) ?? true)
+        }
+        return candidates.first { $0.apps?.mode == .only } ?? candidates.first
+    }
+
+    /// Other switched-on shortcuts set off by the same thing in the same apps.
     func conflicts(with shortcut: Shortcut) -> [Shortcut] {
         guard shortcut.isEnabled, let trigger = shortcut.trigger else { return [] }
         return shortcuts.filter { other in
             other.id != shortcut.id && other.isEnabled && other.trigger.map(trigger.clashes) == true
+                && Self.scopesOverlap(shortcut.apps, other.apps)
+        }
+    }
+
+    /// Whether two shortcuts with the same trigger could both want to run in
+    /// some app. An app-specific shortcut alongside an everywhere one isn't a
+    /// clash: the app-specific one simply takes over in its apps.
+    private static func scopesOverlap(_ a: AppScope?, _ b: AppScope?) -> Bool {
+        let aApps = a?.mode == .only ? Set(a?.bundleIDs ?? []) : nil
+        let bApps = b?.mode == .only ? Set(b?.bundleIDs ?? []) : nil
+        switch (aApps, bApps) {
+        case (nil, nil): return true
+        case let (x?, y?): return !x.isDisjoint(with: y)
+        default: return false
         }
     }
 

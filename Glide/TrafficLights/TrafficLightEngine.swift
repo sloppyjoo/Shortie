@@ -78,10 +78,12 @@ final class TrafficLightEngine {
             guard $0.isEnabled, let rule = $0.trafficLightClick else { return false }
             return rule.mouseButton == mouseButton && rule.modifiers == modifiers
         }
-        guard !candidates.isEmpty,
-              let hit = trafficLight(at: click.location),
-              let match = candidates.first(where: { $0.trafficLightClick?.button == hit.button })
-        else { return false }
+        guard !candidates.isEmpty, let hit = trafficLight(at: click.location) else { return false }
+
+        // Rules can be limited to certain apps: check against the app whose window was clicked.
+        let trigger = Trigger.trafficLight(click: TrafficLightClick(button: hit.button, mouseButton: mouseButton, modifiers: modifiers))
+        let app = NSRunningApplication(processIdentifier: hit.target.processID)?.bundleIdentifier
+        guard let match = ShortcutStore.shared.match(trigger, in: app) else { return false }
 
         swallowingRelease = mouseButton
         let action = match.action

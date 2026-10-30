@@ -74,8 +74,8 @@ struct MouseSettingsView: View {
         }
         .formStyle(.grouped)
         .sheet(item: $editing) { request in
-            MouseButtonEditor(click: request.click, action: request.action) { click, action in
-                save(click: click, action: action, to: request.shortcutID)
+            MouseButtonEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in
+                save(click: click, action: action, apps: apps, to: request.shortcutID)
             }
         }
         .onAppear(perform: refresh)
@@ -97,7 +97,7 @@ struct MouseSettingsView: View {
                     TriggerRow(
                         shortcut: $shortcut,
                         conflicts: store.conflicts(with: shortcut),
-                        edit: { editing = MouseButtonEditorRequest(shortcutID: shortcut.id, click: click, action: shortcut.action) },
+                        edit: { editing = MouseButtonEditorRequest(shortcutID: shortcut.id, click: click, action: shortcut.action, apps: shortcut.apps) },
                         delete: { store.delete(id: shortcut.id) },
                         disable: { store.setEnabled(false, id: $0) }
                     ) {
@@ -124,13 +124,14 @@ struct MouseSettingsView: View {
         }
     }
 
-    private func save(click: MouseButtonClick, action: ShortcutAction, to id: Shortcut.ID?) {
+    private func save(click: MouseButtonClick, action: ShortcutAction, apps: AppScope?, to id: Shortcut.ID?) {
         if let id, var shortcut = store.shortcuts.first(where: { $0.id == id }) {
             shortcut.trigger = .mouseButton(click: click)
             shortcut.action = action
+            shortcut.apps = apps
             store.update(shortcut)
         } else {
-            store.shortcuts.append(Shortcut(trigger: .mouseButton(click: click), action: action))
+            store.shortcuts.append(Shortcut(trigger: .mouseButton(click: click), action: action, apps: apps))
         }
     }
 
@@ -172,13 +173,15 @@ private struct MouseButtonEditorRequest: Identifiable {
     let shortcutID: Shortcut.ID?
     let click: MouseButtonClick
     let action: ShortcutAction
+    var apps: AppScope?
 }
 
 /// The sheet for setting up one mouse button action.
 struct MouseButtonEditor: View {
     @State var click: MouseButtonClick
     @State var action: ShortcutAction
-    let onSave: (MouseButtonClick, ShortcutAction) -> Void
+    @State var apps: AppScope?
+    let onSave: (MouseButtonClick, ShortcutAction, AppScope?) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var isRecording = false
@@ -212,16 +215,18 @@ struct MouseButtonEditor: View {
             ActionFields(action: $action)
                 .padding(.leading, 4)
 
+            AppScopePicker(scope: $apps)
+
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
-                    onSave(click, action)
+                    onSave(click, action, apps)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete)
+                .disabled(!action.isComplete || apps?.isValid == false)
             }
         }
         .padding(20)

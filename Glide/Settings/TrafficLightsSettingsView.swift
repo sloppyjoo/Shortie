@@ -15,8 +15,8 @@ struct TrafficLightsSettingsView: View {
             }
         }
         .sheet(item: $editing) { request in
-            TrafficLightEditor(click: request.click, action: request.action) { click, action in
-                save(click: click, action: action, to: request.shortcutID)
+            TrafficLightEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in
+                save(click: click, action: action, apps: apps, to: request.shortcutID)
             }
         }
     }
@@ -83,16 +83,17 @@ struct TrafficLightsSettingsView: View {
     }
 
     private func edit(_ shortcut: Shortcut, click: TrafficLightClick) {
-        editing = TrafficLightEditorRequest(shortcutID: shortcut.id, click: click, action: shortcut.action)
+        editing = TrafficLightEditorRequest(shortcutID: shortcut.id, click: click, action: shortcut.action, apps: shortcut.apps)
     }
 
-    private func save(click: TrafficLightClick, action: ShortcutAction, to id: Shortcut.ID?) {
+    private func save(click: TrafficLightClick, action: ShortcutAction, apps: AppScope?, to id: Shortcut.ID?) {
         if let id, var shortcut = store.shortcuts.first(where: { $0.id == id }) {
             shortcut.trigger = .trafficLight(click: click)
             shortcut.action = action
+            shortcut.apps = apps
             store.update(shortcut)
         } else {
-            store.shortcuts.append(Shortcut(trigger: .trafficLight(click: click), action: action))
+            store.shortcuts.append(Shortcut(trigger: .trafficLight(click: click), action: action, apps: apps))
         }
     }
 
@@ -119,6 +120,7 @@ private struct TrafficLightEditorRequest: Identifiable {
     let shortcutID: Shortcut.ID?
     let click: TrafficLightClick
     let action: ShortcutAction
+    var apps: AppScope?
 }
 
 struct TrafficLightRow: View {
@@ -160,6 +162,9 @@ struct TriggerRow<Trigger: View>: View {
                     Text(shortcut.action.title)
                         .lineLimit(1)
                         .truncationMode(.middle)
+                    if let apps = shortcut.apps {
+                        AppScopeBadge(scope: apps)
+                    }
                     Spacer(minLength: 0)
                 }
                 .contentShape(.rect)
@@ -227,7 +232,8 @@ extension TrafficLightButton {
 struct TrafficLightEditor: View {
     @State var click: TrafficLightClick
     @State var action: ShortcutAction
-    let onSave: (TrafficLightClick, ShortcutAction) -> Void
+    @State var apps: AppScope?
+    let onSave: (TrafficLightClick, ShortcutAction, AppScope?) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
@@ -262,6 +268,8 @@ struct TrafficLightEditor: View {
             ActionFields(action: $action)
                 .padding(.leading, 4)
 
+            AppScopePicker(scope: $apps)
+
             if click.mouseButton == .left && click.modifiers.isEmpty {
                 Label("This replaces the button's normal click.", systemImage: "info.circle")
                     .font(.caption)
@@ -273,11 +281,11 @@ struct TrafficLightEditor: View {
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
-                    onSave(click, action)
+                    onSave(click, action, apps)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete)
+                .disabled(!action.isComplete || apps?.isValid == false)
             }
         }
         .padding(20)

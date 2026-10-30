@@ -54,10 +54,8 @@ final class ShortcutEngine {
 
         guard !isRecording, !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) else { return false }
 
-        let modifiers = Modifiers(keyPress.flags)
-        guard let shortcut = ShortcutStore.shared.shortcuts.first(where: {
-            $0.isEnabled && $0.keyCombo?.matches(keyCode: keyPress.keyCode, modifiers: modifiers) == true
-        }) else { return false }
+        let keys = KeyCombo(keyCode: keyPress.keyCode, modifiers: Modifiers(keyPress.flags), keyName: "")
+        guard let shortcut = ShortcutStore.shared.match(.keys(combo: keys), in: FrontmostApp.bundleID) else { return false }
 
         // Holding keys down repeats the key press; only act on the first one.
         if !keyPress.isRepeat {

@@ -120,7 +120,7 @@ final class GestureEngine {
     }
 
     private func hasAction(for gesture: Gesture) -> Bool {
-        ShortcutStore.shared.shortcuts.contains { $0.isEnabled && $0.gesture == gesture }
+        ShortcutStore.shared.match(.gesture(gesture: gesture), in: FrontmostApp.bundleID) != nil
     }
 
     // MARK: - Taps and double taps
@@ -267,7 +267,7 @@ final class GestureEngine {
         }
 
         guard !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused),
-              let shortcut = ShortcutStore.shared.shortcuts.first(where: { $0.isEnabled && $0.gesture == gesture })
+              let shortcut = ShortcutStore.shared.match(.gesture(gesture: gesture), in: FrontmostApp.bundleID)
         else { return false }
 
         let action = shortcut.action

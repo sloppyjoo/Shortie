@@ -55,8 +55,8 @@ struct ShortcutListView<Extra: View>: View {
             }
         }
         .sheet(item: $editing) { request in
-            ActionEditor(action: request.action) { action in
-                save(action, to: request.shortcutID)
+            ActionEditor(action: request.action, apps: request.apps) { action, apps in
+                save(action, apps: apps, to: request.shortcutID)
             }
         }
     }
@@ -193,19 +193,20 @@ struct ShortcutListView<Extra: View>: View {
 
     private func edit(_ shortcut: Shortcut) {
         if shortcut.action.kind == .openApp {
-            if let path = chooseApp() { save(.openApp(path: path), to: shortcut.id) }
+            if let path = chooseApp() { save(.openApp(path: path), apps: shortcut.apps, to: shortcut.id) }
         } else {
-            editing = EditorRequest(shortcutID: shortcut.id, action: shortcut.action)
+            editing = EditorRequest(shortcutID: shortcut.id, action: shortcut.action, apps: shortcut.apps)
         }
     }
 
     /// Updates an existing shortcut, or adds a new one and starts recording its keys straight away.
-    private func save(_ action: ShortcutAction, to id: Shortcut.ID?) {
+    private func save(_ action: ShortcutAction, apps: AppScope? = nil, to id: Shortcut.ID?) {
         if let id, var shortcut = store.shortcuts.first(where: { $0.id == id }) {
             shortcut.action = action
+            shortcut.apps = apps
             store.update(shortcut)
         } else {
-            let shortcut = Shortcut(action: action)
+            let shortcut = Shortcut(action: action, apps: apps)
             store.shortcuts.append(shortcut)
             recordingID = shortcut.id
         }
@@ -221,6 +222,7 @@ private struct EditorRequest: Identifiable {
     /// `nil` when adding a new shortcut.
     let shortcutID: Shortcut.ID?
     let action: ShortcutAction
+    var apps: AppScope?
 }
 
 struct ShortcutRow: View {
@@ -241,6 +243,9 @@ struct ShortcutRow: View {
                     Text(shortcut.action.title)
                         .lineLimit(1)
                         .truncationMode(.middle)
+                    if let apps = shortcut.apps {
+                        AppScopeBadge(scope: apps)
+                    }
                     Spacer(minLength: 0)
                 }
                 .contentShape(.rect)

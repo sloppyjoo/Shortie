@@ -65,7 +65,7 @@ final class MouseButtonEngine {
         }
 
         guard !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused),
-              let shortcut = ShortcutStore.shared.shortcuts.first(where: { $0.isEnabled && $0.mouseButtonClick == click })
+              let shortcut = ShortcutStore.shared.match(.mouseButton(click: click), in: FrontmostApp.bundleID)
         else { return false }
 
         swallowingRelease = button

@@ -4,7 +4,8 @@ import UniformTypeIdentifiers
 /// The small sheet for setting up what a shortcut does.
 struct ActionEditor: View {
     @State var action: ShortcutAction
-    let onSave: (ShortcutAction) -> Void
+    @State var apps: AppScope?
+    let onSave: (ShortcutAction, AppScope?) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
@@ -15,16 +16,18 @@ struct ActionEditor: View {
 
             ActionFields(action: $action)
 
+            AppScopePicker(scope: $apps)
+
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
-                    onSave(action)
+                    onSave(action, apps)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete)
+                .disabled(!action.isComplete || apps?.isValid == false)
             }
         }
         .padding(20)
