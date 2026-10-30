@@ -54,6 +54,8 @@ final class ClipboardHistory {
     }
 
     @ObservationIgnored private var lastChangeCount = NSPasteboard.general.changeCount
+    /// BestTouchTool's text actions borrow the clipboard for a moment; that isn't worth remembering.
+    @ObservationIgnored private var isIgnoringChanges = false
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private let thumbnails = NSCache<NSString, NSImage>()
     @ObservationIgnored private let folder: URL
@@ -99,12 +101,18 @@ final class ClipboardHistory {
 
     // MARK: - Remembering
 
+    /// Stops (or restarts) recording copies. Restarting skips whatever is on the clipboard now.
+    func ignoreChanges(_ isIgnoring: Bool) {
+        isIgnoringChanges = isIgnoring
+        if !isIgnoring { lastChangeCount = NSPasteboard.general.changeCount }
+    }
+
     private func check() {
         let pasteboard = NSPasteboard.general
         guard pasteboard.changeCount != lastChangeCount else { return }
         lastChangeCount = pasteboard.changeCount
 
-        guard isEnabled else { return }
+        guard isEnabled, !isIgnoringChanges else { return }
         let types = Set(pasteboard.types?.map(\.rawValue) ?? [])
         guard types.isDisjoint(with: Self.ignoredTypes) else { return }
         let source = NSWorkspace.shared.frontmostApplication?.bundleIdentifier

@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick, .menuItem, .appleScript, .shellScript, .steps, .showMenu],
+            kinds: [.openApp, .runShortcut, .open, .typeText, .text, .pressKeys, .system, .setVolume, .soundOutput, .mouseClick, .showMessage, .speak, .menuItem, .appleScript, .shellScript, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         )
     }
@@ -132,6 +132,16 @@ struct ShortcutListView<Extra: View, Top: View>: View {
                     Section {
                         ForEach(WindowLayoutStore.shared.layouts) { layout in
                             Button(layout.name) { save(.restoreLayout(id: layout.id, name: layout.name), to: nil) }
+                        }
+                    }
+                } else if kind == .text {
+                    Menu("Selected Text", systemImage: kind.systemImage) {
+                        ForEach(TextAction.groups, id: \.self) { group in
+                            Section {
+                                ForEach(group) { action in
+                                    Button(action.title) { save(.text(action: action), to: nil) }
+                                }
+                            }
                         }
                     }
                 } else if kind == .appCommand {
@@ -361,6 +371,11 @@ extension ShortcutAction.Kind {
         case .steps: "Several Actions…"
         case .showMenu: "Show Custom Menu…"
         case .restoreLayout: "Restore Window Layout…"
+        case .text: "Selected Text…"
+        case .showMessage: "Show Message…"
+        case .speak: "Speak Text…"
+        case .setVolume: "Set Volume…"
+        case .soundOutput: "Sound Output…"
         }
     }
 
@@ -391,6 +406,11 @@ extension ShortcutAction.Kind {
         case .steps: "list.number"
         case .showMenu: "list.bullet.rectangle"
         case .restoreLayout: "rectangle.split.2x1"
+        case .text: "character.textbox"
+        case .showMessage: "text.bubble.fill"
+        case .speak: "waveform"
+        case .setVolume: "speaker.wave.2.fill"
+        case .soundOutput: "hifispeaker.fill"
         }
     }
 
@@ -412,6 +432,11 @@ extension ShortcutAction.Kind {
         case .steps: .green
         case .showMenu: .mint
         case .restoreLayout: .blue
+        case .text: .indigo
+        case .showMessage: .yellow
+        case .speak: .pink
+        case .setVolume: .red
+        case .soundOutput: .red
         }
     }
 
@@ -433,6 +458,11 @@ extension ShortcutAction.Kind {
         case .steps: .steps(actions: [])
         case .showMenu: .showMenu(id: nil, name: "")
         case .restoreLayout: .restoreLayout(id: nil, name: "")
+        case .text: .text(action: .uppercase)
+        case .showMessage: .showMessage(text: "")
+        case .speak: .speak(text: "")
+        case .setVolume: .setVolume(percent: 50)
+        case .soundOutput: .soundOutput(uid: "", name: "")
         }
     }
 }

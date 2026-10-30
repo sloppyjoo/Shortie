@@ -33,10 +33,20 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Puts your windows back in one of your saved layouts. The name is kept
     /// for showing in lists, like `showMenu`'s.
     case restoreLayout(id: UUID?, name: String)
+    /// Changes, searches for, speaks or counts the text you've selected.
+    case text(action: TextAction)
+    /// A short message in a glass bubble near the bottom of the screen.
+    case showMessage(text: String)
+    case speak(text: String)
+    case setVolume(percent: Int)
+    /// Switches speakers or headphones. The UID picks the device; the name is
+    /// for showing in lists, and as a fallback if the UID isn't found.
+    case soundOutput(uid: String, name: String)
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
+        case text, showMessage, speak, setVolume, soundOutput
         var id: Self { self }
     }
 
@@ -58,6 +68,11 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .steps: .steps
         case .showMenu: .showMenu
         case .restoreLayout: .restoreLayout
+        case .text: .text
+        case .showMessage: .showMessage
+        case .speak: .speak
+        case .setVolume: .setVolume
+        case .soundOutput: .soundOutput
         }
     }
 
@@ -80,6 +95,11 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .steps(let actions): actions.isEmpty ? "" : "steps"
         case .showMenu(let id, _): id?.uuidString ?? ""
         case .restoreLayout(let id, _): id?.uuidString ?? ""
+        case .text(let action): action.rawValue
+        case .showMessage(let text): text
+        case .speak(let text): text
+        case .setVolume(let percent): String(percent)
+        case .soundOutput(let uid, _): uid
         }
     }
 
@@ -97,8 +117,12 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .appleScript: .appleScript(source: payload)
         case .shellScript: .shellScript(source: payload)
         case .wait: .wait(seconds: Double(payload) ?? 0.5)
+        case .text: .text(action: TextAction(rawValue: payload) ?? .uppercase)
+        case .showMessage: .showMessage(text: payload)
+        case .speak: .speak(text: payload)
+        case .setVolume: .setVolume(percent: Int(payload) ?? 50)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
-        case .pressKeys, .steps, .showMenu, .restoreLayout: self
+        case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput: self
         }
     }
 
@@ -146,6 +170,16 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             name.isEmpty ? "Show Custom Menu" : "Show “\(name)” Menu"
         case .restoreLayout(_, let name):
             name.isEmpty ? "Restore Window Layout" : "Restore “\(name)” Layout"
+        case .text(let action):
+            action.title
+        case .showMessage(let text):
+            "Show “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
+        case .speak(let text):
+            "Say “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
+        case .setVolume(let percent):
+            "Set Volume to \(percent)%"
+        case .soundOutput(let uid, let name):
+            uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
         }
     }
 
@@ -219,6 +253,16 @@ enum ActionRunner {
             FloatingMenu.shared.show(id)
         case .restoreLayout(let id, _):
             WindowLayouts.restore(id)
+        case .text(let action):
+            SelectedText.run(action)
+        case .showMessage(let text):
+            HUD.show(text, systemImage: "text.bubble.fill")
+        case .speak(let text):
+            Speaker.speak(text)
+        case .setVolume(let percent):
+            SoundOutput.setVolume(percent)
+        case .soundOutput(let uid, let name):
+            SoundOutput.select(uid: uid, name: name)
         case .steps(let actions):
             Task {
                 for step in actions {
@@ -268,13 +312,7 @@ enum ShortcutsApp {
 /// Types text into whichever app is in front, as if you'd typed it yourself.
 enum TextTyper {
     static func type(_ text: String) async {
-        // Wait (up to a second) for you to let go of the shortcut's keys. Otherwise
-        // a ⌘ still being held down would turn a typed "c" into Copy.
-        let modifierFlags: CGEventFlags = [.maskCommand, .maskControl, .maskAlternate, .maskShift]
-        for _ in 0..<50 {
-            if CGEventSource.flagsState(.combinedSessionState).intersection(modifierFlags).isEmpty { break }
-            try? await Task.sleep(for: .milliseconds(20))
-        }
+        await waitForModifiersReleased()
 
         let source = CGEventSource(stateID: .hidSystemState)
         let lines = text.components(separatedBy: "\n")
@@ -289,6 +327,16 @@ enum TextTyper {
                 remaining = remaining.dropFirst(chunk.count)
                 send(String(chunk), source: source)
             }
+        }
+    }
+
+    /// Waits (up to a second) for you to let go of the shortcut's keys. Otherwise
+    /// a ⌘ still being held down would turn a typed "c" into Copy.
+    static func waitForModifiersReleased() async {
+        let modifierFlags: CGEventFlags = [.maskCommand, .maskControl, .maskAlternate, .maskShift]
+        for _ in 0..<50 {
+            if CGEventSource.flagsState(.combinedSessionState).intersection(modifierFlags).isEmpty { return }
+            try? await Task.sleep(for: .milliseconds(20))
         }
     }
 

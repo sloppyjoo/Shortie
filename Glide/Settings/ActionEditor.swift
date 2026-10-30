@@ -160,6 +160,38 @@ struct ActionFields: View {
                 .labelsHidden()
                 .fixedSize()
             }
+        case .text:
+            Picker("Text action", selection: payload) {
+                ForEach(TextAction.groups, id: \.self) { group in
+                    Section {
+                        ForEach(group) { Text($0.title).tag($0.rawValue) }
+                    }
+                }
+            }
+            .labelsHidden()
+            .fixedSize()
+        case .showMessage:
+            TextField("Message", text: payload, prompt: Text("Time for a break"))
+                .textFieldStyle(.roundedBorder)
+        case .speak:
+            TextField("Text to say", text: payload, prompt: Text("Hello!"))
+                .textFieldStyle(.roundedBorder)
+        case .setVolume:
+            HStack {
+                Image(systemName: "speaker.fill")
+                    .foregroundStyle(.secondary)
+                Slider(value: Binding(
+                    get: { Double(action.payload) ?? 50 },
+                    set: { payload.wrappedValue = String(Int($0)) }
+                ), in: 0...100, step: 5)
+                Image(systemName: "speaker.wave.3.fill")
+                    .foregroundStyle(.secondary)
+                Text("\(action.payload)%")
+                    .monospacedDigit()
+                    .frame(width: 44, alignment: .trailing)
+            }
+        case .soundOutput:
+            SoundOutputPicker(action: $action)
         case .restoreLayout:
             let layouts = WindowLayoutStore.shared.layouts
             if layouts.isEmpty {
@@ -235,6 +267,36 @@ struct ActionFields: View {
     }
 }
 
+/// Picks a speaker or headphones, or "whichever comes next".
+private struct SoundOutputPicker: View {
+    @Binding var action: ShortcutAction
+
+    @State private var devices: [SoundOutput.Device] = []
+
+    var body: some View {
+        Picker("Device", selection: Binding(
+            get: { action.payload },
+            set: { uid in
+                let name = devices.first { $0.uid == uid }?.name ?? ""
+                action = .soundOutput(uid: uid, name: name)
+            }
+        )) {
+            Text("Choose a Device").tag("")
+            Text("Next Device").tag(SoundOutput.nextDeviceUID)
+            Divider()
+            ForEach(devices) { Text($0.name).tag($0.uid) }
+            // A device you chose before that isn't connected now.
+            if case .soundOutput(let uid, let name) = action, !uid.isEmpty, uid != SoundOutput.nextDeviceUID,
+               !devices.contains(where: { $0.uid == uid }) {
+                Text("\(name) (Not Connected)").tag(uid)
+            }
+        }
+        .labelsHidden()
+        .fixedSize()
+        .onAppear { devices = SoundOutput.devices() }
+    }
+}
+
 enum AppChooser {
     /// Asks you to pick an app; returns its path.
     static func choose() -> String? {
@@ -252,7 +314,7 @@ extension ShortcutAction.Kind {
     /// command…), so it can sit right beside the action type.
     var isSingleChoice: Bool {
         switch self {
-        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu, .restoreLayout: true
+        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu, .restoreLayout, .text, .soundOutput: true
         default: false
         }
     }
@@ -275,6 +337,11 @@ extension ShortcutAction.Kind {
         case .steps: "Several Actions"
         case .showMenu: "Show Custom Menu"
         case .restoreLayout: "Restore Window Layout"
+        case .text: "Selected Text"
+        case .showMessage: "Show Message"
+        case .speak: "Speak Text"
+        case .setVolume: "Set Volume"
+        case .soundOutput: "Sound Output"
         }
     }
 }
