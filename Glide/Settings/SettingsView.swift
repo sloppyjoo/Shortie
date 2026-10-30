@@ -29,7 +29,7 @@ struct SettingsView: View {
         case .general:
             GeneralSettingsView()
         case .shortcuts:
-            ComingSoonView(pane: pane, description: "Global keyboard shortcuts are next on the list.")
+            ShortcutsSettingsView()
         case .windows:
             ComingSoonView(pane: pane, description: "Snap, tile and move windows between displays.")
         case .gestures:
