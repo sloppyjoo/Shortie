@@ -20,10 +20,12 @@ We build one piece at a time and save a git checkpoint after each piece works.
 9. **Many more actions** – mouse clicks; System & Media (media keys, volume, brightness, Control Centre,
    Notification Centre, Mission Control, Show Desktop, screenshots, lock, sleep…); Press Keys with
    common shortcuts (also remaps keys).
+10. **Mouse buttons** – middle, back, forward and more (with ⌃⌥⇧⌘) run any action; Back/Forward suggestions.
 
 ## Next ideas
 
-- **Mouse buttons and Magic Mouse** – extra mouse buttons and Magic Mouse gestures as triggers.
+- **Hold a mouse button and scroll** – e.g. hold Back and scroll to switch tabs or change the volume.
+- **Magic Mouse gestures** – taps and swipes on a Magic Mouse.
 - **Scrolling extras** – per-device settings, pointer speed and acceleration.
 
 ## Later: the rest of BetterTouchTool
