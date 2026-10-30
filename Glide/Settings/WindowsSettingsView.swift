@@ -72,8 +72,9 @@ struct WindowPositionIcon: View {
         case .restore:
             SettingsIcon(systemImage: "arrow.uturn.backward", color: .gray)
                 .padding(2)
-        case .nextDisplay:
-            SettingsIcon(systemImage: "arrow.right", color: .gray)
+        case .nextDisplay, .previousDisplay, .larger, .smaller, .maximizeHeight, .maximizeWidth,
+             .moveLeft, .moveRight, .moveUp, .moveDown:
+            SettingsIcon(systemImage: Self.symbol(for: position), color: .gray)
                 .padding(2)
         default:
             let unit = position.unitRect() ?? CGRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6)
@@ -96,6 +97,24 @@ struct WindowPositionIcon: View {
                 }
                 .offset(x: screen.minX, y: screen.minY)
             }
+        }
+    }
+}
+
+extension WindowPositionIcon {
+    /// For positions that depend on where the window already is, so can't be drawn as an area.
+    static func symbol(for position: WindowPosition) -> String {
+        switch position {
+        case .previousDisplay: "arrow.left"
+        case .larger: "arrow.up.left.and.arrow.down.right"
+        case .smaller: "arrow.down.right.and.arrow.up.left"
+        case .maximizeHeight: "arrow.up.and.down"
+        case .maximizeWidth: "arrow.left.and.right"
+        case .moveLeft: "arrow.left.to.line"
+        case .moveRight: "arrow.right.to.line"
+        case .moveUp: "arrow.up.to.line"
+        case .moveDown: "arrow.down.to.line"
+        default: "arrow.right"
         }
     }
 }

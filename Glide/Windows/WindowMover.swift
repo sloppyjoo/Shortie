@@ -62,12 +62,38 @@ final class WindowMover: NSObject {
             let width = min(current.width, area.width)
             let height = min(current.height, area.height)
             target = CGRect(x: area.midX - width / 2, y: area.midY - height / 2, width: width, height: height)
-        case .nextDisplay:
+        case .maximizeHeight:
+            target = CGRect(x: current.minX, y: area.minY, width: min(current.width, area.width), height: area.height)
+        case .maximizeWidth:
+            target = CGRect(x: area.minX, y: current.minY, width: area.width, height: min(current.height, area.height))
+        case .larger, .smaller:
+            // Rectangle's step: 30 points per press, shared between both sides.
+            let step: CGFloat = position == .larger ? 30 : -30
+            let grown = current.insetBy(dx: -step / 2, dy: -step / 2)
+            let size = CGSize(
+                width: min(max(grown.width, Self.smallestSize.width), area.width),
+                height: min(max(grown.height, Self.smallestSize.height), area.height)
+            )
+            // Growing past a screen edge grows the other way instead.
+            target = CGRect(origin: grown.origin, size: size).kept(inside: area)
+        case .moveLeft, .moveRight, .moveUp, .moveDown:
+            var moved = CGRect(origin: current.origin, size: CGSize(
+                width: min(current.width, area.width), height: min(current.height, area.height)
+            )).kept(inside: area)
+            switch position {
+            case .moveLeft: moved.origin.x = area.minX
+            case .moveRight: moved.origin.x = area.maxX - moved.width
+            case .moveUp: moved.origin.y = area.minY
+            default: moved.origin.y = area.maxY - moved.height
+            }
+            target = moved
+        case .nextDisplay, .previousDisplay:
             guard screens.count > 1 else {
                 NSSound.beep()
                 return
             }
-            let destination = Self.usableArea(of: screens[(screenIndex + 1) % screens.count])
+            let step = position == .nextDisplay ? 1 : screens.count - 1
+            let destination = Self.usableArea(of: screens[(screenIndex + step) % screens.count])
             // Keep the same relative place and size on the new screen.
             target = CGRect(
                 x: destination.minX + (current.minX - area.minX) / area.width * destination.width,
@@ -107,6 +133,9 @@ final class WindowMover: NSObject {
         lastMove = nil
         animate(moves)
     }
+
+    /// Make Smaller stops here.
+    private static let smallestSize = CGSize(width: 200, height: 150)
 
     // MARK: - Restore
 
@@ -342,6 +371,14 @@ private extension CGRect {
     /// Each edge on a whole point, so the window doesn't shimmer as it moves.
     var rounded: CGRect {
         CGRect(x: minX.rounded(), y: minY.rounded(), width: width.rounded(), height: height.rounded())
+    }
+
+    /// Moved (not resized) so it sits inside `area`.
+    func kept(inside area: CGRect) -> CGRect {
+        var rect = self
+        rect.origin.x = min(max(minX, area.minX), area.maxX - width)
+        rect.origin.y = min(max(minY, area.minY), area.maxY - height)
+        return rect
     }
 
     func isClose(to other: CGRect, tolerance: CGFloat = 2) -> Bool {

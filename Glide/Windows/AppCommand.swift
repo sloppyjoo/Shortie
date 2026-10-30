@@ -5,7 +5,7 @@ import ApplicationServices
 nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     case closeWindow, minimizeWindow, toggleFullScreen
     case closeAllWindows, minimizeAllWindows
-    case hideApp, hideOtherApps, quitApp
+    case hideApp, hideOtherApps, quitApp, quitOtherApps
 
     var id: Self { self }
 
@@ -19,6 +19,7 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .hideApp: "Hide App"
         case .hideOtherApps: "Hide Other Apps"
         case .quitApp: "Quit App"
+        case .quitOtherApps: "Quit Other Apps"
         }
     }
 
@@ -32,6 +33,7 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .hideApp: "eye.slash"
         case .hideOtherApps: "eye.slash.fill"
         case .quitApp: "power"
+        case .quitOtherApps: "power.circle"
         }
     }
 
@@ -39,7 +41,7 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     static let groups: [[AppCommand]] = [
         [.closeWindow, .minimizeWindow, .toggleFullScreen],
         [.closeAllWindows, .minimizeAllWindows],
-        [.hideApp, .hideOtherApps, .quitApp],
+        [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps],
     ]
 }
 
@@ -85,6 +87,14 @@ enum AppCommandRunner {
             }
         case .quitApp:
             app?.terminate()
+        case .quitOtherApps:
+            // Apps still ask to save your work. Finder stays, as it always does.
+            let ownID = ProcessInfo.processInfo.processIdentifier
+            for other in NSWorkspace.shared.runningApplications
+            where other.activationPolicy == .regular && other.processIdentifier != target.processID
+                && other.processIdentifier != ownID && other.bundleIdentifier != "com.apple.finder" {
+                other.terminate()
+            }
         }
     }
 }

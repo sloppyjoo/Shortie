@@ -6,7 +6,11 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
     case leftHalf, rightHalf, topHalf, bottomHalf
     case topLeft, topRight, bottomLeft, bottomRight
     case leftThird, centerThird, rightThird, leftTwoThirds, rightTwoThirds
-    case maximize, center, restore, nextDisplay
+    case firstFourth, secondFourth, thirdFourth, lastFourth
+    case maximize, almostMaximize, maximizeHeight, maximizeWidth, center, restore
+    case larger, smaller
+    case moveLeft, moveRight, moveUp, moveDown
+    case nextDisplay, previousDisplay
 
     var id: Self { self }
 
@@ -25,10 +29,24 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         case .rightThird: "Right Third"
         case .leftTwoThirds: "Left Two Thirds"
         case .rightTwoThirds: "Right Two Thirds"
+        case .firstFourth: "First Fourth"
+        case .secondFourth: "Second Fourth"
+        case .thirdFourth: "Third Fourth"
+        case .lastFourth: "Last Fourth"
         case .maximize: "Maximise"
+        case .almostMaximize: "Almost Maximise"
+        case .maximizeHeight: "Maximise Height"
+        case .maximizeWidth: "Maximise Width"
         case .center: "Centre"
         case .restore: "Restore"
+        case .larger: "Make Larger"
+        case .smaller: "Make Smaller"
+        case .moveLeft: "Move to Left Edge"
+        case .moveRight: "Move to Right Edge"
+        case .moveUp: "Move to Top Edge"
+        case .moveDown: "Move to Bottom Edge"
         case .nextDisplay: "Next Display"
+        case .previousDisplay: "Previous Display"
         }
     }
 
@@ -37,7 +55,11 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         [.leftHalf, .rightHalf, .topHalf, .bottomHalf],
         [.topLeft, .topRight, .bottomLeft, .bottomRight],
         [.leftThird, .centerThird, .rightThird, .leftTwoThirds, .rightTwoThirds],
-        [.maximize, .center, .restore, .nextDisplay],
+        [.firstFourth, .secondFourth, .thirdFourth, .lastFourth],
+        [.maximize, .almostMaximize, .maximizeHeight, .maximizeWidth, .center, .restore],
+        [.larger, .smaller],
+        [.moveLeft, .moveRight, .moveUp, .moveDown],
+        [.nextDisplay, .previousDisplay],
     ]
 
     /// Halves and corners get narrower or wider each time you press them again.
@@ -70,8 +92,16 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         case .rightThird: return CGRect(x: 2 / 3, y: 0, width: 1 / 3, height: 1)
         case .leftTwoThirds: return CGRect(x: 0, y: 0, width: 2 / 3, height: 1)
         case .rightTwoThirds: return CGRect(x: 1 / 3, y: 0, width: 2 / 3, height: 1)
+        case .firstFourth: return CGRect(x: 0, y: 0, width: 1 / 4, height: 1)
+        case .secondFourth: return CGRect(x: 1 / 4, y: 0, width: 1 / 4, height: 1)
+        case .thirdFourth: return CGRect(x: 2 / 4, y: 0, width: 1 / 4, height: 1)
+        case .lastFourth: return CGRect(x: 3 / 4, y: 0, width: 1 / 4, height: 1)
         case .maximize: return CGRect(x: 0, y: 0, width: 1, height: 1)
-        case .center, .restore, .nextDisplay: return nil
+        // Rectangle's "Almost Maximise": 90% of the screen, centred.
+        case .almostMaximize: return CGRect(x: 0.05, y: 0.05, width: 0.9, height: 0.9)
+        // These depend on where the window is now, so `WindowMover` works them out.
+        case .maximizeHeight, .maximizeWidth, .center, .restore, .larger, .smaller,
+             .moveLeft, .moveRight, .moveUp, .moveDown, .nextDisplay, .previousDisplay: return nil
         }
     }
 
@@ -96,6 +126,11 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
             (.center, kVK_ANSI_C, ctrlOpt),
             (.restore, kVK_Delete, ctrlOpt),
             (.nextDisplay, kVK_RightArrow, [.control, .option, .command]),
+            // The rest follow Rectangle's defaults.
+            (.previousDisplay, kVK_LeftArrow, [.control, .option, .command]),
+            (.maximizeHeight, kVK_UpArrow, [.control, .option, .shift]),
+            (.larger, kVK_ANSI_Equal, ctrlOpt),
+            (.smaller, kVK_ANSI_Minus, ctrlOpt),
         ]
     }()
 }
