@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shortie: shortcuts for everything on your Mac</title>
-<meta name="description" content="Shortcuts for everything on your Mac. Shortie is a free menu bar app that turns key presses, trackpad gestures and mouse buttons into actions.">
+<title>Shortie: make your Mac do what you want</title>
+<meta name="description" content="Shortie is a free Mac app for customising keyboard shortcuts, trackpad gestures and mouse buttons.">
 <meta property="og:title" content="Shortie">
-<meta property="og:description" content="Shortcuts for everything on your Mac: turn key presses, trackpad gestures and mouse buttons into actions.">
+<meta property="og:description" content="Customise your keyboard shortcuts, trackpad gestures and mouse buttons.">
 <meta property="og:image" content="images/icon.png">
 <link rel="icon" href="images/icon.png">
 <style>
@@ -94,9 +94,8 @@ nav .links a:hover { color: var(--text); text-decoration: none; }
   filter: blur(10px);
 }
 .hero .icon { width: 132px; height: 132px; margin: 0 auto 28px; filter: drop-shadow(0 18px 40px var(--glow)); }
-.hero h1 { font-size: clamp(44px, 7vw, 80px); line-height: 1.05; font-weight: 700; }
-.hero .tagline { font-size: clamp(24px, 3.4vw, 34px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin: 14px 0 0; text-wrap: balance; }
-.hero .lede { font-size: clamp(18px, 2.2vw, 22px); color: var(--muted); max-width: 640px; margin: 14px auto 34px; line-height: 1.4; text-wrap: balance; }
+.hero h1 { font-size: clamp(40px, 7vw, 76px); line-height: 1.05; font-weight: 700; text-wrap: balance; }
+.hero .lede { font-size: clamp(18px, 2.2vw, 22px); color: var(--muted); max-width: 640px; margin: 20px auto 34px; line-height: 1.4; text-wrap: balance; }
 .hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 .hero .note { margin-top: 18px; font-size: 14px; color: var(--faint); }
 
@@ -243,9 +242,8 @@ footer p { margin: 0; max-width: 640px; }
 <header class="hero">
   <div class="wrap">
     <img class="icon" src="images/icon.png" alt="Shortie app icon">
-    <h1>Shortie</h1>
-    <p class="tagline">Shortcuts for everything on your Mac.</p>
-    <p class="lede">Turn a key press, trackpad gesture or mouse button into an action: snap a window, open an app, control music, or run a script.</p>
+    <h1>Make your Mac do<br>what you want.</h1>
+    <p class="lede">Customise your keyboard shortcuts, trackpad gestures and mouse buttons.</p>
     <div class="actions">
       <a class="pill primary" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
@@ -269,17 +267,17 @@ footer p { margin: 0; max-width: 640px; }
     <div class="flow reveal">
       <div class="step">
                 <h3>Trigger</h3>
-        <p>A trackpad gesture, a keyboard shortcut, a typed abbreviation, a mouse button, a click on a window's red, yellow or green button, or an event like an app opening.</p>
+        <p>A keyboard shortcut, trackpad gesture, mouse button, typed abbreviation, a click on a window's red, yellow or green button, or an event such as an app opening.</p>
       </div>
       <div class="arrow">→</div>
       <div class="step">
                 <h3>Action</h3>
-        <p>Open an app or website, type text, press keys, move a window, control media, change selected text, run a script, or several of these in a row.</p>
+        <p>Open an app or website, type text, press keys, move a window, control media, run a script, or several of these in a row.</p>
       </div>
       <div class="arrow">→</div>
       <div class="step">
                 <h3>Apps</h3>
-        <p>All apps, only some, or all except some. A rule for a specific app takes priority, so the same gesture can do different things in different apps.</p>
+        <p>All apps, only some, or all except some. A rule for a specific app wins, so one gesture can do different things in different apps.</p>
       </div>
     </div>
   </div>
@@ -314,7 +312,7 @@ footer p { margin: 0; max-width: 640px; }
       <div class="card reveal">
         <div class="tile t-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg></div>
         <h3>Clipboard history</h3>
-        <p>A searchable list of what you copied, with pinning. Items from password managers are skipped, and the history is stored only on your Mac.</p>
+        <p>Search and paste anything you copied earlier, and pin what you use often. Password manager items are skipped, and the history stays on your Mac.</p>
       </div>
       <div class="card reveal">
         <div class="tile t-mint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 12h8M8 15h5"/></svg></div>
@@ -334,7 +332,7 @@ footer p { margin: 0; max-width: 640px; }
       <div class="card reveal">
         <div class="tile t-black"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 9h20" stroke-width="3"/></svg></div>
         <h3>Black menu bar</h3>
-        <p>Makes the menu bar black so the notch blends in. You can turn it on for each screen separately.</p>
+        <p>Turns the menu bar black so the notch blends in. Set it for each screen.</p>
       </div>
     </div>
   </div>
@@ -349,7 +347,6 @@ footer p { margin: 0; max-width: 640px; }
         <ul>
           <li>Taps, swipes, pinches, clicks and more, with 2 to 5 fingers</li>
           <li>A warning when macOS already uses the same gesture</li>
-          <li>Different actions for the same gesture in different apps</li>
         </ul>
       </div>
       <div class="frame">
@@ -385,7 +382,6 @@ footer p { margin: 0; max-width: 640px; }
         <ul>
           <li>Run a shortcut from Apple's Shortcuts app</li>
           <li>Choose a menu item such as “File › Export as PDF…”</li>
-          <li>Set the volume, switch speakers, show a message</li>
         </ul>
       </div>
       <div class="frame">
@@ -403,7 +399,6 @@ footer p { margin: 0; max-width: 640px; }
         <ul>
           <li>Green maximises instead of going full screen</li>
           <li>Right-click red to quit the whole app</li>
-          <li>Suggested setups you can add with one click</li>
         </ul>
       </div>
       <div class="frame">
@@ -420,7 +415,6 @@ footer p { margin: 0; max-width: 640px; }
   <div class="wrap">
     <div class="section-head reveal">
       <h2>Full list</h2>
-      <p>If macOS already uses a gesture, Shortie warns you and links to the setting that turns it off.</p>
     </div>
     <div class="chip-group reveal">
       <h4>Trackpad</h4>
@@ -440,7 +434,7 @@ footer p { margin: 0; max-width: 640px; }
       </div>
     </div>
     <div class="chip-group reveal">
-      <h4>Actions (some of them)</h4>
+      <h4>Some of the actions</h4>
       <div class="chips">
         <span class="chip">Open apps, files, websites</span><span class="chip">Run a Shortcut</span><span class="chip">Type text</span><span class="chip">Press keys</span>
         <span class="chip">Media keys</span><span class="chip">Volume and brightness</span><span class="chip">Switch sound output</span><span class="chip">Microphone on/off</span>
@@ -461,10 +455,10 @@ footer p { margin: 0; max-width: 640px; }
       <h2>Under the hood</h2>
     </div>
     <div class="principles">
-      <div class="principle reveal"><b>Native Swift</b><span>Written in Swift with SwiftUI and AppKit. Uses Liquid Glass on macOS 26 and later.</span></div>
+      <div class="principle reveal"><b>Native</b><span>Written in Swift with SwiftUI and AppKit. Uses Liquid Glass on macOS 26 and later.</span></div>
       <div class="principle reveal"><b>Low overhead</b><span>Input listeners only run while a rule needs them. Idle CPU use is 0%.</span></div>
       <div class="principle reveal"><b>Private</b><span>No account, no analytics, and the app doesn't connect to the internet.</span></div>
-      <div class="principle reveal"><b>One permission</b><span>Needs Accessibility access, to read input and move windows. Nothing else.</span></div>
+      <div class="principle reveal"><b>One permission</b><span>Shortie only needs Accessibility access, to read input and move windows.</span></div>
     </div>
   </div>
 </section>

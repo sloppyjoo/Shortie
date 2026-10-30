@@ -5,8 +5,8 @@
 <h1 align="center">Shortie</h1>
 
 <p align="center">
-  <b>Shortcuts for everything on your Mac.</b><br>
-  Turn a key press, trackpad gesture or mouse button into an action: snap a window, open an app, control music, or run a script.
+  <b>Make your Mac do what you want.</b><br>
+  Customise your keyboard shortcuts, trackpad gestures and mouse buttons.
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ Each rule has a trigger, an action, and the apps it applies to. Any trigger can 
 
 ## Features
 
-- **Trackpad gestures:** about 70. Taps, double taps, tap and hold, TipTaps, 3–5 finger swipes, swipes in from an edge, pinches, rotation, multi-finger and corner clicks, force click. You can record a gesture instead of picking it, and Shortie warns you when macOS already uses one.
+- **Trackpad gestures:** about 70. Taps, double taps, tap and hold, TipTaps, 3–5 finger swipes, swipes in from an edge, pinches, rotation, multi-finger and corner clicks, force click. You can record a gesture instead of picking it, and Shortie warns you if macOS already uses it.
 - **Keyboard shortcuts:** any key combination can run any action. Caps Lock can also work as a **Hyper key**: hold it for ⌃⌥⇧⌘, tap it for Caps Lock.
 - **Window snapping:** halves, thirds, fourths, corners, Almost Maximise, Make Larger/Smaller and more, with keyboard shortcuts or by dragging a window to the edge of the screen.
 - **Window layouts:** save the position of every open window under a name, then put them all back with one shortcut.
