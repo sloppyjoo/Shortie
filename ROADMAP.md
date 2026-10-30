@@ -39,6 +39,34 @@ We build one piece at a time and save a git checkpoint after each piece works.
 
 See [HANDOFF.md](HANDOFF.md) for how it's built and what's still to confirm.
 
+23. **Window layouts** – save where every window is and glide them all back with one trigger.
+
+## Every gesture and action: the plan
+
+Built one batch at a time, each tested before it's saved.
+
+1. **Mac actions** – toggle dark mode, Dock hiding, menu bar hiding, hidden files, desktop icons;
+   microphone on/off; keyboard backlight; screen saver; Force Quit window; eject all disks;
+   log out, restart, shut down (with macOS's own confirmation); open the dashboard; pause BestTouchTool.
+   A small glass HUD confirms toggles.
+2. **Window actions** – previous display, almost maximise, maximise height or width, make larger or
+   smaller, nudge to an edge without resizing, quit other apps.
+3. **Text and feedback actions** – change selected text (UPPERCASE, lowercase, Title Case, trim,
+   remove line breaks, sort lines, URL-encode…), search the web for it, show a HUD message,
+   speak text, set volume to a level, switch sound output.
+4. **Mouse actions** – triple click, ⌘-click, move the pointer to the screen's or window's centre,
+   scroll to top or bottom.
+5. **More trackpad gestures** – diagonal swipes, TipSwipes (rest a finger, swipe others),
+   corner taps, edge taps, three-finger rotate, swipe and hold, tap sequences, edge sliders
+   (slide along an edge to change volume or brightness).
+6. **Keyboard triggers** – key sequences (press G then M), double-press a modifier (⌘ ⌘),
+   tap a modifier alone (right ⌘), hold a key, left vs right modifiers.
+7. **Mouse triggers** – hold a button and scroll, hold a button and move (mouse gestures),
+   screen corners and edges, scroll over the menu bar or Dock, mouse drawings, Magic Mouse gestures.
+8. **Other triggers** – at a time or every N minutes, Wi-Fi network changed, USB or Bluetooth device
+   connected, display connected, battery level, clipboard changed.
+9. **And then some** – if/else conditions inside Several Actions, command palette, trigger debugger.
+
 ## Next ideas
 
 - **Mouse** – hold a button and scroll (e.g. Back + scroll to switch tabs), Magic Mouse gestures,

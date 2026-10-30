@@ -52,16 +52,21 @@ final class ShortcutEngine {
             return false
         }
 
-        guard !isRecording, !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) else { return false }
+        guard !isRecording else { return false }
+        let isPaused = UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
 
         let modifiers = Modifiers(keyPress.flags)
         let keys = KeyCombo(keyCode: keyPress.keyCode, modifiers: modifiers, keyName: "")
         guard let shortcut = ShortcutStore.shared.match(.keys(combo: keys), in: FrontmostApp.bundleID) else {
+            if isPaused { return false }
             // Not a shortcut, so it's ordinary typing: maybe it finishes a text shortcut.
             return TypedTextEngine.shared.typed(
                 keyPress.characters, keyCode: keyPress.keyCode, modifiers: modifiers, isRepeat: keyPress.isRepeat
             )
         }
+
+        // While paused, the only shortcut that works is the one that resumes.
+        if isPaused, shortcut.action != .system(action: .togglePause) { return false }
 
         // Holding keys down repeats the key press; only act on the first one.
         if !keyPress.isRepeat {

@@ -88,6 +88,7 @@ enum InputEngines {
 enum DefaultsKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let isPaused = "isPaused"
+    static let microphoneLevel = "microphoneLevel"
     static let didPromptForAccessibility = "didPromptForAccessibility"
     static let wheelDirection = "wheelDirection"
     static let smoothScrolling = "smoothScrolling"

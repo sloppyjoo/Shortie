@@ -73,8 +73,9 @@ final class MouseButtonEngine {
             return true
         }
 
-        guard !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused),
-              let shortcut = ShortcutStore.shared.match(.mouseButton(click: click), in: FrontmostApp.bundleID)
+        guard let shortcut = ShortcutStore.shared.match(.mouseButton(click: click), in: FrontmostApp.bundleID),
+              // While paused, the only button that works is the one that resumes.
+              !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) || shortcut.action == .system(action: .togglePause)
         else { return false }
 
         swallowingRelease = button

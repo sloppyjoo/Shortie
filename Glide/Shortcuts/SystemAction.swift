@@ -8,10 +8,15 @@ import IOKit.hidsystem
 nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case playPause, nextTrack, previousTrack
     case volumeUp, volumeDown, mute, brightnessUp, brightnessDown
+    case toggleMicrophone, keyboardBrightnessUp, keyboardBrightnessDown
     case controlCentre, notificationCentre, missionControl, appExpose, showDesktop, apps, spotlight, emojiAndSymbols
     case windowSwitcher, clipboardHistory
     case screenshotTool, screenshotSelection, screenshotScreen
     case lockScreen, sleepDisplay, sleep
+    case toggleDarkMode, toggleDockHiding, toggleMenuBarHiding, toggleHiddenFiles, toggleDesktopIcons
+    case screenSaver, forceQuit, ejectAll
+    case logOut, restart, shutDown
+    case openDashboard, togglePause
 
     var id: Self { self }
 
@@ -25,6 +30,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .mute: "Mute"
         case .brightnessUp: "Brightness Up"
         case .brightnessDown: "Brightness Down"
+        case .toggleMicrophone: "Microphone On or Off"
+        case .keyboardBrightnessUp: "Keyboard Backlight Up"
+        case .keyboardBrightnessDown: "Keyboard Backlight Down"
         case .controlCentre: "Open Control Centre"
         case .notificationCentre: "Open Notification Centre"
         case .missionControl: "Mission Control"
@@ -41,6 +49,19 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .lockScreen: "Lock Screen"
         case .sleepDisplay: "Turn Display Off"
         case .sleep: "Sleep"
+        case .toggleDarkMode: "Dark Mode On or Off"
+        case .toggleDockHiding: "Hide or Show the Dock"
+        case .toggleMenuBarHiding: "Hide or Show the Menu Bar"
+        case .toggleHiddenFiles: "Show or Hide Hidden Files"
+        case .toggleDesktopIcons: "Show or Hide Desktop Icons"
+        case .screenSaver: "Start Screen Saver"
+        case .forceQuit: "Force Quit…"
+        case .ejectAll: "Eject All Disks"
+        case .logOut: "Log Out…"
+        case .restart: "Restart…"
+        case .shutDown: "Shut Down…"
+        case .openDashboard: "Open BestTouchTool Settings"
+        case .togglePause: "Pause or Resume BestTouchTool"
         }
     }
 
@@ -54,6 +75,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .mute: "speaker.slash.fill"
         case .brightnessUp: "sun.max.fill"
         case .brightnessDown: "sun.min.fill"
+        case .toggleMicrophone: "mic.slash.fill"
+        case .keyboardBrightnessUp: "light.max"
+        case .keyboardBrightnessDown: "light.min"
         case .controlCentre: "switch.2"
         case .notificationCentre: "bell.fill"
         case .missionControl: "rectangle.3.group"
@@ -70,16 +94,33 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .lockScreen: "lock.fill"
         case .sleepDisplay: "display"
         case .sleep: "moon.fill"
+        case .toggleDarkMode: "circle.lefthalf.filled"
+        case .toggleDockHiding: "dock.rectangle"
+        case .toggleMenuBarHiding: "menubar.rectangle"
+        case .toggleHiddenFiles: "eye"
+        case .toggleDesktopIcons: "menubar.dock.rectangle"
+        case .screenSaver: "sparkles.tv"
+        case .forceQuit: "xmark.octagon.fill"
+        case .ejectAll: "eject.fill"
+        case .logOut: "rectangle.portrait.and.arrow.right"
+        case .restart: "arrow.clockwise"
+        case .shutDown: "power"
+        case .openDashboard: "gearshape.fill"
+        case .togglePause: "hand.raised.slash"
         }
     }
 
     /// For menus, so related actions sit together.
     static let groups: [[SystemAction]] = [
         [.playPause, .nextTrack, .previousTrack],
-        [.volumeUp, .volumeDown, .mute, .brightnessUp, .brightnessDown],
+        [.volumeUp, .volumeDown, .mute, .toggleMicrophone],
+        [.brightnessUp, .brightnessDown, .keyboardBrightnessUp, .keyboardBrightnessDown],
         [.windowSwitcher, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .emojiAndSymbols],
+        [.toggleDarkMode, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons],
         [.screenshotTool, .screenshotSelection, .screenshotScreen],
-        [.lockScreen, .sleepDisplay, .sleep],
+        [.screenSaver, .forceQuit, .ejectAll],
+        [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
+        [.openDashboard, .togglePause],
     ]
 }
 
@@ -94,6 +135,10 @@ enum SystemActionRunner {
         case .mute: MediaKey.press(NX_KEYTYPE_MUTE)
         case .brightnessUp: MediaKey.press(NX_KEYTYPE_BRIGHTNESS_UP)
         case .brightnessDown: MediaKey.press(NX_KEYTYPE_BRIGHTNESS_DOWN)
+        case .keyboardBrightnessUp: MediaKey.press(NX_KEYTYPE_ILLUMINATION_UP)
+        case .keyboardBrightnessDown: MediaKey.press(NX_KEYTYPE_ILLUMINATION_DOWN)
+        case .toggleMicrophone:
+            MacToggles.toggleMicrophone()
 
         case .controlCentre:
             MenuBarExtras.press(identifierContaining: "controlcenter")
@@ -134,6 +179,40 @@ enum SystemActionRunner {
             run("/usr/bin/pmset", ["displaysleepnow"])
         case .sleep:
             run("/usr/bin/pmset", ["sleepnow"])
+
+        case .toggleDarkMode:
+            ScriptRunner.runAppleScript(#"tell application "System Events" to tell appearance preferences to set dark mode to not dark mode"#)
+        case .toggleDockHiding:
+            ScriptRunner.runAppleScript(#"tell application "System Events" to tell dock preferences to set autohide to not autohide"#)
+        case .toggleMenuBarHiding:
+            ScriptRunner.runAppleScript(#"tell application "System Events" to tell dock preferences to set autohide menu bar to not autohide menu bar"#)
+        case .toggleHiddenFiles:
+            let isShown = MacToggles.toggleFinderSetting("AppleShowAllFiles", defaultValue: false)
+            HUD.show(isShown ? "Hidden Files Shown" : "Hidden Files Hidden", systemImage: isShown ? "eye" : "eye.slash")
+        case .toggleDesktopIcons:
+            let isShown = MacToggles.toggleFinderSetting("CreateDesktop", defaultValue: true)
+            HUD.show(isShown ? "Desktop Icons Shown" : "Desktop Icons Hidden", systemImage: isShown ? "eye" : "eye.slash")
+        case .screenSaver:
+            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Library/CoreServices/ScreenSaverEngine.app"))
+        case .forceQuit:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_Escape), modifiers: [.option, .command], keyName: "Esc"))
+        case .ejectAll:
+            MacToggles.ejectAll()
+
+        // macOS's own "Are you sure?" windows, so nothing happens by accident.
+        case .logOut:
+            ScriptRunner.runAppleScript(#"tell application "loginwindow" to «event aevtlogo»"#)
+        case .restart:
+            ScriptRunner.runAppleScript(#"tell application "loginwindow" to «event aevtrrst»"#)
+        case .shutDown:
+            ScriptRunner.runAppleScript(#"tell application "loginwindow" to «event aevtrsdn»"#)
+
+        case .openDashboard:
+            WindowManager.shared.show(.settings)
+        case .togglePause:
+            let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
+            UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)
+            HUD.show(isPaused ? "BestTouchTool Paused" : "BestTouchTool Resumed", systemImage: isPaused ? "hand.raised.slash" : "hand.draw")
         }
     }
 
