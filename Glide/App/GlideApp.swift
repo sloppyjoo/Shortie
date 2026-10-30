@@ -48,6 +48,7 @@ enum InputEngines {
         ShortcutEngine.shared.start()
         ScrollEngine.shared.start()
         TrafficLightEngine.shared.start()
+        GestureEngine.shared.start()
     }
 }
 

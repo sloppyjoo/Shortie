@@ -52,7 +52,7 @@ struct SettingsView: View {
         case .menuBar:
             MenuBarSettingsView()
         case .gestures:
-            ComingSoonView(pane: pane, description: "Custom trackpad and mouse gestures.")
+            GesturesSettingsView()
         case .permissions:
             PermissionsSettingsView()
         }
