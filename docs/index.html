@@ -245,13 +245,16 @@ footer p { margin: 0; max-width: 640px; }
     <h1>Shortie</h1>
     <p class="lede">A menu bar app for macOS. Set up trackpad gestures, keyboard shortcuts and mouse buttons to snap windows, control media, run scripts and more.</p>
     <div class="actions">
-      <a class="pill primary" href="https://github.com/sloppyjoo/Shortie">
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        Get it on GitHub
+      <a class="pill primary" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+        Download for Mac
       </a>
-      <a class="pill secondary" href="#features">See what it does</a>
+      <a class="pill secondary" href="https://github.com/sloppyjoo/Shortie">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
     </div>
-    <p class="note">Free and open source · macOS 15 or later</p>
+    <p class="note">Version 0.1 · Free and open source · macOS 15 or later · <a href="#install">Install help</a></p>
   </div>
 </header>
 
@@ -468,11 +471,22 @@ footer p { margin: 0; max-width: 640px; }
   <div class="wrap">
     <div class="section-head reveal">
       <h2>Install</h2>
-      <p>There's no prebuilt download yet. For now, build it with Xcode.</p>
+      <p>Download the app, or build it yourself with Xcode.</p>
     </div>
     <div class="install">
       <div class="card reveal">
-        <h3>Build</h3>
+        <h3>Download</h3>
+        <ol class="steps">
+          <li><a href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg">Download Shortie.dmg</a>, open it, and drag Shortie into Applications.</li>
+          <li>Open Shortie. Because it isn't notarised by Apple yet, macOS says it couldn't check it. Click <b>Done</b>.</li>
+          <li>Open <b>System Settings › Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to Shortie. You only need to do this once.</li>
+          <li>Grant <b>Accessibility</b> permission when the welcome window asks.</li>
+          <li>Click the hand icon in the menu bar to open settings. To start, try <b>Window Snapping › Standard Set</b>.</li>
+        </ol>
+        <p style="color: var(--faint); font-size: 14px; margin: 20px 0 0;">Requires macOS 15 or later, on Apple silicon or Intel. Trackpad gestures rely on a private macOS framework and may break in a future macOS update.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Build from source</h3>
         <ol class="steps">
           <li>Install Xcode from the App Store.</li>
           <li>Clone the repository and open the project:</li>
@@ -483,15 +497,7 @@ open Glide.xcodeproj</pre>
         <ol class="steps" start="3">
           <li>In Xcode, choose your own team under Signing &amp; Capabilities, then press ⌘R.</li>
         </ol>
-      </div>
-      <div class="card reveal">
-        <h3>First launch</h3>
-        <ol class="steps">
-          <li>Grant <b>Accessibility</b> permission when the welcome window asks.</li>
-          <li>Click the hand icon in the menu bar to open settings.</li>
-          <li>To start, try <b>Window Snapping › Standard Set</b>.</li>
-        </ol>
-        <p style="color: var(--faint); font-size: 14px; margin: 20px 0 0;">Requires macOS 15 or later. Trackpad gestures rely on a private macOS framework and may break in a future macOS update.</p>
+        <p style="color: var(--faint); font-size: 14px; margin: 20px 0 0;">Older versions and release notes are on the <a href="https://github.com/sloppyjoo/Shortie/releases">Releases page</a>.</p>
       </div>
     </div>
   </div>
@@ -502,7 +508,7 @@ open Glide.xcodeproj</pre>
     <img src="images/icon.png" alt="">
     <h2>Shortie</h2>
     <p>Free and open source under the MIT licence.</p>
-    <a class="pill primary" href="https://github.com/sloppyjoo/Shortie">View on GitHub</a>
+    <a class="pill primary" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download for Mac</a>
   </div>
 </div>
 

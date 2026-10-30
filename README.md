@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><b>Download</b></a> ·
   <a href="https://sloppyjoo.github.io/Shortie/"><b>Website</b></a> ·
-  <a href="#install"><b>Install</b></a> ·
   <a href="ROADMAP.md"><b>Roadmap</b></a>
 </p>
 
@@ -62,7 +62,19 @@ Each rule has a trigger, an action, and the apps it applies to. Any trigger can 
 
 ## Install
 
-There's no prebuilt download yet. For now, build it with Xcode:
+[**Download Shortie.dmg**](https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg), open it, and drag Shortie into Applications. Works on Apple silicon and Intel Macs running macOS 15 or later.
+
+Shortie isn't notarised by Apple yet, so the first time you open it:
+
+1. macOS says it couldn't check Shortie for malware. Click **Done**.
+2. Open **System Settings › Privacy & Security**, scroll down, and click **Open Anyway** next to Shortie.
+3. Grant **Accessibility** permission when Shortie's welcome window asks.
+
+Then click the hand icon in the menu bar to open settings.
+
+> Trackpad gestures rely on macOS's private MultitouchSupport framework and may break in a future macOS update.
+
+### Build from source
 
 ```bash
 git clone https://github.com/sloppyjoo/Shortie.git
@@ -70,11 +82,7 @@ cd Shortie
 open Glide.xcodeproj
 ```
 
-In Xcode, choose your own team under **Signing & Capabilities**, then press **⌘R**. On first launch, grant Accessibility permission, then click the hand icon in the menu bar to open settings.
-
-**Requirements:** macOS 15 or later; Xcode 27 to build.
-
-> Trackpad gestures rely on macOS's private MultitouchSupport framework and may break in a future macOS update.
+In Xcode, choose your own team under **Signing & Capabilities**, then press **⌘R**. Building needs Xcode 27.
 
 ## Project notes
 
