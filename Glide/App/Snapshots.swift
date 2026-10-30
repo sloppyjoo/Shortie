@@ -43,7 +43,9 @@ enum Snapshots {
         // Off screen, out of the way.
         window.setFrameOrigin(NSPoint(x: -10_000, y: -10_000))
         window.orderFrontRegardless()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.8))
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        SettingsView.pinSidebarWidth(in: window)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
 
         guard let frameView = window.contentView?.superview,
               let rep = frameView.bitmapImageRepForCachingDisplay(in: frameView.bounds)

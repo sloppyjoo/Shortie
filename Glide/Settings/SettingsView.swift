@@ -7,11 +7,48 @@ struct SettingsView: View {
 
     init(initialPane: SettingsPane = .general) {
         _selection = State(initialValue: initialPane)
+        // AppKit saves the sidebar's width and puts it back next time, ignoring
+        // the width asked for below. An old saved width can cut off the titles.
+        UserDefaults.standard.removeObject(forKey: "NSSplitView Subview Frames settings, SidebarNavigationSplitView")
     }
     @State private var columns = NavigationSplitViewVisibility.all
 
-    /// Like System Settings, the sidebar is always shown at one fixed width.
-    private static let sidebarWidth: CGFloat = 215
+    /// Like System Settings, the sidebar is always shown at one fixed width:
+    /// wide enough for its longest title, in the sidebar's text size.
+    static let sidebarWidth: CGFloat = {
+        // System Settings › Appearance › Sidebar icon size: 1 small, 2 medium, 3 large.
+        let fontSize: CGFloat = switch UserDefaults.standard.integer(forKey: "NSTableViewDefaultSizeMode") {
+        case 1: 11
+        case 3: 15
+        default: 13
+        }
+        let font = NSFont.systemFont(ofSize: fontSize)
+        let widest = SettingsPane.allCases
+            .map { ($0.title as NSString).size(withAttributes: [.font: font]).width }
+            .max() ?? 0
+        // Room for the icon, the row's padding and the sidebar's inset.
+        return max(215, (widest + 90).rounded(.up))
+    }()
+
+    /// SwiftUI doesn't always honour the column width above, so also fix the
+    /// sidebar's width on the window's split view, which AppKit always respects.
+    static func pinSidebarWidth(in window: NSWindow) {
+        guard let splitView = window.contentView.flatMap(firstSplitView),
+              let controller = splitView.delegate as? NSSplitViewController,
+              let sidebar = controller.splitViewItems.first
+        else { return }
+        sidebar.minimumThickness = sidebarWidth
+        sidebar.maximumThickness = sidebarWidth
+        splitView.setPosition(sidebarWidth, ofDividerAt: 0)
+    }
+
+    private static func firstSplitView(in view: NSView) -> NSSplitView? {
+        if let splitView = view as? NSSplitView { return splitView }
+        for subview in view.subviews {
+            if let found = firstSplitView(in: subview) { return found }
+        }
+        return nil
+    }
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columns) {
@@ -57,6 +94,8 @@ struct SettingsView: View {
             ShortcutsSettingsView()
         case .windows:
             WindowsSettingsView()
+        case .layouts:
+            WindowLayoutsSettingsView()
         case .trafficLights:
             TrafficLightsSettingsView()
         case .mouse:
@@ -80,7 +119,7 @@ struct SettingsView: View {
 }
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, shortcuts, textShortcuts, windows, trafficLights, mouse, gestures, automations, clipboard, menus, menuBar, permissions
+    case general, shortcuts, textShortcuts, windows, layouts, trafficLights, mouse, gestures, automations, clipboard, menus, menuBar, permissions
 
     var id: Self { self }
 
@@ -88,7 +127,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     static let groups: [(title: String?, panes: [SettingsPane])] = [
         (nil, [.general]),
         ("Triggers", [.shortcuts, .textShortcuts, .gestures, .mouse, .automations]),
-        ("Windows", [.windows, .trafficLights]),
+        ("Windows", [.windows, .layouts, .trafficLights]),
         ("Mac", [.clipboard, .menus, .menuBar, .permissions]),
     ]
 
@@ -101,6 +140,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .mouse: "Mouse"
         case .automations: "Automations"
         case .windows: "Window Snapping"
+        case .layouts: "Window Layouts"
         case .trafficLights: "Window Buttons"
         case .clipboard: "Clipboard"
         case .menus: "Custom Menus"
@@ -119,6 +159,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .mouse: "Extra buttons and smoother scrolling."
         case .automations: "Do things when apps open or your Mac wakes."
         case .windows: "Snap windows with keys or by dragging."
+        case .layouts: "Save how your windows are arranged and bring it back."
         case .trafficLights: "New tricks for the red, yellow and green buttons."
         case .clipboard: "Everything you copy, ready to paste again."
         case .menus: "Your own menus, in the menu bar or at the pointer."
@@ -132,6 +173,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "gearshape.fill"
         case .shortcuts: "command"
         case .windows: "macwindow"
+        case .layouts: "rectangle.split.2x1.fill"
         case .trafficLights: "circle.fill"
         case .mouse: "computermouse.fill"
         case .textShortcuts: "character.cursor.ibeam"
@@ -149,6 +191,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: .gray
         case .shortcuts: .purple
         case .windows: .blue
+        case .layouts: .indigo
         case .trafficLights: .red
         case .mouse: .teal
         case .textShortcuts: .brown

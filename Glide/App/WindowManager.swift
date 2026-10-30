@@ -27,6 +27,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         // ...and also put the window on top even if macOS hasn't switched to us yet.
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
+        if id == .settings { SettingsView.pinSidebarWidth(in: window) }
     }
 
     func close(_ id: WindowID) {

@@ -160,6 +160,24 @@ struct ActionFields: View {
                 .labelsHidden()
                 .fixedSize()
             }
+        case .restoreLayout:
+            let layouts = WindowLayoutStore.shared.layouts
+            if layouts.isEmpty {
+                Text("Save a layout in Window Layouts first.")
+                    .foregroundStyle(.secondary)
+            } else {
+                Picker("Layout", selection: Binding(
+                    get: { if case .restoreLayout(let id, _) = action { id } else { nil } },
+                    set: { newID in action = .restoreLayout(id: newID, name: WindowLayoutStore.shared.layout(id: newID)?.name ?? "") }
+                )) {
+                    Text("Choose a Layout").tag(UUID?.none)
+                    ForEach(layouts) { layout in
+                        Text(layout.name).tag(UUID?.some(layout.id))
+                    }
+                }
+                .labelsHidden()
+                .fixedSize()
+            }
         case .mouseClick:
             Picker("Click", selection: payload) {
                 ForEach(MouseAction.allCases) { Text($0.title).tag($0.rawValue) }
@@ -234,7 +252,7 @@ extension ShortcutAction.Kind {
     /// command…), so it can sit right beside the action type.
     var isSingleChoice: Bool {
         switch self {
-        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu: true
+        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu, .restoreLayout: true
         default: false
         }
     }
@@ -256,6 +274,7 @@ extension ShortcutAction.Kind {
         case .wait: "Wait"
         case .steps: "Several Actions"
         case .showMenu: "Show Custom Menu"
+        case .restoreLayout: "Restore Window Layout"
         }
     }
 }

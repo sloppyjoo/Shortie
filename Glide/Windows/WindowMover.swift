@@ -98,6 +98,16 @@ final class WindowMover: NSObject {
         animate(window, from: current, to: target.integral)
     }
 
+    /// Moves several windows at once, all gliding along the same spring.
+    func move(_ windows: [(window: AXUIElement, to: CGRect)]) {
+        finishGlide()
+        let moves = windows.compactMap { window in
+            frame(of: window.window).map { (window: window.window, from: $0, to: window.to.integral) }
+        }
+        lastMove = nil
+        animate(moves)
+    }
+
     // MARK: - Restore
 
     private func rememberOriginalFrame(of window: AXUIElement, _ frame: CGRect) {
@@ -126,38 +136,45 @@ final class WindowMover: NSObject {
     private static let spring = Spring(duration: 0.3, bounce: 0)
 
     private struct Glide {
-        let window: AXUIElement
-        let from: CGRect
-        let to: CGRect
+        struct Item {
+            let window: AXUIElement
+            let from: CGRect
+            let to: CGRect
+            /// The app whose "enhanced user interface" we switched off, to switch back on after.
+            let enhancedUIApp: AXUIElement?
+        }
+
+        let items: [Item]
         let startTime: CFTimeInterval
         let link: CADisplayLink
-        /// The app whose "enhanced user interface" we switched off, to switch back on after.
-        let enhancedUIApp: AXUIElement?
     }
 
     private var currentGlide: Glide?
 
     private func animate(_ window: AXUIElement, from start: CGRect, to end: CGRect) {
+        animate([(window, start, end)])
+    }
+
+    private func animate(_ moves: [(window: AXUIElement, from: CGRect, to: CGRect)]) {
         finishGlide()
+        guard !moves.isEmpty else { return }
+
+        let items = moves.map {
+            Glide.Item(window: $0.window, from: $0.from, to: $0.to, enhancedUIApp: switchOffEnhancedUserInterface(for: $0.window))
+        }
 
         // Respect System Settings › Accessibility › Display › Reduce motion.
         guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
-              !start.isClose(to: end, tolerance: 1),
+              items.contains(where: { !$0.from.isClose(to: $0.to, tolerance: 1) }),
               let screen = NSScreen.main
         else {
-            let app = switchOffEnhancedUserInterface(for: window)
-            setFrame(of: window, to: end)
-            switchOnEnhancedUserInterface(app)
-            recordWhereItLanded(window)
+            land(items)
             return
         }
 
         // A display link calls us once per screen refresh (60–120 times a second).
         let link = screen.displayLink(target: self, selector: #selector(stepGlide))
-        currentGlide = Glide(
-            window: window, from: start, to: end, startTime: CACurrentMediaTime(), link: link,
-            enhancedUIApp: switchOffEnhancedUserInterface(for: window)
-        )
+        currentGlide = Glide(items: items, startTime: CACurrentMediaTime(), link: link)
         link.add(to: .main, forMode: .common)
     }
 
@@ -174,17 +191,27 @@ final class WindowMover: NSObject {
             finishGlide()
             return
         }
-        setPositionAndSize(of: glide.window, to: glide.from.interpolated(to: glide.to, progress))
+        for item in glide.items {
+            setPositionAndSize(of: item.window, to: item.from.interpolated(to: item.to, progress))
+        }
     }
 
-    /// Lands a gliding window at its destination straight away.
+    /// Lands gliding windows at their destinations straight away.
     private func finishGlide() {
         guard let glide = currentGlide else { return }
         currentGlide = nil
         glide.link.invalidate()
-        setFrame(of: glide.window, to: glide.to)
-        switchOnEnhancedUserInterface(glide.enhancedUIApp)
-        recordWhereItLanded(glide.window)
+        land(glide.items)
+    }
+
+    private func land(_ items: [Glide.Item]) {
+        for item in items {
+            setFrame(of: item.window, to: item.to)
+        }
+        for item in items {
+            switchOnEnhancedUserInterface(item.enhancedUIApp)
+            recordWhereItLanded(item.window)
+        }
     }
 
     /// Some apps have a minimum size, so note where the window really ended up.

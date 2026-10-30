@@ -30,10 +30,13 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Opens one of your custom menus at the pointer. The name is kept for
     /// showing in lists; it's updated if you rename the menu.
     case showMenu(id: UUID?, name: String)
+    /// Puts your windows back in one of your saved layouts. The name is kept
+    /// for showing in lists, like `showMenu`'s.
+    case restoreLayout(id: UUID?, name: String)
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
-        case menuItem, appleScript, shellScript, wait, steps, showMenu
+        case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
         var id: Self { self }
     }
 
@@ -54,6 +57,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .wait: .wait
         case .steps: .steps
         case .showMenu: .showMenu
+        case .restoreLayout: .restoreLayout
         }
     }
 
@@ -75,6 +79,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .wait(let seconds): String(seconds)
         case .steps(let actions): actions.isEmpty ? "" : "steps"
         case .showMenu(let id, _): id?.uuidString ?? ""
+        case .restoreLayout(let id, _): id?.uuidString ?? ""
         }
     }
 
@@ -93,7 +98,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .shellScript: .shellScript(source: payload)
         case .wait: .wait(seconds: Double(payload) ?? 0.5)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
-        case .pressKeys, .steps, .showMenu: self
+        case .pressKeys, .steps, .showMenu, .restoreLayout: self
         }
     }
 
@@ -139,6 +144,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             actions.map(\.title).joined(separator: ", then ")
         case .showMenu(_, let name):
             name.isEmpty ? "Show Custom Menu" : "Show “\(name)” Menu"
+        case .restoreLayout(_, let name):
+            name.isEmpty ? "Restore Window Layout" : "Restore “\(name)” Layout"
         }
     }
 
@@ -210,6 +217,8 @@ enum ActionRunner {
             break // Only means something between steps.
         case .showMenu(let id, _):
             FloatingMenu.shared.show(id)
+        case .restoreLayout(let id, _):
+            WindowLayouts.restore(id)
         case .steps(let actions):
             Task {
                 for step in actions {

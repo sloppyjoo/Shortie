@@ -127,6 +127,13 @@ struct ShortcutListView<Extra: View, Top: View>: View {
                             Button(click.title, systemImage: click.systemImage) { save(.mouseClick(click: click), to: nil) }
                         }
                     }
+                } else if kind == .restoreLayout, !WindowLayoutStore.shared.layouts.isEmpty {
+                    // Saved layouts go straight into the menu.
+                    Section {
+                        ForEach(WindowLayoutStore.shared.layouts) { layout in
+                            Button(layout.name) { save(.restoreLayout(id: layout.id, name: layout.name), to: nil) }
+                        }
+                    }
                 } else if kind == .appCommand {
                     ForEach(AppCommand.groups, id: \.self) { group in
                         Section {
@@ -353,12 +360,17 @@ extension ShortcutAction.Kind {
         case .wait: "Wait…"
         case .steps: "Several Actions…"
         case .showMenu: "Show Custom Menu…"
+        case .restoreLayout: "Restore Window Layout…"
         }
     }
 
     /// The dashboard section keyboard shortcuts of this kind live in.
     var sectionName: String {
-        self == .moveWindow || self == .appCommand ? "Windows" : "Shortcuts"
+        switch self {
+        case .moveWindow, .appCommand: "Windows"
+        case .restoreLayout: "Window Layouts"
+        default: "Shortcuts"
+        }
     }
 
     var systemImage: String {
@@ -378,6 +390,7 @@ extension ShortcutAction.Kind {
         case .wait: "hourglass"
         case .steps: "list.number"
         case .showMenu: "list.bullet.rectangle"
+        case .restoreLayout: "rectangle.split.2x1"
         }
     }
 
@@ -398,6 +411,7 @@ extension ShortcutAction.Kind {
         case .wait: .gray
         case .steps: .green
         case .showMenu: .mint
+        case .restoreLayout: .blue
         }
     }
 
@@ -418,6 +432,7 @@ extension ShortcutAction.Kind {
         case .wait: .wait(seconds: 0.5)
         case .steps: .steps(actions: [])
         case .showMenu: .showMenu(id: nil, name: "")
+        case .restoreLayout: .restoreLayout(id: nil, name: "")
         }
     }
 }
