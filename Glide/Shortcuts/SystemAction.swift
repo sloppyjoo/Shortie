@@ -60,8 +60,8 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .logOut: "Log Out…"
         case .restart: "Restart…"
         case .shutDown: "Shut Down…"
-        case .openDashboard: "Open BestTouchTool Settings"
-        case .togglePause: "Pause or Resume BestTouchTool"
+        case .openDashboard: "Open Shortie Settings"
+        case .togglePause: "Pause or Resume Shortie"
         }
     }
 
@@ -212,7 +212,7 @@ enum SystemActionRunner {
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)
-            HUD.show(isPaused ? "BestTouchTool Paused" : "BestTouchTool Resumed", systemImage: isPaused ? "hand.raised.slash" : "hand.draw")
+            HUD.show(isPaused ? "Shortie Paused" : "Shortie Resumed", systemImage: isPaused ? "hand.raised.slash" : "hand.draw")
         }
     }
 

@@ -25,7 +25,7 @@ enum HyperTapAction: String, CaseIterable, Identifiable {
 /// Tapped on its own, it still works as Caps Lock (or Escape, if you prefer).
 ///
 /// How: macOS's built-in `hidutil` tool remaps Caps Lock to F18 (a key no
-/// keyboard has) while BestTouchTool runs. `ShortcutEngine` then watches F18
+/// keyboard has) while Shortie runs. `ShortcutEngine` then watches F18
 /// and adds the modifiers to keys pressed while it's held. Caps Lock itself
 /// is switched through IOKit, the layer under the keyboard.
 final class HyperKey {
@@ -56,7 +56,7 @@ final class HyperKey {
         remapCapsLock(isEnabled)
     }
 
-    /// Puts Caps Lock back to normal, for when BestTouchTool quits.
+    /// Puts Caps Lock back to normal, for when Shortie quits.
     func restoreCapsLock() {
         if isEnabled { remapCapsLock(false) }
     }

@@ -2,7 +2,7 @@
 import AppKit
 import SwiftUI
 
-/// Development only: launched with `--snapshots <folder>`, BestTouchTool draws
+/// Development only: launched with `--snapshots <folder>`, Shortie draws
 /// every dashboard page and a few editors to PNG files (light and dark), then
 /// quits. Used to check layouts for cut-off or overlapping text.
 enum Snapshots {

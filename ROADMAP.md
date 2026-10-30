@@ -1,4 +1,4 @@
-# BestTouchTool roadmap
+# Shortie roadmap
 
 The goal is everything BetterTouchTool does, plus more, built to feel like Apple made it.
 We build one piece at a time and save a git checkpoint after each piece works.
@@ -21,7 +21,7 @@ We build one piece at a time and save a git checkpoint after each piece works.
    Notification Centre, Mission Control, Show Desktop, screenshots, lock, sleep…); Press Keys with
    common shortcuts (also remaps keys).
 10. **Mouse buttons** – middle, back, forward and more (with ⌃⌥⇧⌘) run any action; Back/Forward suggestions.
-11. **Renamed to BestTouchTool.**
+11. **Renamed** from Glide to BestTouchTool, and later to **Shortie**.
 12. **Per-app rules** – any trigger can work in all apps, only some, or all but some; app-specific rules win.
 13. **Text shortcuts** – type an abbreviation like ;email anywhere to expand it (or run any action).
 14. **Automations** – run actions when apps open, quit or come forward; on wake, sleep, lock, unlock, charger.
@@ -40,14 +40,15 @@ We build one piece at a time and save a git checkpoint after each piece works.
 See [HANDOFF.md](HANDOFF.md) for how it's built and what's still to confirm.
 
 23. **Window layouts** – save where every window is and glide them all back with one trigger.
+24. **Renamed to Shortie**, with a website in `docs/`.
 
 ## Every gesture and action: the plan
 
-Built one batch at a time, each tested before it's saved.
+Built one batch at a time, each tested before it's saved. Batches 1–3 are done.
 
 1. **Mac actions** – toggle dark mode, Dock hiding, menu bar hiding, hidden files, desktop icons;
    microphone on/off; keyboard backlight; screen saver; Force Quit window; eject all disks;
-   log out, restart, shut down (with macOS's own confirmation); open the dashboard; pause BestTouchTool.
+   log out, restart, shut down (with macOS's own confirmation); open the dashboard; pause Shortie.
    A small glass HUD confirms toggles.
 2. **Window actions** – previous display, almost maximise, maximise height or width, make larger or
    smaller, nudge to an edge without resizing, quit other apps.
@@ -85,6 +86,5 @@ Built one batch at a time, each tested before it's saved.
 
 ## Before a public release
 
-- Choose a final name (BestTouchTool is close to BetterTouchTool's trademark).
 - Paid Apple Developer account, notarisation, and an update mechanism.
 - A GitHub remote, for backup and cloud sessions.

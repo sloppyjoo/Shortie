@@ -48,7 +48,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         case .onboarding:
             window = NSWindow(contentViewController: NSHostingController(rootView: OnboardingView()))
             window.styleMask = [.titled, .closable, .fullSizeContentView]
-            window.title = "Welcome to BestTouchTool"
+            window.title = "Welcome to Shortie"
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.isMovableByWindowBackground = true
@@ -62,7 +62,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
             controller.sizingOptions = []
             window = NSWindow(contentViewController: controller)
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
-            window.title = "BestTouchTool"
+            window.title = "Shortie"
             window.toolbarStyle = .unified
             window.contentMinSize = NSSize(width: 715, height: 460)
             window.setContentSize(NSSize(width: 760, height: 520))

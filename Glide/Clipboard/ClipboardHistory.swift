@@ -32,7 +32,7 @@ nonisolated struct ClipboardEntry: Codable, Identifiable, Hashable {
 ///
 /// macOS has no "clipboard changed" notification, so like every clipboard
 /// manager we check its change counter twice a second, which costs almost
-/// nothing. History is saved in BestTouchTool's folder on your Mac and never
+/// nothing. History is saved in Shortie's folder on your Mac and never
 /// sent anywhere.
 ///
 /// Passwords are never kept: password managers label them "concealed" (an
@@ -54,7 +54,7 @@ final class ClipboardHistory {
     }
 
     @ObservationIgnored private var lastChangeCount = NSPasteboard.general.changeCount
-    /// BestTouchTool's text actions borrow the clipboard for a moment; that isn't worth remembering.
+    /// Shortie's text actions borrow the clipboard for a moment; that isn't worth remembering.
     @ObservationIgnored private var isIgnoringChanges = false
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private let thumbnails = NSCache<NSString, NSImage>()
@@ -67,7 +67,7 @@ final class ClipboardHistory {
     ]
 
     private init() {
-        folder = URL.applicationSupportDirectory.appending(path: "BestTouchTool", directoryHint: .isDirectory)
+        folder = AppFolder.url
         imagesFolder = folder.appending(path: "Clipboard Images", directoryHint: .isDirectory)
         try? FileManager.default.createDirectory(at: imagesFolder, withIntermediateDirectories: true)
         if let data = try? Data(contentsOf: fileURL),

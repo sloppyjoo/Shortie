@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A10000000000000000000001 /* BestTouchTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BestTouchTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000001 /* Shortie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shortie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,7 +40,7 @@
 		A10000000000000000000005 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000001 /* BestTouchTool.app */,
+				A10000000000000000000001 /* Shortie.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -67,7 +67,7 @@
 			packageProductDependencies = (
 			);
 			productName = Glide;
-			productReference = A10000000000000000000001 /* BestTouchTool.app */;
+			productReference = A10000000000000000000001 /* Shortie.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -173,13 +173,13 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				DEVELOPMENT_TEAM = 5H354LVSGV;
 				CODE_SIGN_STYLE = Automatic;
-				CODE_SIGN_ENTITLEMENTS = Glide/BestTouchTool.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Glide/Shortie.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = BestTouchTool;
+				INFOPLIST_KEY_CFBundleDisplayName = Shortie;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Your \"Run AppleScript\" actions use this to control other apps.";
@@ -189,7 +189,7 @@
 				);
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.slopbookpro.Glide;
-				PRODUCT_NAME = BestTouchTool;
+				PRODUCT_NAME = Shortie;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -205,13 +205,13 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				DEVELOPMENT_TEAM = 5H354LVSGV;
 				CODE_SIGN_STYLE = Automatic;
-				CODE_SIGN_ENTITLEMENTS = Glide/BestTouchTool.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Glide/Shortie.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = BestTouchTool;
+				INFOPLIST_KEY_CFBundleDisplayName = Shortie;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Your \"Run AppleScript\" actions use this to control other apps.";
@@ -221,7 +221,7 @@
 				);
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.slopbookpro.Glide;
-				PRODUCT_NAME = BestTouchTool;
+				PRODUCT_NAME = Shortie;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;

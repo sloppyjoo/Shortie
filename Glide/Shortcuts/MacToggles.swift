@@ -58,7 +58,7 @@ enum MacToggles {
         }
     }
 
-    /// Runs a line of AppleScript inside BestTouchTool and returns its result as a number.
+    /// Runs a line of AppleScript inside Shortie and returns its result as a number.
     /// Only for Standard Additions commands like `set volume`, which need no permission.
     static func appleScriptNumber(_ source: String) -> Int? {
         var error: NSDictionary?

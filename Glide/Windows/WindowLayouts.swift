@@ -37,8 +37,7 @@ final class WindowLayoutStore {
 
     @ObservationIgnored private var isLoaded = false
 
-    @ObservationIgnored private let fileURL = URL.applicationSupportDirectory
-        .appending(path: "BestTouchTool", directoryHint: .isDirectory)
+    @ObservationIgnored private let fileURL = AppFolder.url
         .appending(path: "layouts.json")
 
     private init() {
@@ -95,7 +94,7 @@ final class WindowLayoutStore {
 /// Reads where windows are, and puts them back.
 enum WindowLayouts {
     /// Every ordinary window you can see right now: not minimised, not in a
-    /// hidden app, not full screen, and not BestTouchTool's own.
+    /// hidden app, not full screen, and not Shortie's own.
     static func currentWindows() -> [SavedWindow] {
         let ownID = ProcessInfo.processInfo.processIdentifier
         var windows: [SavedWindow] = []

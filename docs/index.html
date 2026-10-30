@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shortie: gestures, shortcuts and windows for your Mac</title>
+<meta name="description" content="A free menu bar app for macOS: about 70 trackpad gestures, keyboard and mouse shortcuts, window snapping and layouts, clipboard history and well over 100 actions. Native, private and light.">
+<meta property="og:title" content="Shortie">
+<meta property="og:description" content="Make your Mac do what you mean: gestures, shortcuts, window snapping and more.">
+<meta property="og:image" content="images/icon.png">
+<link rel="icon" href="images/icon.png">
+<style>
+:root {
+  --bg: #fbfbfd;
+  --bg-raised: #ffffff;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --faint: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --card: rgba(255, 255, 255, 0.72);
+  --blue: #4a6cff;
+  --violet: #9b3cf0;
+  --accent: #5a5cff;
+  --glow: rgba(90, 92, 255, 0.18);
+  --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 12px 40px rgba(30, 30, 80, 0.10);
+  --radius: 22px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-raised: #111114;
+    --text: #f5f5f7;
+    --muted: #a1a1a6;
+    --faint: #86868b;
+    --line: rgba(255, 255, 255, 0.10);
+    --card: rgba(28, 28, 32, 0.72);
+    --accent: #8b8dff;
+    --glow: rgba(120, 100, 255, 0.28);
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; display: block; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+h1, h2, h3 { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif; letter-spacing: -0.02em; margin: 0; }
+.gradient-text {
+  background: linear-gradient(120deg, var(--blue), var(--violet));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Navigation */
+nav {
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; align-items: center; gap: 28px; height: 52px; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 600; color: var(--text); }
+.brand img { width: 26px; height: 26px; }
+.brand:hover { text-decoration: none; }
+nav .links { display: flex; gap: 24px; margin-left: auto; font-size: 14px; }
+nav .links a { color: var(--muted); }
+nav .links a:hover { color: var(--text); text-decoration: none; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 999px; font-weight: 600; font-size: 16px;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.pill:hover { text-decoration: none; transform: translateY(-1px); }
+.pill.primary { background: linear-gradient(120deg, var(--blue), var(--violet)); color: #fff; box-shadow: 0 8px 24px var(--glow); }
+.pill.secondary { color: var(--accent); border: 1px solid var(--line); background: var(--card); }
+.pill svg { width: 18px; height: 18px; }
+
+/* Hero */
+.hero { position: relative; text-align: center; padding: 96px 0 40px; }
+.hero::before {
+  content: ""; position: absolute; inset: -200px -20% auto; height: 760px; z-index: -1;
+  background:
+    radial-gradient(40% 50% at 30% 40%, rgba(74, 108, 255, 0.22), transparent 70%),
+    radial-gradient(40% 50% at 70% 35%, rgba(155, 60, 240, 0.20), transparent 70%);
+  filter: blur(10px);
+}
+.hero .icon { width: 132px; height: 132px; margin: 0 auto 28px; filter: drop-shadow(0 18px 40px var(--glow)); }
+.hero h1 { font-size: clamp(44px, 7vw, 80px); line-height: 1.05; font-weight: 700; }
+.hero .lede { font-size: clamp(19px, 2.4vw, 24px); color: var(--muted); max-width: 720px; margin: 22px auto 34px; line-height: 1.4; }
+.hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.hero .note { margin-top: 18px; font-size: 14px; color: var(--faint); }
+
+.showpiece { position: relative; margin: 64px auto 0; max-width: 440px; }
+.showpiece .frame { transform: perspective(1400px) rotateX(8deg); transform-origin: center top; }
+
+/* Screenshot frames */
+.frame {
+  border-radius: 18px; overflow: hidden; background: var(--bg-raised);
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+}
+.frame .bar { display: flex; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.frame .bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+.frame .bar i:nth-child(2) { background: #febc2e; }
+.frame .bar i:nth-child(3) { background: #28c840; }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 80px auto 0; }
+.stat { text-align: center; padding: 26px 12px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); }
+.stat b { display: block; font-size: 40px; font-weight: 700; letter-spacing: -0.03em; }
+.stat span { color: var(--muted); font-size: 15px; }
+
+/* Sections */
+section { padding: 110px 0 0; }
+.eyebrow { font-size: 15px; font-weight: 600; letter-spacing: .02em; color: var(--accent); margin-bottom: 10px; }
+.section-head { text-align: center; max-width: 760px; margin: 0 auto 56px; }
+.section-head h2 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; font-weight: 700; }
+.section-head p { color: var(--muted); font-size: 20px; margin: 18px 0 0; }
+
+/* When / Do / Works In */
+.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 14px; }
+.flow .step { padding: 28px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); }
+.flow .step h3 { font-size: 22px; margin-bottom: 8px; }
+.flow .step p { margin: 0; color: var(--muted); font-size: 16px; }
+.flow .step small { display: block; margin-top: 16px; font-size: 14px; color: var(--faint); }
+.flow .arrow { display: grid; place-items: center; color: var(--faint); font-size: 26px; }
+
+/* Feature grid */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card { padding: 28px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); transition: transform .25s ease, box-shadow .25s ease; }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.card h3 { font-size: 20px; margin: 18px 0 8px; }
+.card p { margin: 0; color: var(--muted); font-size: 16px; }
+.tile { width: 44px; height: 44px; border-radius: 11px; display: grid; place-items: center; color: #fff; }
+.tile svg { width: 24px; height: 24px; }
+.t-orange { background: linear-gradient(160deg, #ffad4d, #f27a1a); }
+.t-purple { background: linear-gradient(160deg, #b17bff, #8240e8); }
+.t-blue   { background: linear-gradient(160deg, #5aa2ff, #1d6cf2); }
+.t-indigo { background: linear-gradient(160deg, #7c7cff, #4b46e0); }
+.t-teal   { background: linear-gradient(160deg, #4fd6d0, #149a9a); }
+.t-gray   { background: linear-gradient(160deg, #8e8e93, #5b5b60); }
+.t-cyan   { background: linear-gradient(160deg, #5fd3ff, #1694d8); }
+.t-mint   { background: linear-gradient(160deg, #5ee0b5, #1fae84); }
+.t-red    { background: linear-gradient(160deg, #ff7a70, #e2372b); }
+.t-pink   { background: linear-gradient(160deg, #ff7eb3, #e43d84); }
+.t-brown  { background: linear-gradient(160deg, #c9a27b, #946c45); }
+.t-black  { background: linear-gradient(160deg, #4a4a4f, #1c1c1e); }
+
+/* Showcase rows */
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; margin-bottom: 110px; }
+.row.flip .copy { order: 2; }
+.row h3 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.12; font-weight: 700; }
+.row p { color: var(--muted); font-size: 19px; margin: 16px 0 0; }
+.row ul { margin: 20px 0 0; padding: 0; list-style: none; }
+.row li { padding: 8px 0 8px 30px; position: relative; color: var(--text); font-size: 17px; border-top: 1px solid var(--line); }
+.row li::before { content: ""; position: absolute; left: 4px; top: 16px; width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(120deg, var(--blue), var(--violet)); }
+
+/* Chips */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.chip { padding: 9px 16px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-size: 15px; white-space: nowrap; }
+.chip.more { color: var(--accent); }
+.chip-group { margin-bottom: 34px; }
+.chip-group h4 { text-align: center; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 0 0 14px; font-weight: 600; }
+
+/* Principles */
+.principles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.principle { padding: 26px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--card); }
+.principle b { display: block; font-size: 18px; margin-bottom: 6px; }
+.principle span { color: var(--muted); font-size: 15px; }
+
+/* Install */
+.install { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.install .card { padding: 32px; }
+pre {
+  margin: 16px 0 0; padding: 16px 18px; border-radius: 14px; overflow-x: auto;
+  background: #16161a; color: #e9e9ef; font: 13.5px/1.6 ui-monospace, "SF Mono", Menlo, monospace;
+}
+ol.steps { margin: 14px 0 0; padding-left: 22px; color: var(--muted); }
+ol.steps li { margin: 8px 0; }
+
+/* Final call */
+.cta { text-align: center; padding: 120px 0 100px; }
+.cta img { width: 96px; height: 96px; margin: 0 auto 24px; }
+.cta h2 { font-size: clamp(36px, 5vw, 56px); font-weight: 700; }
+.cta p { color: var(--muted); font-size: 20px; margin: 14px 0 30px; }
+
+footer { border-top: 1px solid var(--line); padding: 30px 0 50px; color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; gap: 20px; justify-content: space-between; flex-wrap: wrap; }
+footer p { margin: 0; max-width: 640px; }
+
+/* Gentle reveal on scroll */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .card, .pill { transition: none; }
+}
+
+@media (max-width: 900px) {
+  .grid, .principles { grid-template-columns: repeat(2, 1fr); }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .row, .row.flip { grid-template-columns: 1fr; gap: 32px; }
+  .row.flip .copy { order: 0; }
+  .flow { grid-template-columns: 1fr; }
+  .flow .arrow { transform: rotate(90deg); }
+  .install { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 16px; }
+  nav .links a:not(.gh) { display: none; }
+  .grid, .principles { grid-template-columns: 1fr; }
+  .hero { padding-top: 64px; }
+  .hero .icon { width: 104px; height: 104px; }
+  section { padding-top: 80px; }
+  .row { margin-bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="images/icon.png" alt="">Shortie</a>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#gestures">Gestures</a>
+      <a href="#install">Install</a>
+      <a class="gh" href="https://github.com/GITHUB_USER/Shortie">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <img class="icon" src="images/icon.png" alt="Shortie app icon">
+    <h1>Make your Mac do<br><span class="gradient-text">what you mean.</span></h1>
+    <p class="lede">Trackpad gestures, keyboard and mouse shortcuts, window snapping and over a hundred actions. One small menu bar app that feels like Apple made it.</p>
+    <div class="actions">
+      <a class="pill primary" href="https://github.com/GITHUB_USER/Shortie">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Get it on GitHub
+      </a>
+      <a class="pill secondary" href="#features">See what it does</a>
+    </div>
+    <p class="note">Free · macOS 15 or later · Apple silicon and Intel</p>
+
+    <div class="showpiece reveal">
+      <div class="frame">
+        <picture>
+          <source srcset="images/gesture-editor-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052">
+        </picture>
+      </div>
+    </div>
+
+    <div class="stats reveal">
+      <div class="stat"><b class="gradient-text">~70</b><span>trackpad gestures</span></div>
+      <div class="stat"><b class="gradient-text">100+</b><span>actions</span></div>
+      <div class="stat"><b class="gradient-text">0%</b><span>CPU when idle</span></div>
+      <div class="stat"><b class="gradient-text">1</b><span>permission needed</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">How it works</div>
+      <h2>Any trigger. Any action.<br>Any app, or just some.</h2>
+      <p>Every rule is three plain steps. Mix and match freely: a gesture can snap a window, a key can run a script, a window button can quit an app.</p>
+    </div>
+    <div class="flow reveal">
+      <div class="step">
+        <div class="eyebrow">When</div>
+        <h3>You do something</h3>
+        <p>Swipe, tap, click, press keys, type an abbreviation, press a mouse button, click a window's traffic light, or an app opens.</p>
+        <small>Six kinds of trigger</small>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="eyebrow">Do</div>
+        <h3>Your Mac acts</h3>
+        <p>Open, type, press keys, move windows, control media, change selected text, run scripts, or chain several actions together.</p>
+        <small>Over a hundred actions</small>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="eyebrow">Works in</div>
+        <h3>Where you choose</h3>
+        <p>Everywhere, only in the apps you pick, or everywhere but those. App-specific rules win, so one gesture can do different things in different apps.</p>
+        <small>Per-app rules</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Features</div>
+      <h2>Everything in one place.</h2>
+      <p>The tools you'd otherwise need four or five apps for, sharing one tidy dashboard.</p>
+    </div>
+    <div class="grid">
+      <div class="card reveal">
+        <div class="tile t-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 013 0v5m0-1a1.5 1.5 0 013 0v2m0-1a1.5 1.5 0 013 0v4a6 6 0 01-6 6h-1a6 6 0 01-5-2.7L4 15a1.5 1.5 0 012.5-1.6L9 16"/></svg></div>
+        <h3>Trackpad gestures</h3>
+        <p>About 70: taps, swipes, pinches, TipTaps, edge swipes, corner clicks and force click, with a recorder that learns yours.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6a3 3 0 10-3 3h12a3 3 0 10-3-3v12a3 3 0 103-3H6a3 3 0 103 3z"/></svg></div>
+        <h3>Keyboard shortcuts</h3>
+        <p>Any keys run any action. Includes a Hyper key: hold Caps Lock for ⌃⌥⇧⌘, tap it and it's still Caps Lock.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14" /></svg></div>
+        <h3>Window snapping</h3>
+        <p>Halves, thirds, fourths, corners and more by key or by dragging to an edge. Windows glide on Apple's own spring curve.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="2"/><rect x="13" y="4" width="8" height="7" rx="2"/><rect x="13" y="13" width="8" height="7" rx="2"/></svg></div>
+        <h3>Window layouts</h3>
+        <p>Save where every window sits as “Coding” or “Writing”, and bring the whole arrangement back with one trigger.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-black"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="#ff5f57"/><circle cx="12" cy="12" r="3" fill="#febc2e"/><circle cx="18" cy="12" r="3" fill="#28c840"/></svg></div>
+        <h3>Window buttons</h3>
+        <p>Teach the red, yellow and green buttons new tricks. Green maximises without full screen; right-click red to quit.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="3" width="12" height="18" rx="6"/><path d="M12 7v4"/></svg></div>
+        <h3>Mouse buttons and scrolling</h3>
+        <p>Middle, back and forward buttons run anything. Set the wheel's direction apart from the trackpad's, with smooth momentum scrolling.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-brown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h10M5 12h14M5 17h7"/></svg></div>
+        <h3>Text shortcuts</h3>
+        <p>Type ;email anywhere and it becomes your address. Or have an abbreviation run any action instead.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg></div>
+        <h3>Clipboard history</h3>
+        <p>Everything you copy, searchable in a glass panel. Pin favourites. Passwords are skipped, and it all stays on your Mac.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-mint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 12h8M8 15h5"/></svg></div>
+        <h3>Custom menus</h3>
+        <p>Your own menus of actions, in the menu bar or popping up right at the pointer.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></div>
+        <h3>Selected-text tools</h3>
+        <p>Make any selection UPPERCASE, Title Case or sorted, search the web for it, have it read aloud, or paste as plain text.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></div>
+        <h3>Automations</h3>
+        <p>Run actions when an app opens, quits or comes forward, or when your Mac wakes, sleeps, locks or plugs in.</p>
+      </div>
+      <div class="card reveal">
+        <div class="tile t-black"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 9h20" stroke-width="3"/></svg></div>
+        <h3>Hide the notch</h3>
+        <p>A black menu bar that blends the notch away, switched on per screen. Plus a searchable window switcher.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="row reveal">
+      <div class="copy">
+        <div class="eyebrow">Windows</div>
+        <h3>Snap, glide,<br>and remember.</h3>
+        <p>Press the same shortcut again to cycle a half through ½, ⅓ and ⅔. Drag to an edge for a Liquid Glass preview. Hold ⌃⌘ to move a window from anywhere inside it.</p>
+        <ul>
+          <li>31 positions, from halves to “Almost Maximise”</li>
+          <li>Make Larger or Smaller in steps, nudge to an edge</li>
+          <li>One click adds a standard set of shortcuts</li>
+        </ul>
+      </div>
+      <div class="frame">
+        <picture>
+          <source srcset="images/windows-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="images/windows-light.png" alt="The Window Snapping page, with dragging settings and shortcuts for each half of the screen" width="1086" height="1100" loading="lazy">
+        </picture>
+      </div>
+    </div>
+
+    <div class="row flip reveal">
+      <div class="copy">
+        <div class="eyebrow">Chains</div>
+        <h3>Several actions,<br>one press.</h3>
+        <p>String steps together with pauses in between: copy, wait, open a site. Or go further with AppleScript, shell scripts and choosing items from any app's menus.</p>
+        <ul>
+          <li>Run Shortcuts from Apple's Shortcuts app</li>
+          <li>Choose “File › Export as PDF…” in the app in front</li>
+          <li>Set the volume, switch speakers, show a message</li>
+        </ul>
+      </div>
+      <div class="frame">
+        <picture>
+          <source srcset="images/steps-editor-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="images/steps-editor-light.png" alt="A keyboard shortcut that presses ⌘C, waits 0.3 seconds, then opens google.com" width="1040" height="1284" loading="lazy">
+        </picture>
+      </div>
+    </div>
+
+    <div class="row reveal">
+      <div class="copy">
+        <div class="eyebrow">Traffic lights</div>
+        <h3>The buttons you click<br>all day, upgraded.</h3>
+        <p>Any click on a window's red, yellow or green button, left or right, can run any action, for the window you clicked, even one in the background.</p>
+        <ul>
+          <li>Green maximises instead of going full screen</li>
+          <li>Right-click red to quit the whole app</li>
+          <li>Suggestions to get going in one click</li>
+        </ul>
+      </div>
+      <div class="frame">
+        <picture>
+          <source srcset="images/window-buttons-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="images/window-buttons-light.png" alt="The Window Buttons page: clicking green maximises, clicking red quits the app" width="1086" height="720" loading="lazy">
+        </picture>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="gestures" style="padding-top: 0">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">The full list</div>
+      <h2>Gestures for every finger.</h2>
+      <p>If macOS already uses a gesture, Shortie tells you, and shows you where to switch it off.</p>
+    </div>
+    <div class="chip-group reveal">
+      <h4>Trackpad</h4>
+      <div class="chips">
+        <span class="chip">2–5 finger taps</span><span class="chip">Double taps</span><span class="chip">Tap and hold</span>
+        <span class="chip">TipTap left and right</span><span class="chip">3–5 finger swipes</span><span class="chip">Swipe in from any edge</span>
+        <span class="chip">Pinch in and out</span><span class="chip">Rotate</span><span class="chip">2–5 finger clicks</span>
+        <span class="chip">Corner clicks</span><span class="chip">Force click</span>
+      </div>
+    </div>
+    <div class="chip-group reveal">
+      <h4>Other triggers</h4>
+      <div class="chips">
+        <span class="chip">Keyboard shortcuts</span><span class="chip">Hyper key</span><span class="chip">Typed abbreviations</span>
+        <span class="chip">Mouse buttons with modifiers</span><span class="chip">Window buttons</span><span class="chip">App opens, quits or comes forward</span>
+        <span class="chip">Wake, sleep, lock, unlock</span><span class="chip">Charger in or out</span>
+      </div>
+    </div>
+    <div class="chip-group reveal">
+      <h4>A taste of the actions</h4>
+      <div class="chips">
+        <span class="chip">Open apps, files, websites</span><span class="chip">Run a Shortcut</span><span class="chip">Type text</span><span class="chip">Press keys</span>
+        <span class="chip">Media keys</span><span class="chip">Volume and brightness</span><span class="chip">Switch sound output</span><span class="chip">Microphone on/off</span>
+        <span class="chip">Control Centre</span><span class="chip">Mission Control</span><span class="chip">Screenshots</span><span class="chip">Dark mode on/off</span>
+        <span class="chip">Hide the Dock</span><span class="chip">Show hidden files</span><span class="chip">Lock, sleep, restart</span>
+        <span class="chip">Snap and resize windows</span><span class="chip">Restore a layout</span><span class="chip">Quit other apps</span>
+        <span class="chip">Change selected text</span><span class="chip">Speak text</span><span class="chip">Clipboard history</span>
+        <span class="chip">AppleScript and shell</span><span class="chip">Choose a menu item</span><span class="chip">Custom menus</span>
+        <span class="chip more">…and more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Built with care</div>
+      <h2>Light, private, native.</h2>
+    </div>
+    <div class="principles">
+      <div class="principle reveal"><b>Native Swift</b><span>SwiftUI and AppKit, with Liquid Glass on macOS 26 and later. No web views, no Electron.</span></div>
+      <div class="principle reveal"><b>Zero when idle</b><span>Every listener switches itself off when nothing needs it: 0% CPU and no wake-ups.</span></div>
+      <div class="principle reveal"><b>Stays on your Mac</b><span>No accounts, no tracking, no network. Clipboard history skips passwords.</span></div>
+      <div class="principle reveal"><b>Feels right</b><span>Timing and motion borrowed from Apple and proven tools, not guesswork.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Install</div>
+      <h2>Up and running in minutes.</h2>
+      <p>There's no signed download yet, so for now you build it yourself with Xcode. It's free.</p>
+    </div>
+    <div class="install">
+      <div class="card reveal">
+        <h3>Build it</h3>
+        <ol class="steps">
+          <li>Install Xcode from the App Store.</li>
+          <li>Download the code and build:</li>
+        </ol>
+<pre>git clone https://github.com/GITHUB_USER/Shortie.git
+cd Shortie
+open Glide.xcodeproj</pre>
+        <ol class="steps" start="3">
+          <li>In Xcode, choose your own team under Signing &amp; Capabilities, then press ⌘R.</li>
+        </ol>
+      </div>
+      <div class="card reveal">
+        <h3>First launch</h3>
+        <ol class="steps">
+          <li>A welcome window asks for <b>Accessibility</b> permission: the one thing it needs, to see your gestures and move windows.</li>
+          <li>Click the hand in the menu bar to open the dashboard.</li>
+          <li>Try <b>Window Snapping › Standard Set</b>, or add a gesture.</li>
+        </ol>
+        <p style="color: var(--faint); font-size: 14px; margin: 20px 0 0;">Needs macOS 15 or later. Some trackpad features use a private macOS framework, so they could change with future macOS updates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap reveal">
+    <img src="images/icon.png" alt="">
+    <h2>Your Mac, <span class="gradient-text">your way.</span></h2>
+    <p>Free, and the code is right there on GitHub.</p>
+    <a class="pill primary" href="https://github.com/GITHUB_USER/Shortie">View on GitHub</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>Shortie is an independent project, not made by or affiliated with Apple. Mac and macOS are trademarks of Apple Inc.</p>
+    <p><a href="https://github.com/GITHUB_USER/Shortie">GitHub</a></p>
+  </div>
+</footer>
+
+<script>
+  // Fade sections in as they scroll into view.
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        observer.unobserve(entry.target);
+      }
+    }
+  }, { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+</script>
+</body>
+</html>

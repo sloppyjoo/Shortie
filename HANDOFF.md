@@ -1,8 +1,8 @@
-# BestTouchTool: session summary and handoff
+# Shortie: session summary and handoff
 
 *Last updated 30 October 2026, at the end of the first build session.*
 
-BestTouchTool is a menu bar app for macOS that does what BetterTouchTool does: keyboard shortcuts, trackpad gestures, mouse buttons, window snapping and more. It aims to feel like Apple made it. It was built from an empty folder in one session, one confirmed step at a time. Everything listed under "What it does" is built, and all of it is committed in git (33 commits on `main`). Most features have been tried and confirmed by the user. Anything not yet confirmed is listed under [Testing status](#testing-status).
+Shortie is a menu bar app for macOS that does what BetterTouchTool does: keyboard shortcuts, trackpad gestures, mouse buttons, window snapping and more. It aims to feel like Apple made it. It was built from an empty folder in one session, one confirmed step at a time. Everything listed under "What it does" is built, and all of it is committed in git (33 commits on `main`). Most features have been tried and confirmed by the user. Anything not yet confirmed is listed under [Testing status](#testing-status).
 
 ---
 
@@ -11,14 +11,14 @@ BestTouchTool is a menu bar app for macOS that does what BetterTouchTool does: k
 | | |
 |---|---|
 | **Build** | `xcodebuild -project Glide.xcodeproj -scheme Glide -configuration Debug -derivedDataPath build -allowProvisioningUpdates build` |
-| **Run** | `open build/Build/Products/Debug/BestTouchTool.app` |
-| **Restart after a build** | `pkill -x BestTouchTool; open build/Build/Products/Debug/BestTouchTool.app` |
+| **Run** | `open build/Build/Products/Debug/Shortie.app` |
+| **Restart after a build** | `pkill -x Shortie; open build/Build/Products/Debug/Shortie.app` |
 | **Open in Xcode** | `Glide.xcodeproj`, then ⌘R |
-| **Settings and data** | `~/Library/Application Support/BestTouchTool/` (`shortcuts.json`, `menus.json`, `clipboard.json`, `Clipboard Images/`) |
+| **Settings and data** | `~/Library/Application Support/Shortie/` (`shortcuts.json`, `menus.json`, `clipboard.json`, `Clipboard Images/`) |
 
 - **Requirements:** macOS 15 or later to run; built with Xcode 27 and Swift 6.4 (strict concurrency, everything on the main actor by default).
 - **Signing:** the free Apple Development personal team (`5H354LVSGV`). This matters because Accessibility permission survives rebuilds only with a real certificate; ad-hoc signing loses it on every build.
-- **Names:** the app was first called **Glide** and renamed **BestTouchTool**. The Xcode project, target, folders and type names (`GlideApp` and so on) are still called Glide, on purpose. The bundle ID `com.slopbookpro.Glide` was kept so permissions and settings carry over. Everything the user sees says BestTouchTool.
+- **Names:** the app was first called **Glide**, then **BestTouchTool**, and is now **Shortie** (renamed 31 October 2026; the old settings folder is moved across on first launch by `AppFolder`). The Xcode project, target, folders and type names (`GlideApp` and so on) are still called Glide, on purpose. The bundle ID `com.slopbookpro.Glide` was kept so permissions and settings carry over. Everything the user sees says Shortie.
 
 ---
 
@@ -102,7 +102,7 @@ Each engine has a `start()` that is safe to call repeatedly, and switches itself
 | Automations | `Automations/AutomationEngine.swift` | NSWorkspace and distributed notifications, plus IOKit power notifications |
 | Clipboard | `Clipboard/ClipboardHistory.swift` | Checks the clipboard's change counter twice a second, with timer tolerance |
 
-Events BestTouchTool posts itself (keys, clicks, scrolls) are stamped with `SyntheticEvent.marker` (in `MouseClicker.swift`). Every tap lets them straight through, so actions can never set off other shortcuts.
+Events Shortie posts itself (keys, clicks, scrolls) are stamped with `SyntheticEvent.marker` (in `MouseClicker.swift`). Every tap lets them straight through, so actions can never set off other shortcuts.
 
 ### Moving windows
 
@@ -153,7 +153,7 @@ Events BestTouchTool posts itself (keys, clicks, scrolls) are stamped with `Synt
 4. **Some apps report their window position late while being dragged**, Electron apps such as Claude in particular. Use the window server (`CGWindowListCopyWindowInfo`), not Accessibility, to follow a drag.
 5. **Some apps (Chrome) switch on `AXEnhancedUserInterface`**, which makes window moves wobbly. `WindowMover` switches it off while moving a window.
 6. **`UserDefaults(suiteName: UserDefaults.globalDomain)` doesn't work.** `UserDefaults.standard` already includes the global settings.
-7. **The `shortcuts` command, AppleScript and shell scripts run as child processes.** AppleScript also needs the `com.apple.security.automation.apple-events` entitlement (in `Glide/BestTouchTool.entitlements`) and `NSAppleEventsUsageDescription`.
+7. **The `shortcuts` command, AppleScript and shell scripts run as child processes.** AppleScript also needs the `com.apple.security.automation.apple-events` entitlement (in `Glide/Shortie.entitlements`) and `NSAppleEventsUsageDescription`.
 8. **SwiftUI grouped forms style the first section header on a page differently.** Always use `SectionTitle`.
 9. **A `\\"` inside a Swift string written from Python ends the string early.** This bit twice.
 
@@ -163,22 +163,22 @@ Events BestTouchTool posts itself (keys, clicks, scrolls) are stamped with `Synt
 - **There's no `timeout` command.** Run things in the background and `kill` them.
 - **`cd` persists between shell calls.** Always give `xcodebuild` absolute paths.
 - **The shell has no Accessibility permission**; only the app does. Accessibility checks have to run inside the app, for example as a temporary `os.Logger` diagnostic, and are removed afterwards.
-- **Computer-use tools can't see BestTouchTool**, because it isn't in `/Applications`. Use snapshot mode instead (below).
+- **Computer-use tools can't see Shortie**, because it isn't in `/Applications`. Use snapshot mode instead (below).
 
 ---
 
 ## How to check your work
 
 - **Snapshots of every page (debug builds only):**
-  `build/Build/Products/Debug/BestTouchTool.app/Contents/MacOS/BestTouchTool --snapshots /some/folder`
+  `build/Build/Products/Debug/Shortie.app/Contents/MacOS/Shortie --snapshots /some/folder`
   This draws every dashboard page and four editors, in light and dark, to PNG files, then quits.
   - The sidebar and window title look blank in these images. That's only a quirk of drawing them this way.
   - Gestures and Permissions show "no permission" states, because the snapshot process isn't trusted.
 - **Idle cost:**
-  `ps -o %cpu=,rss= -p $(pgrep -x BestTouchTool)`
-  `top -l 3 -s 3 -stats pid,cpu,idlew,power -pid $(pgrep -x BestTouchTool)`
+  `ps -o %cpu=,rss= -p $(pgrep -x Shortie)`
+  `top -l 3 -s 3 -stats pid,cpu,idlew,power -pid $(pgrep -x Shortie)`
   Last measured: 0.0% CPU, 0 wake-ups, energy impact 0.0, about 85 MB of memory (debug build).
-- **Crashes:** `~/Library/Logs/DiagnosticReports/BestTouchTool-*.ips`
+- **Crashes:** `~/Library/Logs/DiagnosticReports/Shortie-*.ips`
 - **Commits:** the user confirms each piece works before it's committed. Commit messages end with the Claude co-author line.
 
 ---
@@ -240,5 +240,5 @@ See [ROADMAP.md](ROADMAP.md). The main candidates:
    - Importing BetterTouchTool presets
 4. **Release prep:**
    - Rename the internal project from Glide if wanted
-   - Pick a final name: "BestTouchTool" is close to BetterTouchTool's trademark
+   - Pick a final name: "Shortie" is close to BetterTouchTool's trademark
    - Paid developer account, notarisation, an update mechanism, and a GitHub remote for backup and cloud sessions (there is none yet)

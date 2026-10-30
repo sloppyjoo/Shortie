@@ -39,7 +39,7 @@ struct ClipboardSettingsView: View {
                 } header: {
                     HStack {
                         SectionTitle("Never Keep Copies From")
-                        InfoButton("Passwords are never kept anyway: password managers mark them as secret, and BestTouchTool skips anything marked that way. History stays on your Mac and is never sent anywhere.")
+                        InfoButton("Passwords are never kept anyway: password managers mark them as secret, and Shortie skips anything marked that way. History stays on your Mac and is never sent anywhere.")
                     }
                 }
 

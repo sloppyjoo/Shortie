@@ -40,8 +40,7 @@ final class CustomMenuStore {
 
     @ObservationIgnored private var isLoaded = false
 
-    @ObservationIgnored private let fileURL = URL.applicationSupportDirectory
-        .appending(path: "BestTouchTool", directoryHint: .isDirectory)
+    @ObservationIgnored private let fileURL = AppFolder.url
         .appending(path: "menus.json")
 
     private init() {

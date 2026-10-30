@@ -54,7 +54,7 @@ final class TypedTextEngine {
 
         recent = String((recent + characters).suffix(Self.memoryLength))
 
-        // Don't fire while you're typing an abbreviation into BestTouchTool itself.
+        // Don't fire while you're typing an abbreviation into Shortie itself.
         let app = FrontmostApp.bundleID
         guard app != Bundle.main.bundleIdentifier,
               let (shortcut, abbreviation) = match(in: app)

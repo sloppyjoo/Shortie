@@ -16,14 +16,14 @@ struct GesturesSettingsView: View {
             case .unavailable:
                 Section {
                     Label(
-                        "BestTouchTool couldn't connect to your trackpad. A macOS update may have changed how trackpads report touches.",
+                        "Shortie couldn't connect to your trackpad. A macOS update may have changed how trackpads report touches.",
                         systemImage: "exclamationmark.triangle.fill"
                     )
                     .foregroundStyle(.orange)
                 }
             case .notStarted:
                 Section {
-                    Text("Gestures start once BestTouchTool has Accessibility permission.")
+                    Text("Gestures start once Shortie has Accessibility permission.")
                         .foregroundStyle(.secondary)
                 }
             case .running:

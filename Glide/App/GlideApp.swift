@@ -47,12 +47,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Caps Lock only becomes Hyper while BestTouchTool is running.
+    /// Caps Lock only becomes Hyper while Shortie is running.
     func applicationWillTerminate(_ notification: Notification) {
         HyperKey.shared.restoreCapsLock()
     }
 
-    /// Opening BestTouchTool again (from Finder or Spotlight) while it's already running
+    /// Opening Shortie again (from Finder or Spotlight) while it's already running
     /// shows the dashboard, so it never feels like nothing happened.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         WindowManager.shared.show(.settings)
@@ -82,6 +82,27 @@ enum InputEngines {
         MouseButtonEngine.shared.updateNeed()
         WindowDragEngine.shared.updateNeed()
     }
+}
+
+/// Where Shortie keeps your shortcuts, menus, layouts and clipboard history:
+/// `~/Library/Application Support/Shortie`.
+enum AppFolder {
+    static let url: URL = {
+        let fileManager = FileManager.default
+        let folder = URL.applicationSupportDirectory.appending(path: "Shortie", directoryHint: .isDirectory)
+        // The app used to be called BestTouchTool, and before that Glide.
+        // Bring the old folder across the first time.
+        if !fileManager.fileExists(atPath: folder.path) {
+            for oldName in ["BestTouchTool", "Glide"] {
+                let oldFolder = URL.applicationSupportDirectory.appending(path: oldName, directoryHint: .isDirectory)
+                if fileManager.fileExists(atPath: oldFolder.path), (try? fileManager.moveItem(at: oldFolder, to: folder)) != nil {
+                    break
+                }
+            }
+        }
+        try? fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }()
 }
 
 /// Keys for small preferences saved with `@AppStorage` (stored in UserDefaults).

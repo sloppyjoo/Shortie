@@ -19,7 +19,7 @@ struct GeneralSettingsView: View {
                 HStack {
                     Toggle("Caps Lock as Hyper Key", isOn: $hyperKey)
                         .onChange(of: hyperKey) { HyperKey.shared.apply() }
-                    InfoButton("Hold Caps Lock with another key for ⌃⌥⇧⌘ plus that key, a combination no app uses. Record a Hyper shortcut by holding Caps Lock. Caps Lock is back to normal whenever BestTouchTool isn't running.")
+                    InfoButton("Hold Caps Lock with another key for ⌃⌥⇧⌘ plus that key, a combination no app uses. Record a Hyper shortcut by holding Caps Lock. Caps Lock is back to normal whenever Shortie isn't running.")
                 }
                 if hyperKey {
                     Picker("When Tapped", selection: $hyperTapAction) {

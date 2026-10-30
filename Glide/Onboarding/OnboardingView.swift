@@ -15,11 +15,11 @@ struct OnboardingView: View {
                     .padding(10)
             }
 
-            Text("BestTouchTool never records or sends anything you type.")
+            Text("Shortie never records or sends anything you type.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
-            Button(permissions.allGranted ? "Start Using BestTouchTool" : "Set Up Later") {
+            Button(permissions.allGranted ? "Start Using Shortie" : "Set Up Later") {
                 hasCompletedOnboarding = true
                 WindowManager.shared.close(.onboarding)
             }
@@ -47,7 +47,7 @@ struct OnboardingView: View {
                 .symbolRenderingMode(.hierarchical)
                 .padding(.bottom, 6)
 
-            Text("Welcome to BestTouchTool")
+            Text("Welcome to Shortie")
                 .font(.largeTitle.bold())
 
             Text("Gestures, shortcuts and window snapping that feel like they came with your Mac.")

@@ -48,7 +48,7 @@ struct MouseSettingsView: View {
                         Text(direction.title).tag(direction)
                     }
                 }
-                // BestTouchTool only changes the wheel; the trackpad's direction comes from macOS.
+                // Shortie only changes the wheel; the trackpad's direction comes from macOS.
                 if !systemIsNatural {
                     LabeledContent("Trackpad natural scrolling is off") {
                         Button("Trackpad Settings…") {

@@ -40,15 +40,15 @@ final class StatusBarController: NSObject {
         let menu = NSMenu()
 
         if !Permissions.shared.allGranted {
-            let item = menuItem("BestTouchTool Needs Permission…", action: #selector(showOnboarding))
+            let item = menuItem("Shortie Needs Permission…", action: #selector(showOnboarding))
             item.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: nil)
             menu.addItem(item)
             menu.addItem(.separator())
         }
 
-        menu.addItem(menuItem("About BestTouchTool", action: #selector(showAbout)))
+        menu.addItem(menuItem("About Shortie", action: #selector(showAbout)))
         menu.addItem(.separator())
-        menu.addItem(menuItem("Quit BestTouchTool", action: #selector(quit), key: "q"))
+        menu.addItem(menuItem("Quit Shortie", action: #selector(quit), key: "q"))
 
         // Attach the menu just long enough to pop it up in the usual spot under the
         // icon, then detach it so the next left-click opens the dashboard again.
@@ -67,7 +67,7 @@ final class StatusBarController: NSObject {
         let isPaused = UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
         statusItem.button?.image = NSImage(
             systemSymbolName: isPaused ? "hand.raised.slash" : "hand.draw",
-            accessibilityDescription: "BestTouchTool"
+            accessibilityDescription: "Shortie"
         )
     }
 

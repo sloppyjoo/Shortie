@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// A floating, borderless panel like Spotlight's, used for the window switcher
-/// and clipboard history. It can take typing without making BestTouchTool
+/// and clipboard history. It can take typing without making Shortie
 /// the active app, so the app you were using stays in front.
 final class GlassPanel: NSPanel {
     override var canBecomeKey: Bool { true }

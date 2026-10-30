@@ -303,7 +303,7 @@ final class WindowDragEngine {
 private nonisolated func handleDragEvent(
     proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, userInfo: UnsafeMutableRawPointer?
 ) -> Unmanaged<CGEvent>? {
-    // Let through the clicks BestTouchTool itself makes (like a Left Click action).
+    // Let through the clicks Shortie itself makes (like a Left Click action).
     guard event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker else {
         return Unmanaged.passUnretained(event)
     }

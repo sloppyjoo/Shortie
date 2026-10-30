@@ -138,13 +138,7 @@ final class ShortcutStore {
     @ObservationIgnored private var isLoaded = false
 
     private init() {
-        let folder = URL.applicationSupportDirectory.appending(path: "BestTouchTool", directoryHint: .isDirectory)
-        // The app used to be called Glide; bring its folder across the first time.
-        let oldFolder = URL.applicationSupportDirectory.appending(path: "Glide", directoryHint: .isDirectory)
-        if !FileManager.default.fileExists(atPath: folder.path), FileManager.default.fileExists(atPath: oldFolder.path) {
-            try? FileManager.default.moveItem(at: oldFolder, to: folder)
-        }
-        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let folder = AppFolder.url
         fileURL = folder.appending(path: "shortcuts.json")
         defer { isLoaded = true }
 

@@ -164,7 +164,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .clipboard: "Everything you copy, ready to paste again."
         case .menus: "Your own menus, in the menu bar or at the pointer."
         case .menuBar: "Hide the notch with a black menu bar."
-        case .permissions: "What BestTouchTool needs to work."
+        case .permissions: "What Shortie needs to work."
         }
     }
 
