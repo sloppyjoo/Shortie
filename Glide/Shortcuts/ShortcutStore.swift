@@ -1,13 +1,66 @@
 import Foundation
 import Observation
 
-/// One keyboard shortcut: which keys, and what they do.
+/// One shortcut: what sets it off, and what it does.
 nonisolated struct Shortcut: Codable, Identifiable, Hashable {
     var id = UUID()
-    /// `nil` until you've recorded the keys.
-    var keyCombo: KeyCombo?
+    /// `nil` for a keyboard shortcut whose keys you haven't recorded yet.
+    var trigger: Trigger?
     var action: ShortcutAction
     var isEnabled = true
+
+    init(id: UUID = UUID(), trigger: Trigger? = nil, action: ShortcutAction, isEnabled: Bool = true) {
+        self.id = id
+        self.trigger = trigger
+        self.action = action
+        self.isEnabled = isEnabled
+    }
+
+    init(keyCombo: KeyCombo?, action: ShortcutAction) {
+        self.init(trigger: keyCombo.map { .keys(combo: $0) }, action: action)
+    }
+
+    /// The keys, for keyboard shortcuts.
+    var keyCombo: KeyCombo? {
+        get {
+            if case .keys(let combo) = trigger { combo } else { nil }
+        }
+        set {
+            trigger = newValue.map { .keys(combo: $0) }
+        }
+    }
+
+    /// The click, for traffic light actions.
+    var trafficLightClick: TrafficLightClick? {
+        if case .trafficLight(let click) = trigger { click } else { nil }
+    }
+
+    var isKeyboardShortcut: Bool {
+        trigger == nil || keyCombo != nil
+    }
+
+    // Saved files from before triggers existed have a plain "keyCombo" instead of
+    // a "trigger", so read either.
+    private enum CodingKeys: String, CodingKey {
+        case id, trigger, action, isEnabled, keyCombo
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        action = try container.decode(ShortcutAction.self, forKey: .action)
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        trigger = try container.decodeIfPresent(Trigger.self, forKey: .trigger)
+            ?? container.decodeIfPresent(KeyCombo.self, forKey: .keyCombo).map { .keys(combo: $0) }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(trigger, forKey: .trigger)
+        try container.encode(action, forKey: .action)
+        try container.encode(isEnabled, forKey: .isEnabled)
+    }
 }
 
 /// All your shortcuts, saved to a plain, readable JSON file:
@@ -42,6 +95,20 @@ final class ShortcutStore {
     func update(_ shortcut: Shortcut) {
         if let index = shortcuts.firstIndex(where: { $0.id == shortcut.id }) {
             shortcuts[index] = shortcut
+        }
+    }
+
+    /// Other switched-on shortcuts set off by the same thing.
+    func conflicts(with shortcut: Shortcut) -> [Shortcut] {
+        guard shortcut.isEnabled, let trigger = shortcut.trigger else { return [] }
+        return shortcuts.filter { other in
+            other.id != shortcut.id && other.isEnabled && other.trigger.map(trigger.clashes) == true
+        }
+    }
+
+    func setEnabled(_ isEnabled: Bool, id: Shortcut.ID) {
+        if let index = shortcuts.firstIndex(where: { $0.id == id }) {
+            shortcuts[index].isEnabled = isEnabled
         }
     }
 

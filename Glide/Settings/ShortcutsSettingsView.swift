@@ -62,7 +62,7 @@ struct ShortcutListView<Extra: View>: View {
     }
 
     private func belongsHere(_ shortcut: Shortcut) -> Bool {
-        kinds.contains(shortcut.action.kind)
+        shortcut.isKeyboardShortcut && kinds.contains(shortcut.action.kind)
     }
 
     private var emptyState: some View {
@@ -91,11 +91,7 @@ struct ShortcutListView<Extra: View>: View {
                             conflicts: conflicts(with: shortcut),
                             edit: { edit(shortcut) },
                             delete: { store.delete(id: shortcut.id) },
-                            disable: { id in
-                                if let index = store.shortcuts.firstIndex(where: { $0.id == id }) {
-                                    store.shortcuts[index].isEnabled = false
-                                }
-                            }
+                            disable: { store.setEnabled(false, id: $0) }
                         )
                     }
                 }
@@ -137,6 +133,14 @@ struct ShortcutListView<Extra: View>: View {
                             }
                         }
                     }
+                } else if kind == .appCommand {
+                    ForEach(AppCommand.groups, id: \.self) { group in
+                        Section {
+                            ForEach(group) { command in
+                                Button(command.title) { save(.appCommand(command: command), to: nil) }
+                            }
+                        }
+                    }
                 } else {
                     Button(kind.menuTitle, systemImage: kind.systemImage) { add(kind) }
                 }
@@ -147,11 +151,7 @@ struct ShortcutListView<Extra: View>: View {
 
     /// Other switched-on shortcuts (in any section) that use the same keys.
     private func conflicts(with shortcut: Shortcut) -> [Shortcut] {
-        guard shortcut.isEnabled, let combo = shortcut.keyCombo else { return [] }
-        return store.shortcuts.filter { other in
-            other.id != shortcut.id && other.isEnabled
-                && other.keyCombo?.matches(keyCode: combo.keyCode, modifiers: combo.modifiers) == true
-        }
+        ShortcutStore.shared.conflicts(with: shortcut)
     }
 
     private func recordingBinding(for id: Shortcut.ID) -> Binding<Bool> {
@@ -196,12 +196,7 @@ struct ShortcutListView<Extra: View>: View {
     }
 
     private func chooseApp() -> String? {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.application]
-        panel.directoryURL = URL(fileURLWithPath: "/Applications")
-        panel.prompt = "Choose"
-        panel.message = "Choose the app this shortcut should open."
-        return panel.runModal() == .OK ? panel.url?.path : nil
+        AppChooser.choose()
     }
 }
 
@@ -303,7 +298,7 @@ struct ConflictBadge: View {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(other.action.title)
                             .lineLimit(1)
-                        Text("In \(other.action.kind.sectionName)")
+                        Text("In \(other.sectionName)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -337,7 +332,7 @@ struct ConflictBadge: View {
     }
 
     private var accessibilityText: String {
-        let names = conflicts.map { "“\($0.action.title)” in \($0.action.kind.sectionName)" }
+        let names = conflicts.map { "“\($0.action.title)” in \($0.sectionName)" }
         return "Same keys as " + names.joined(separator: ", ")
     }
 }
@@ -356,6 +351,9 @@ struct ActionIcon: View {
         case .moveWindow(let position):
             WindowPositionIcon(position: position)
                 .frame(width: 24, height: 24)
+        case .appCommand(let command):
+            SettingsIcon(systemImage: command.systemImage, color: action.kind.color)
+                .padding(2)
         default:
             SettingsIcon(systemImage: action.kind.systemImage, color: action.kind.color)
                 .padding(2)
@@ -371,12 +369,13 @@ extension ShortcutAction.Kind {
         case .open: "Open Website or File…"
         case .typeText: "Type Text…"
         case .moveWindow: "Move Window…"
+        case .appCommand: "Window or App Command…"
         }
     }
 
-    /// The dashboard section this kind of shortcut lives in.
+    /// The dashboard section keyboard shortcuts of this kind live in.
     var sectionName: String {
-        self == .moveWindow ? "Windows" : "Shortcuts"
+        self == .moveWindow || self == .appCommand ? "Windows" : "Shortcuts"
     }
 
     var systemImage: String {
@@ -386,6 +385,7 @@ extension ShortcutAction.Kind {
         case .open: "link"
         case .typeText: "text.cursor"
         case .moveWindow: "macwindow"
+        case .appCommand: "macwindow.badge.plus"
         }
     }
 
@@ -396,6 +396,7 @@ extension ShortcutAction.Kind {
         case .open: .teal
         case .typeText: .indigo
         case .moveWindow: .blue
+        case .appCommand: .gray
         }
     }
 
@@ -406,6 +407,14 @@ extension ShortcutAction.Kind {
         case .open: .open(target: "")
         case .typeText: .typeText(text: "")
         case .moveWindow: .moveWindow(position: .maximize)
+        case .appCommand: .appCommand(command: .closeWindow)
         }
+    }
+}
+
+extension Shortcut {
+    /// The dashboard section this shortcut lives in.
+    var sectionName: String {
+        trafficLightClick != nil ? "Traffic Lights" : action.kind.sectionName
     }
 }

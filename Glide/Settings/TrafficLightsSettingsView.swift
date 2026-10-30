@@ -1,0 +1,358 @@
+import SwiftUI
+
+/// The Traffic Lights section of the dashboard: extra actions for the red,
+/// yellow and green buttons on every window.
+struct TrafficLightsSettingsView: View {
+    private var store = ShortcutStore.shared
+    @State private var editing: TrafficLightEditorRequest?
+
+    var body: some View {
+        Group {
+            if store.shortcuts.contains(where: { $0.trafficLightClick != nil }) {
+                list
+            } else {
+                emptyState
+            }
+        }
+        .sheet(item: $editing) { request in
+            TrafficLightEditor(click: request.click, action: request.action) { click, action in
+                save(click: click, action: action, to: request.shortcutID)
+            }
+        }
+    }
+
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label {
+                Text("Make the Window Buttons Do More")
+            } icon: {
+                TrafficLightDots(highlighted: nil)
+                    .scaleEffect(2.2)
+                    .frame(height: 40)
+            }
+        } description: {
+            Text("Click, right-click or ⌥-click a window's red, yellow or green button to quit an app, hide it, maximise the window without going full screen, and more.")
+        } actions: {
+            HStack {
+                Button("Add Suggestions", action: addSuggestions)
+                addButton
+            }
+        }
+    }
+
+    private var list: some View {
+        @Bindable var store = store
+
+        return Form {
+            Section {
+                ForEach($store.shortcuts) { $shortcut in
+                    if let click = shortcut.trafficLightClick {
+                        TrafficLightRow(
+                            shortcut: $shortcut,
+                            click: click,
+                            conflicts: store.conflicts(with: shortcut),
+                            edit: { edit(shortcut, click: click) },
+                            delete: { store.delete(id: shortcut.id) },
+                            disable: { store.setEnabled(false, id: $0) }
+                        )
+                    }
+                }
+            } header: {
+                HStack {
+                    Spacer()
+                    Button("Add Suggestions", action: addSuggestions)
+                    addButton
+                }
+            } footer: {
+                Text("Clicks you haven't given an action keep working as normal.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private var addButton: some View {
+        Button("Add Action", systemImage: "plus") {
+            editing = TrafficLightEditorRequest(
+                shortcutID: nil,
+                click: TrafficLightClick(button: .close, mouseButton: .right, modifiers: []),
+                action: .appCommand(command: .quitApp)
+            )
+        }
+    }
+
+    private func edit(_ shortcut: Shortcut, click: TrafficLightClick) {
+        editing = TrafficLightEditorRequest(shortcutID: shortcut.id, click: click, action: shortcut.action)
+    }
+
+    private func save(click: TrafficLightClick, action: ShortcutAction, to id: Shortcut.ID?) {
+        if let id, var shortcut = store.shortcuts.first(where: { $0.id == id }) {
+            shortcut.trigger = .trafficLight(click: click)
+            shortcut.action = action
+            store.update(shortcut)
+        } else {
+            store.shortcuts.append(Shortcut(trigger: .trafficLight(click: click), action: action))
+        }
+    }
+
+    /// A handy starting set. Skips any click you've already given an action.
+    private func addSuggestions() {
+        let suggestions: [(TrafficLightClick, ShortcutAction)] = [
+            (TrafficLightClick(button: .close, mouseButton: .right, modifiers: []), .appCommand(command: .quitApp)),
+            (TrafficLightClick(button: .minimize, mouseButton: .right, modifiers: []), .appCommand(command: .hideApp)),
+            // Green maximises without full screen (click again to restore); ⌥ keeps full screen to hand.
+            (TrafficLightClick(button: .zoom, mouseButton: .left, modifiers: []), .moveWindow(position: .maximize)),
+            (TrafficLightClick(button: .zoom, mouseButton: .left, modifiers: .option), .appCommand(command: .toggleFullScreen)),
+            (TrafficLightClick(button: .close, mouseButton: .left, modifiers: .option), .appCommand(command: .closeAllWindows)),
+            (TrafficLightClick(button: .minimize, mouseButton: .left, modifiers: .option), .appCommand(command: .minimizeAllWindows)),
+        ]
+        for (click, action) in suggestions where !store.shortcuts.contains(where: { $0.trafficLightClick == click }) {
+            store.shortcuts.append(Shortcut(trigger: .trafficLight(click: click), action: action))
+        }
+    }
+}
+
+private struct TrafficLightEditorRequest: Identifiable {
+    let id = UUID()
+    /// `nil` when adding a new one.
+    let shortcutID: Shortcut.ID?
+    let click: TrafficLightClick
+    let action: ShortcutAction
+}
+
+struct TrafficLightRow: View {
+    @Binding var shortcut: Shortcut
+    let click: TrafficLightClick
+    let conflicts: [Shortcut]
+    let edit: () -> Void
+    let delete: () -> Void
+    let disable: (Shortcut.ID) -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: edit) {
+                HStack(spacing: 10) {
+                    TrafficLightDots(highlighted: click.button)
+                    Text(click.clickDescription)
+                        .frame(minWidth: 110, alignment: .leading)
+                    Image(systemName: "arrow.right")
+                        .foregroundStyle(.secondary)
+                    ActionIcon(action: shortcut.action)
+                    Text(shortcut.action.title)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .opacity(shortcut.isEnabled ? 1 : 0.45)
+
+            if !conflicts.isEmpty {
+                ConflictBadge(conflicts: conflicts, disable: disable)
+            }
+
+            Toggle("Enabled", isOn: $shortcut.isEnabled)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.small)
+
+            Menu {
+                Button("Edit…", action: edit)
+                Button("Delete", role: .destructive, action: delete)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+        }
+        .contextMenu {
+            Button("Edit…", action: edit)
+            Button("Delete", role: .destructive, action: delete)
+        }
+    }
+}
+
+/// The three window buttons, with one lit up and the others greyed out.
+/// Pass `nil` to light up all three.
+struct TrafficLightDots: View {
+    let highlighted: TrafficLightButton?
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(TrafficLightButton.allCases) { button in
+                Circle()
+                    .fill(highlighted == nil || highlighted == button ? button.color : Color.secondary.opacity(0.25))
+                    .frame(width: 10, height: 10)
+            }
+        }
+        .accessibilityLabel(highlighted.map { "\($0.title) button" } ?? "Window buttons")
+    }
+}
+
+extension TrafficLightButton {
+    var color: Color {
+        switch self {
+        case .close: Color(red: 1, green: 0.37, blue: 0.34)
+        case .minimize: Color(red: 1, green: 0.74, blue: 0.18)
+        case .zoom: Color(red: 0.16, green: 0.79, blue: 0.25)
+        }
+    }
+}
+
+/// The sheet for setting up one traffic light action.
+struct TrafficLightEditor: View {
+    @State var click: TrafficLightClick
+    @State var action: ShortcutAction
+    let onSave: (TrafficLightClick, ShortcutAction) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Traffic Light Action")
+                .font(.headline)
+
+            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
+                GridRow {
+                    Text("Button").gridColumnAlignment(.trailing)
+                    TrafficLightButtonPicker(selection: $click.button)
+                }
+                GridRow {
+                    Text("Click")
+                    Picker("Click", selection: $click.mouseButton) {
+                        ForEach(MouseButton.allCases) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                GridRow {
+                    Text("While holding")
+                    ModifierToggles(modifiers: $click.modifiers)
+                }
+                GridRow {
+                    Text("Action")
+                    Picker("Action", selection: kind) {
+                        ForEach(Self.kindOrder) { kind in
+                            Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+            }
+
+            ActionFields(action: $action)
+                .padding(.leading, 4)
+
+            if click.mouseButton == .left && click.modifiers.isEmpty {
+                Label("This replaces the button's normal click.", systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack {
+                Spacer()
+                Button("Cancel", role: .cancel) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Save") {
+                    onSave(click, action)
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(!action.isComplete)
+            }
+        }
+        .padding(20)
+        .frame(width: 480)
+    }
+
+    /// Window commands first, since they're what you'll usually want here.
+    private static let kindOrder: [ShortcutAction.Kind] = [.appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText]
+
+    private var kind: Binding<ShortcutAction.Kind> {
+        Binding(
+            get: { action.kind },
+            set: { if $0 != action.kind { action = $0.emptyAction } }
+        )
+    }
+}
+
+/// Four little ⌃ ⌥ ⇧ ⌘ toggle buttons.
+struct ModifierToggles: View {
+    @Binding var modifiers: Modifiers
+
+    private static let all: [(Modifiers, String, String)] = [
+        (.control, "⌃", "Control"), (.option, "⌥", "Option"), (.shift, "⇧", "Shift"), (.command, "⌘", "Command"),
+    ]
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(Self.all, id: \.1) { modifier, symbol, name in
+                Toggle(symbol, isOn: Binding(
+                    get: { modifiers.contains(modifier) },
+                    set: { isOn in
+                        if isOn { modifiers.insert(modifier) } else { modifiers.remove(modifier) }
+                    }
+                ))
+                .toggleStyle(.button)
+                .help(name)
+            }
+        }
+    }
+}
+
+/// Choose a window button by clicking a picture of it, the way they look on a
+/// real window, with their symbols showing as if you're hovering.
+struct TrafficLightButtonPicker: View {
+    @Binding var selection: TrafficLightButton
+
+    var body: some View {
+        HStack(spacing: 18) {
+            ForEach(TrafficLightButton.allCases) { button in
+                Button {
+                    selection = button
+                } label: {
+                    VStack(spacing: 5) {
+                        ZStack {
+                            Circle()
+                                .fill(button.color.gradient)
+                                .overlay(Circle().strokeBorder(.black.opacity(0.15), lineWidth: 0.5))
+                            Image(systemName: button.symbol)
+                                .font(.system(size: 11, weight: .heavy))
+                                .foregroundStyle(.black.opacity(0.55))
+                        }
+                        .frame(width: 26, height: 26)
+                        .padding(3)
+                        .overlay {
+                            Circle().strokeBorder(Color.accentColor, lineWidth: 2.5)
+                                .opacity(selection == button ? 1 : 0)
+                        }
+
+                        Text(button.title)
+                            .font(.caption)
+                            .foregroundStyle(selection == button ? .primary : .secondary)
+                    }
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(button.title) button")
+                .accessibilityAddTraits(selection == button ? .isSelected : [])
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: selection)
+    }
+}
+
+extension TrafficLightButton {
+    /// The little symbol that appears on the button when you hover over it.
+    var symbol: String {
+        switch self {
+        case .close: "xmark"
+        case .minimize: "minus"
+        case .zoom: "plus"
+        }
+    }
+}

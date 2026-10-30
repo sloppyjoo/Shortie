@@ -23,8 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusBar = StatusBarController()
-        ShortcutEngine.shared.start()
-        ScrollEngine.shared.start()
+        InputEngines.start()
         NotchBar.shared.update()
 
         // Show the welcome window until Glide has everything it needs.
@@ -39,6 +38,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         WindowManager.shared.show(.settings)
         return false
+    }
+}
+
+/// Everything that listens to your keyboard, mouse and trackpad.
+enum InputEngines {
+    /// Safe to call repeatedly; each one waits until Accessibility is granted.
+    static func start() {
+        ShortcutEngine.shared.start()
+        ScrollEngine.shared.start()
+        TrafficLightEngine.shared.start()
     }
 }
 

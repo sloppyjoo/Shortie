@@ -4,22 +4,35 @@ import SwiftUI
 /// sections on the left, the selected section on the right.
 struct SettingsView: View {
     @State private var selection: SettingsPane? = .general
+    @State private var columns = NavigationSplitViewVisibility.all
+
+    /// Like System Settings, the sidebar is always shown at one fixed width.
+    private static let sidebarWidth: CGFloat = 215
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columns) {
             List(SettingsPane.allCases, selection: $selection) { pane in
                 Label {
                     Text(pane.title)
                 } icon: {
-                    SettingsIcon(systemImage: pane.systemImage, color: pane.color)
+                    if pane == .trafficLights {
+                        TrafficLightsSidebarIcon()
+                    } else {
+                        SettingsIcon(systemImage: pane.systemImage, color: pane.color)
+                    }
                 }
             }
-            .navigationSplitViewColumnWidth(200)
+            .navigationSplitViewColumnWidth(min: Self.sidebarWidth, ideal: Self.sidebarWidth, max: Self.sidebarWidth)
             .toolbar(removing: .sidebarToggle)
         } detail: {
             let pane = selection ?? .general
             detail(for: pane)
+                .frame(minWidth: 500, maxWidth: .infinity, maxHeight: .infinity)
                 .navigationTitle(pane.title)
+        }
+        // Don't let the sidebar be collapsed (for example by dragging its edge).
+        .onChange(of: columns) { _, newValue in
+            if newValue != .all { columns = .all }
         }
     }
 
@@ -32,6 +45,8 @@ struct SettingsView: View {
             ShortcutsSettingsView()
         case .windows:
             WindowsSettingsView()
+        case .trafficLights:
+            TrafficLightsSettingsView()
         case .mouse:
             MouseSettingsView()
         case .menuBar:
@@ -45,7 +60,7 @@ struct SettingsView: View {
 }
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, shortcuts, windows, mouse, menuBar, gestures, permissions
+    case general, shortcuts, windows, trafficLights, mouse, menuBar, gestures, permissions
 
     var id: Self { self }
 
@@ -54,6 +69,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "General"
         case .shortcuts: "Shortcuts"
         case .windows: "Windows"
+        case .trafficLights: "Traffic Lights"
         case .mouse: "Mouse & Scrolling"
         case .menuBar: "Menu Bar"
         case .gestures: "Gestures"
@@ -66,6 +82,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "gearshape.fill"
         case .shortcuts: "command"
         case .windows: "macwindow"
+        case .trafficLights: "circle.fill"
         case .mouse: "computermouse.fill"
         case .menuBar: "menubar.rectangle"
         case .gestures: "hand.draw.fill"
@@ -78,6 +95,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: .gray
         case .shortcuts: .purple
         case .windows: .blue
+        case .trafficLights: .red
         case .mouse: .teal
         case .menuBar: .black
         case .gestures: .orange
@@ -97,6 +115,21 @@ struct SettingsIcon: View {
             .foregroundStyle(.white)
             .frame(width: 20, height: 20)
             .background(color.gradient, in: .rect(cornerRadius: 5))
+    }
+}
+
+/// The sidebar icon for Traffic Lights: the three window buttons on a dark tile.
+struct TrafficLightsSidebarIcon: View {
+    var body: some View {
+        HStack(spacing: 1.5) {
+            ForEach(TrafficLightButton.allCases) { button in
+                Circle()
+                    .fill(button.color)
+                    .frame(width: 4.5, height: 4.5)
+            }
+        }
+        .frame(width: 20, height: 20)
+        .background(Color(white: 0.22).gradient, in: .rect(cornerRadius: 5))
     }
 }
 

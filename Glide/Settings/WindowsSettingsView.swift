@@ -6,7 +6,7 @@ struct WindowsSettingsView: View {
 
     var body: some View {
         ShortcutListView(
-            kinds: [.moveWindow],
+            kinds: [.moveWindow, .appCommand],
             emptyTitle: "Snap Windows with Your Keyboard",
             emptySymbol: "macwindow",
             emptyDescription: "Move the front window to a half, corner or third of the screen. Start with the standard set, or add your own.",
@@ -35,7 +35,9 @@ struct WindowsSettingsView: View {
             let keyCode = UInt16(standard.keyCode)
             let combo = KeyCombo(keyCode: keyCode, modifiers: standard.modifiers, keyName: KeyNames.name(for: keyCode))
 
-            let hasPosition = store.shortcuts.contains { $0.action == .moveWindow(position: standard.position) }
+            let hasPosition = store.shortcuts.contains {
+                $0.isKeyboardShortcut && $0.action == .moveWindow(position: standard.position)
+            }
             if hasPosition { continue }
 
             let keysTaken = store.shortcuts.contains {

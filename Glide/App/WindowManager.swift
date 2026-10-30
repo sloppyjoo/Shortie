@@ -56,12 +56,15 @@ final class WindowManager: NSObject, NSWindowDelegate {
             let controller = NSHostingController(rootView: SettingsView())
             // Let SwiftUI put the sidebar and title into the window's toolbar.
             controller.sceneBridgingOptions = .all
-            controller.sizingOptions = .minSize
+            // Keep one fixed minimum size. Otherwise every section works out its own,
+            // and the window jumps around as you click through the sidebar.
+            controller.sizingOptions = []
             window = NSWindow(contentViewController: controller)
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             window.title = "Glide"
             window.toolbarStyle = .unified
-            window.setContentSize(NSSize(width: 720, height: 460))
+            window.contentMinSize = NSSize(width: 715, height: 460)
+            window.setContentSize(NSSize(width: 760, height: 520))
         }
         window.isReleasedWhenClosed = false
         window.delegate = self

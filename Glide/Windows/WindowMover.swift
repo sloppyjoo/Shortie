@@ -1,5 +1,7 @@
 import AppKit
 import ApplicationServices
+import QuartzCore
+import SwiftUI
 
 /// Moves and resizes other apps' windows.
 ///
@@ -7,10 +9,13 @@ import ApplicationServices
 /// control another app's windows (it's what screen readers use). Each window is an
 /// "element" with attributes like position and size that we can read and set.
 ///
+/// Windows glide into place rather than jumping: on each screen refresh we set
+/// the window a little further along Apple's spring curve.
+///
 /// A note on coordinates: AppKit measures screens from the *bottom*-left corner,
 /// but the Accessibility API measures windows from the *top*-left. Everything in
 /// here works in Accessibility (top-left) coordinates.
-final class WindowMover {
+final class WindowMover: NSObject {
     static let shared = WindowMover()
 
     /// The last snap Glide did, so pressing the same shortcut again can cycle sizes.
@@ -18,7 +23,7 @@ final class WindowMover {
         let window: AXUIElement
         let position: WindowPosition
         let cycle: Int
-        let frame: CGRect
+        var frame: CGRect
     }
 
     private var lastMove: LastMove?
@@ -26,8 +31,12 @@ final class WindowMover {
     /// Where windows were before Glide first moved them, for Restore.
     private var originalFrames: [(window: AXUIElement, frame: CGRect)] = []
 
-    func move(_ position: WindowPosition) {
-        guard let window = focusedWindow(), let current = frame(of: window) else {
+    /// Moves `window`, or the window you're using if none is given.
+    func move(_ position: WindowPosition, window: AXUIElement? = nil) {
+        // If a window is still gliding, land it first so we start from where it's going.
+        finishGlide()
+
+        guard let window = window ?? ActionTarget.frontmost?.window, let current = frame(of: window) else {
             NSSound.beep()
             return
         }
@@ -76,11 +85,17 @@ final class WindowMover {
             )
         }
 
-        rememberOriginalFrame(of: window, current)
-        setFrame(of: window, to: target.integral)
+        // Maximising a window that's already maximised puts it back how it was,
+        // like the green button's own zoom.
+        if position == .maximize, current.isClose(to: target.integral, tolerance: 4),
+           originalFrames.contains(where: { CFEqual($0.window, window) }) {
+            restore(window)
+            return
+        }
 
-        // Read back where it actually ended up: some apps have a minimum size.
-        lastMove = LastMove(window: window, position: position, cycle: cycle, frame: frame(of: window) ?? target)
+        rememberOriginalFrame(of: window, current)
+        lastMove = LastMove(window: window, position: position, cycle: cycle, frame: target.integral)
+        animate(window, from: current, to: target.integral)
     }
 
     // MARK: - Restore
@@ -97,22 +112,89 @@ final class WindowMover {
             NSSound.beep()
             return
         }
-        setFrame(of: window, to: originalFrames[index].frame)
+        let original = originalFrames[index].frame
         originalFrames.remove(at: index)
         lastMove = nil
+        animate(window, from: frame(of: window) ?? original, to: original)
+    }
+
+    // MARK: - Gliding
+
+    /// Apple's smooth, no-bounce spring: the same curve as SwiftUI's `.smooth`
+    /// animation, shortened to suit window moves. It starts briskly and settles
+    /// gently, like the system's own animations.
+    private static let spring = Spring(duration: 0.3, bounce: 0)
+
+    private struct Glide {
+        let window: AXUIElement
+        let from: CGRect
+        let to: CGRect
+        let startTime: CFTimeInterval
+        let link: CADisplayLink
+        /// The app whose "enhanced user interface" we switched off, to switch back on after.
+        let enhancedUIApp: AXUIElement?
+    }
+
+    private var currentGlide: Glide?
+
+    private func animate(_ window: AXUIElement, from start: CGRect, to end: CGRect) {
+        finishGlide()
+
+        // Respect System Settings › Accessibility › Display › Reduce motion.
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
+              !start.isClose(to: end, tolerance: 1),
+              let screen = NSScreen.main
+        else {
+            let app = switchOffEnhancedUserInterface(for: window)
+            setFrame(of: window, to: end)
+            switchOnEnhancedUserInterface(app)
+            recordWhereItLanded(window)
+            return
+        }
+
+        // A display link calls us once per screen refresh (60–120 times a second).
+        let link = screen.displayLink(target: self, selector: #selector(stepGlide))
+        currentGlide = Glide(
+            window: window, from: start, to: end, startTime: CACurrentMediaTime(), link: link,
+            enhancedUIApp: switchOffEnhancedUserInterface(for: window)
+        )
+        link.add(to: .main, forMode: .common)
+    }
+
+    @objc private func stepGlide(_ link: CADisplayLink) {
+        guard let glide = currentGlide else {
+            link.invalidate()
+            return
+        }
+        let elapsed = link.targetTimestamp - glide.startTime
+        let progress = Self.spring.value(target: 1.0, time: elapsed)
+
+        // A spring only ever gets closer to its target; once it's nearly there, land exactly.
+        if progress > 0.997 || elapsed > 0.6 {
+            finishGlide()
+            return
+        }
+        setPositionAndSize(of: glide.window, to: glide.from.interpolated(to: glide.to, progress))
+    }
+
+    /// Lands a gliding window at its destination straight away.
+    private func finishGlide() {
+        guard let glide = currentGlide else { return }
+        currentGlide = nil
+        glide.link.invalidate()
+        setFrame(of: glide.window, to: glide.to)
+        switchOnEnhancedUserInterface(glide.enhancedUIApp)
+        recordWhereItLanded(glide.window)
+    }
+
+    /// Some apps have a minimum size, so note where the window really ended up.
+    /// That's what the next press compares against to decide whether to cycle sizes.
+    private func recordWhereItLanded(_ window: AXUIElement) {
+        guard let lastMove, CFEqual(lastMove.window, window), let landed = frame(of: window) else { return }
+        self.lastMove?.frame = landed
     }
 
     // MARK: - Reading and setting windows
-
-    private func focusedWindow() -> AXUIElement? {
-        guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
-        let appElement = AXUIElementCreateApplication(app.processIdentifier)
-        var value: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &value) == .success,
-              let value
-        else { return nil }
-        return (value as! AXUIElement)
-    }
 
     private func frame(of window: AXUIElement) -> CGRect? {
         var positionValue: CFTypeRef?
@@ -136,31 +218,42 @@ final class WindowMover {
               let sizeValue = AXValueCreate(.cgSize, &size)
         else { return }
 
-        withoutEnhancedUserInterface(for: window) {
-            // Position, then size, then position again: moving to another screen can
-            // briefly limit the size, and some apps nudge the window when resized.
+        // Position, then size, then position again: moving to another screen can
+        // briefly limit the size, and some apps nudge the window when resized.
+        AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, positionValue)
+        AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, sizeValue)
+        AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, positionValue)
+    }
+
+    /// The quicker version for each frame of a glide.
+    private func setPositionAndSize(of window: AXUIElement, to frame: CGRect) {
+        var origin = frame.origin
+        var size = frame.size
+        if let positionValue = AXValueCreate(.cgPoint, &origin) {
             AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, positionValue)
+        }
+        if let sizeValue = AXValueCreate(.cgSize, &size) {
             AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, sizeValue)
-            AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, positionValue)
         }
     }
 
+    private static let enhancedUserInterface = "AXEnhancedUserInterface" as CFString
+
     /// Some apps (Chrome, for one) turn on "enhanced user interface" mode when an
     /// accessibility app is around, which makes window moves slow and wobbly.
-    /// Switch it off just while we move the window.
-    private func withoutEnhancedUserInterface(for window: AXUIElement, _ body: () -> Void) {
+    /// We switch it off while moving a window. Returns the app if we did, so it
+    /// can be switched back on afterwards.
+    private func switchOffEnhancedUserInterface(for window: AXUIElement) -> AXUIElement? {
         var pid: pid_t = 0
         AXUIElementGetPid(window, &pid)
         let app = AXUIElementCreateApplication(pid)
-        let attribute = "AXEnhancedUserInterface" as CFString
+        guard AX.bool(app, Self.enhancedUserInterface as String) == true else { return nil }
+        AXUIElementSetAttributeValue(app, Self.enhancedUserInterface, kCFBooleanFalse)
+        return app
+    }
 
-        var value: CFTypeRef?
-        let wasEnabled = AXUIElementCopyAttributeValue(app, attribute, &value) == .success
-            && (value as? Bool) == true
-
-        if wasEnabled { AXUIElementSetAttributeValue(app, attribute, kCFBooleanFalse) }
-        body()
-        if wasEnabled { AXUIElementSetAttributeValue(app, attribute, kCFBooleanTrue) }
+    private func switchOnEnhancedUserInterface(_ app: AXUIElement?) {
+        if let app { AXUIElementSetAttributeValue(app, Self.enhancedUserInterface, kCFBooleanTrue) }
     }
 
     // MARK: - Screens
@@ -190,6 +283,22 @@ final class WindowMover {
 
 private extension CGRect {
     var area: CGFloat { isNull ? 0 : width * height }
+
+    /// Part-way from this rectangle to `other`; `progress` 0 is here, 1 is there.
+    func interpolated(to other: CGRect, _ progress: Double) -> CGRect {
+        CGRect(
+            x: minX + (other.minX - minX) * progress,
+            y: minY + (other.minY - minY) * progress,
+            width: width + (other.width - width) * progress,
+            height: height + (other.height - height) * progress
+        )
+        .rounded
+    }
+
+    /// Each edge on a whole point, so the window doesn't shimmer as it moves.
+    var rounded: CGRect {
+        CGRect(x: minX.rounded(), y: minY.rounded(), width: width.rounded(), height: height.rounded())
+    }
 
     func isClose(to other: CGRect, tolerance: CGFloat = 2) -> Bool {
         abs(minX - other.minX) <= tolerance && abs(minY - other.minY) <= tolerance

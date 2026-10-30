@@ -10,12 +10,16 @@ We build one piece at a time and save a git checkpoint after each piece works.
 3. **Window snapping** – halves, corners, thirds, maximise, centre, restore, next display; size cycling ½ → ⅓ → ⅔.
 4. **Scrolling fix** (replaces LinearMouse) – separate wheel direction, smooth momentum scrolling with a speed slider.
 5. **Notch bar** – a black menu bar that hides the notch, switched on per screen.
+6. **Traffic lights** – any click on a window's red, yellow or green button can run any action
+   (e.g. click green to maximise without full screen). New window and app commands: close, minimise,
+   full screen, close or minimise all windows, hide, hide others, quit.
+7. **Polish** – windows glide into place with Apple's spring; steadier dashboard sidebar.
 
 ## Next
 
 Possible scrolling extras: per-device settings, pointer speed and acceleration.
 
-6. **Trackpad and mouse gestures** – multi-finger taps, swipes and clicks; Magic Mouse; extra mouse buttons.
+8. **Trackpad and mouse gestures** – multi-finger taps, swipes and clicks; Magic Mouse; extra mouse buttons.
    Includes a gesture recorder: do the gesture rather than picking it from a list.
 
 ## Later: the rest of BetterTouchTool

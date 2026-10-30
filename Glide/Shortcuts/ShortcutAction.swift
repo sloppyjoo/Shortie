@@ -11,9 +11,11 @@ nonisolated enum ShortcutAction: Codable, Hashable {
     case typeText(text: String)
     /// Snaps the front window somewhere, like the left half of the screen.
     case moveWindow(position: WindowPosition)
+    /// Closes, minimises, hides or quits a window or app.
+    case appCommand(command: AppCommand)
 
     enum Kind: CaseIterable, Identifiable {
-        case openApp, runShortcut, open, typeText, moveWindow
+        case openApp, runShortcut, open, typeText, moveWindow, appCommand
         var id: Self { self }
     }
 
@@ -24,6 +26,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .open: .open
         case .typeText: .typeText
         case .moveWindow: .moveWindow
+        case .appCommand: .appCommand
         }
     }
 
@@ -35,6 +38,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .open(let target): target
         case .typeText(let text): text
         case .moveWindow(let position): position.rawValue
+        case .appCommand(let command): command.rawValue
         }
     }
 
@@ -45,6 +49,7 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .open: .open(target: payload)
         case .typeText: .typeText(text: payload)
         case .moveWindow: .moveWindow(position: WindowPosition(rawValue: payload) ?? .maximize)
+        case .appCommand: .appCommand(command: AppCommand(rawValue: payload) ?? .closeWindow)
         }
     }
 
@@ -65,6 +70,8 @@ nonisolated enum ShortcutAction: Codable, Hashable {
             "Type “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
         case .moveWindow(let position):
             position.title
+        case .appCommand(let command):
+            command.title
         }
     }
 
@@ -94,7 +101,9 @@ nonisolated enum ShortcutAction: Codable, Hashable {
 
 /// Carries out actions.
 enum ActionRunner {
-    static func run(_ action: ShortcutAction) {
+    /// Runs an action. Window actions apply to `target`'s window, or to the
+    /// window you're using if there's no target.
+    static func run(_ action: ShortcutAction, on target: ActionTarget? = nil) {
         switch action {
         case .openApp(let path):
             // Opens the app, or brings it to the front if it's already running.
@@ -112,7 +121,11 @@ enum ActionRunner {
         case .typeText(let text):
             Task { await TextTyper.type(text) }
         case .moveWindow(let position):
-            WindowMover.shared.move(position)
+            WindowMover.shared.move(position, window: target?.window)
+        case .appCommand(let command):
+            if let target = target ?? ActionTarget.frontmost {
+                AppCommandRunner.run(command, on: target)
+            }
         }
     }
 }

@@ -34,11 +34,8 @@ final class Permissions {
         let granted = AXIsProcessTrusted()
         if granted != accessibility {
             accessibility = granted
-            // Start listening for shortcuts and scrolls the moment you allow it, no restart needed.
-            if granted {
-                ShortcutEngine.shared.start()
-                ScrollEngine.shared.start()
-            }
+            // Start listening for shortcuts, scrolls and clicks the moment you allow it, no restart needed.
+            if granted { InputEngines.start() }
         }
     }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The small sheet for setting up what a shortcut does.
 struct ActionEditor: View {
@@ -6,15 +7,13 @@ struct ActionEditor: View {
     let onSave: (ShortcutAction) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    /// Names from the Shortcuts app; `nil` while still loading.
-    @State private var availableShortcuts: [String]?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label(action.kind.editorTitle, systemImage: action.kind.systemImage)
                 .font(.headline)
 
-            fields
+            ActionFields(action: $action)
 
             HStack {
                 Spacer()
@@ -31,15 +30,37 @@ struct ActionEditor: View {
         .padding(20)
         .frame(width: 440)
     }
+}
+
+/// The controls for one action's details: which app, which website, what text…
+/// Shared by every editor that sets up an action.
+struct ActionFields: View {
+    @Binding var action: ShortcutAction
+
+    /// Names from the Shortcuts app; `nil` while still loading.
+    @State private var availableShortcuts: [String]?
 
     /// Edits the one piece of text the action carries.
     private var payload: Binding<String> {
         Binding(get: { action.payload }, set: { action = action.with(payload: $0) })
     }
 
-    @ViewBuilder
-    private var fields: some View {
+    var body: some View {
         switch action.kind {
+        case .openApp:
+            HStack {
+                if action.isComplete {
+                    ActionIcon(action: action)
+                    Text(action.title)
+                } else {
+                    Text("No app chosen")
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Choose App…") {
+                    if let path = AppChooser.choose() { payload.wrappedValue = path }
+                }
+            }
         case .runShortcut:
             shortcutPicker
         case .open:
@@ -57,15 +78,21 @@ struct ActionEditor: View {
                 .background(.background, in: .rect(cornerRadius: 6))
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
         case .moveWindow:
-            Picker("Move the front window to", selection: payload) {
+            Picker("Move the window to", selection: payload) {
                 ForEach(WindowPosition.groups, id: \.self) { group in
                     Section {
                         ForEach(group) { Text($0.title).tag($0.rawValue) }
                     }
                 }
             }
-        case .openApp:
-            EmptyView()
+        case .appCommand:
+            Picker("Command", selection: payload) {
+                ForEach(AppCommand.groups, id: \.self) { group in
+                    Section {
+                        ForEach(group) { Text($0.title).tag($0.rawValue) }
+                    }
+                }
+            }
         }
     }
 
@@ -104,6 +131,18 @@ struct ActionEditor: View {
     }
 }
 
+enum AppChooser {
+    /// Asks you to pick an app; returns its path.
+    static func choose() -> String? {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.prompt = "Choose"
+        panel.message = "Choose the app to open."
+        return panel.runModal() == .OK ? panel.url?.path : nil
+    }
+}
+
 extension ShortcutAction.Kind {
     var editorTitle: String {
         switch self {
@@ -112,6 +151,7 @@ extension ShortcutAction.Kind {
         case .open: "Open Website or File"
         case .typeText: "Type Text"
         case .moveWindow: "Move Window"
+        case .appCommand: "Window or App Command"
         }
     }
 }
