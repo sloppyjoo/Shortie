@@ -55,6 +55,8 @@ struct ShortcutListView<Extra: View, Top: View>: View {
             list
         }
         .formStyle(.grouped)
+        // Rows glide in and out as you add and remove them.
+        .animation(.smooth(duration: 0.25), value: store.shortcuts.map(\.id))
         .sheet(item: $editing) { request in
             ActionEditor(keyCombo: request.keyCombo, action: request.action, apps: request.apps) { keys, action, apps in
                 save(action, keys: keys, apps: apps, to: request.shortcutID)
@@ -203,6 +205,9 @@ struct ShortcutRow: View {
     /// Switches off another shortcut, by ID.
     let disable: (Shortcut.ID) -> Void
 
+    /// The ⋯ menu only shows while you're pointing at the row, to keep lists calm.
+    @State private var isHovering = false
+
     var body: some View {
         HStack(spacing: 12) {
             Button(action: edit) {
@@ -241,7 +246,11 @@ struct ShortcutRow: View {
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
             .fixedSize()
+            .opacity(isHovering ? 1 : 0)
         }
+        .contentShape(.rect)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.15), value: isHovering)
         .contextMenu {
             Button("Edit…", action: edit)
             Button("Delete", role: .destructive, action: delete)

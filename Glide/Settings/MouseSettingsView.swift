@@ -62,6 +62,8 @@ struct MouseSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // Rows glide in and out as you add and remove them.
+        .animation(.smooth(duration: 0.25), value: store.shortcuts.map(\.id))
         .animation(.smooth(duration: 0.2), value: smoothScrolling)
         .sheet(item: $editing) { request in
             MouseButtonEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in

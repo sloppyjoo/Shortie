@@ -46,6 +46,8 @@ struct TrafficLightsSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // Rows glide in and out as you add and remove them.
+        .animation(.smooth(duration: 0.25), value: store.shortcuts.map(\.id))
         .sheet(item: $editing) { request in
             TrafficLightEditor(click: request.click, action: request.action, apps: request.apps) { click, action, apps in
                 save(click: click, action: action, apps: apps, to: request.shortcutID)
@@ -122,6 +124,9 @@ struct TriggerRow<Trigger: View>: View {
     let disable: (Shortcut.ID) -> Void
     @ViewBuilder let trigger: Trigger
 
+    /// The ⋯ menu only shows while you're pointing at the row, to keep lists calm.
+    @State private var isHovering = false
+
     var body: some View {
         HStack(spacing: 12) {
             Button(action: edit) {
@@ -164,7 +169,11 @@ struct TriggerRow<Trigger: View>: View {
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
             .fixedSize()
+            .opacity(isHovering ? 1 : 0)
         }
+        .contentShape(.rect)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.15), value: isHovering)
         .contextMenu {
             Button("Edit…", action: edit)
             Button("Delete", role: .destructive, action: delete)

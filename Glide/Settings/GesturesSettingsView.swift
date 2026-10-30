@@ -32,6 +32,8 @@ struct GesturesSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // Rows glide in and out as you add and remove them.
+        .animation(.smooth(duration: 0.25), value: store.shortcuts.map(\.id))
         .onAppear { engine.isWatching = true }
         .onDisappear { engine.isWatching = false }
         .sheet(item: $editing) { request in

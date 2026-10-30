@@ -47,6 +47,8 @@ struct TextShortcutsSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // Rows glide in and out as you add and remove them.
+        .animation(.smooth(duration: 0.25), value: store.shortcuts.map(\.id))
         .sheet(item: $editing) { request in
             TextShortcutEditor(abbreviation: request.abbreviation, action: request.action, apps: request.apps) { abbreviation, action, apps in
                 save(abbreviation: abbreviation, action: action, apps: apps, to: request.shortcutID)
