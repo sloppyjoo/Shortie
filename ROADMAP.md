@@ -26,27 +26,37 @@ We build one piece at a time and save a git checkpoint after each piece works.
 13. **Text shortcuts** – type an abbreviation like ;email anywhere to expand it (or run any action).
 14. **Automations** – run actions when apps open, quit or come forward; on wake, sleep, lock, unlock, charger.
 15. **Hyper key** – hold Caps Lock for ⌃⌥⇧⌘; tap it and it's still Caps Lock.
+16. **Window dragging** – drag to screen edges to snap (Liquid Glass preview), ⌃⌘-drag to move and ⌃⌥-drag
+    to resize from anywhere.
+17. **Window switcher** – every window, searchable, in a glass panel.
+18. **Dashboard redesign** – grouped sidebar, page headers, minimal text with ⓘ details, one
+    When / Do / Works In editor, smooth animations.
+19. **Clipboard history** – Hyper+V; search, paste, pin; skips passwords; kept on this Mac only.
+20. **Power actions** – choose a menu item, AppleScript, shell scripts, Several Actions with waits.
+21. **Custom menus** – your own menus in the menu bar or at the pointer.
+22. **App icon, efficiency and polish** – Liquid Glass icon; listeners switch off when unused
+    (0% idle CPU, no wake-ups); consistent headings and layouts checked page by page.
+
+See [HANDOFF.md](HANDOFF.md) for how it's built and what's still to confirm.
 
 ## Next ideas
 
-- **Hold a mouse button and scroll** – e.g. hold Back and scroll to switch tabs or change the volume.
-- **Magic Mouse gestures** – taps and swipes on a Magic Mouse.
-- **Scrolling extras** – per-device settings, pointer speed and acceleration.
-
-## Later: the rest of BetterTouchTool
-
+- **Mouse** – hold a button and scroll (e.g. Back + scroll to switch tabs), Magic Mouse gestures,
+  per-device settings, pointer speed and acceleration.
 - **More triggers** – key sequences, a device connected, Wi-Fi changed.
-- **More actions** – Do Not Disturb, click a menu item, AppleScript and shell scripts,
-  chains of several actions.
-- **More window tools** – drag a window to a screen edge to snap, move or resize with a modifier key plus the mouse,
-  a window switcher.
-- **Clipboard history**.
-- **Custom menu bar items and floating menus**.
+- **Clipboard** – keep rich text (formatting and links), not just plain text.
+- **Custom menus** – allow Several Actions as a menu item.
 - **Stream Deck support**.
 
 ## "And more": beyond BetterTouchTool
 
-- **Trigger debugger** – see live why something did or didn't fire.
 - **Command palette** – search every action and run it from one shortcut.
+- **Trigger debugger** – see live why something did or didn't fire.
 - **Import from BetterTouchTool** – bring your existing BTT presets across.
-- **Readable, syncable config** – plain files you can back up, share or keep in iCloud.
+- **Syncable config** – keep your settings in iCloud.
+
+## Before a public release
+
+- Choose a final name (BestTouchTool is close to BetterTouchTool's trademark).
+- Paid Apple Developer account, notarisation, and an update mechanism.
+- A GitHub remote, for backup and cloud sessions.
