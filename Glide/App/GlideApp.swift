@@ -26,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Load your shortcuts now, so the first key press or gesture doesn't wait on the file.
         _ = ShortcutStore.shared
         InputEngines.start()
+        AutomationEngine.shared.start()
         NotchBar.shared.update()
 
         // Show the welcome window until Glide has everything it needs.

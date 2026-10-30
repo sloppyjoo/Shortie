@@ -1,12 +1,16 @@
 import Foundation
 
 /// What sets a shortcut off: some keys, a click on a window button, a
-/// trackpad gesture, or an extra mouse button.
+/// trackpad gesture, an extra mouse button, something you type, or
+/// something that happens (an app opening, the Mac waking…).
 nonisolated enum Trigger: Codable, Hashable {
     case keys(combo: KeyCombo)
     case trafficLight(click: TrafficLightClick)
     case gesture(gesture: Gesture)
     case mouseButton(click: MouseButtonClick)
+    /// Typing this abbreviation, like ";email".
+    case typedText(abbreviation: String)
+    case event(event: AutomationEvent)
 
     /// Whether two triggers would fire on the same thing.
     func clashes(with other: Trigger) -> Bool {
@@ -19,6 +23,11 @@ nonisolated enum Trigger: Codable, Hashable {
             a == b
         case let (.mouseButton(a), .mouseButton(b)):
             a == b
+        case let (.typedText(a), .typedText(b)):
+            a == b
+        case (.event, .event):
+            // Doing several things when one event happens is fine.
+            false
         default:
             false
         }
@@ -99,5 +108,91 @@ nonisolated struct MouseButtonClick: Codable, Hashable {
     /// E.g. "⌥ Back Button".
     var title: String {
         modifiers.isEmpty ? Self.name(of: button) : "\(modifiers.symbols) \(Self.name(of: button))"
+    }
+}
+
+/// Something that happens on your Mac, which can run an action.
+nonisolated enum AutomationEvent: Codable, Hashable {
+    case appLaunched(bundleID: String)
+    case appQuit(bundleID: String)
+    case appActivated(bundleID: String)
+    case macWoke
+    case macWillSleep
+    case screenLocked
+    case screenUnlocked
+    case chargerConnected
+    case chargerDisconnected
+
+    enum Kind: String, CaseIterable, Identifiable {
+        case appLaunched, appQuit, appActivated, macWoke, macWillSleep, screenLocked, screenUnlocked, chargerConnected, chargerDisconnected
+        var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .appLaunched: "An App Opens"
+            case .appQuit: "An App Quits"
+            case .appActivated: "An App Comes to the Front"
+            case .macWoke: "Mac Wakes"
+            case .macWillSleep: "Mac Goes to Sleep"
+            case .screenLocked: "Screen Locks"
+            case .screenUnlocked: "Screen Unlocks"
+            case .chargerConnected: "Charger Connected"
+            case .chargerDisconnected: "Charger Disconnected"
+            }
+        }
+
+        var needsApp: Bool {
+            self == .appLaunched || self == .appQuit || self == .appActivated
+        }
+    }
+
+    init(kind: Kind, bundleID: String) {
+        switch kind {
+        case .appLaunched: self = .appLaunched(bundleID: bundleID)
+        case .appQuit: self = .appQuit(bundleID: bundleID)
+        case .appActivated: self = .appActivated(bundleID: bundleID)
+        case .macWoke: self = .macWoke
+        case .macWillSleep: self = .macWillSleep
+        case .screenLocked: self = .screenLocked
+        case .screenUnlocked: self = .screenUnlocked
+        case .chargerConnected: self = .chargerConnected
+        case .chargerDisconnected: self = .chargerDisconnected
+        }
+    }
+
+    var kind: Kind {
+        switch self {
+        case .appLaunched: .appLaunched
+        case .appQuit: .appQuit
+        case .appActivated: .appActivated
+        case .macWoke: .macWoke
+        case .macWillSleep: .macWillSleep
+        case .screenLocked: .screenLocked
+        case .screenUnlocked: .screenUnlocked
+        case .chargerConnected: .chargerConnected
+        case .chargerDisconnected: .chargerDisconnected
+        }
+    }
+
+    /// The app, for app events.
+    var bundleID: String? {
+        switch self {
+        case .appLaunched(let id), .appQuit(let id), .appActivated(let id): id
+        default: nil
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .appLaunched: "app.badge"
+        case .appQuit: "xmark.app"
+        case .appActivated: "macwindow.on.rectangle"
+        case .macWoke: "sun.horizon"
+        case .macWillSleep: "moon.zzz"
+        case .screenLocked: "lock"
+        case .screenUnlocked: "lock.open"
+        case .chargerConnected: "powerplug"
+        case .chargerDisconnected: "battery.75percent"
+        }
     }
 }

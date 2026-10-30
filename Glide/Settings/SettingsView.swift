@@ -49,6 +49,10 @@ struct SettingsView: View {
             TrafficLightsSettingsView()
         case .mouse:
             MouseSettingsView()
+        case .textShortcuts:
+            TextShortcutsSettingsView()
+        case .automations:
+            AutomationsSettingsView()
         case .menuBar:
             MenuBarSettingsView()
         case .gestures:
@@ -60,7 +64,7 @@ struct SettingsView: View {
 }
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, shortcuts, windows, trafficLights, mouse, menuBar, gestures, permissions
+    case general, shortcuts, textShortcuts, windows, trafficLights, mouse, gestures, automations, menuBar, permissions
 
     var id: Self { self }
 
@@ -71,6 +75,8 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .windows: "Windows"
         case .trafficLights: "Traffic Lights"
         case .mouse: "Mouse"
+        case .textShortcuts: "Text Shortcuts"
+        case .automations: "Automations"
         case .menuBar: "Menu Bar"
         case .gestures: "Gestures"
         case .permissions: "Permissions"
@@ -84,6 +90,8 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .windows: "macwindow"
         case .trafficLights: "circle.fill"
         case .mouse: "computermouse.fill"
+        case .textShortcuts: "character.cursor.ibeam"
+        case .automations: "gearshape.2.fill"
         case .menuBar: "menubar.rectangle"
         case .gestures: "hand.draw.fill"
         case .permissions: "lock.fill"
@@ -97,6 +105,8 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .windows: .blue
         case .trafficLights: .red
         case .mouse: .teal
+        case .textShortcuts: .brown
+        case .automations: .indigo
         case .menuBar: .black
         case .gestures: .orange
         case .permissions: .green

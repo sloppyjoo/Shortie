@@ -48,6 +48,16 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
         if case .mouseButton(let click) = trigger { click } else { nil }
     }
 
+    /// The abbreviation, for text shortcuts.
+    var abbreviation: String? {
+        if case .typedText(let abbreviation) = trigger { abbreviation } else { nil }
+    }
+
+    /// The event, for automations.
+    var event: AutomationEvent? {
+        if case .event(let event) = trigger { event } else { nil }
+    }
+
     var isKeyboardShortcut: Bool {
         trigger == nil || keyCombo != nil
     }

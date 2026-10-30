@@ -54,8 +54,14 @@ final class ShortcutEngine {
 
         guard !isRecording, !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) else { return false }
 
-        let keys = KeyCombo(keyCode: keyPress.keyCode, modifiers: Modifiers(keyPress.flags), keyName: "")
-        guard let shortcut = ShortcutStore.shared.match(.keys(combo: keys), in: FrontmostApp.bundleID) else { return false }
+        let modifiers = Modifiers(keyPress.flags)
+        let keys = KeyCombo(keyCode: keyPress.keyCode, modifiers: modifiers, keyName: "")
+        guard let shortcut = ShortcutStore.shared.match(.keys(combo: keys), in: FrontmostApp.bundleID) else {
+            // Not a shortcut, so it's ordinary typing: maybe it finishes a text shortcut.
+            return TypedTextEngine.shared.typed(
+                keyPress.characters, keyCode: keyPress.keyCode, modifiers: modifiers, isRepeat: keyPress.isRepeat
+            )
+        }
 
         // Holding keys down repeats the key press; only act on the first one.
         if !keyPress.isRepeat {
@@ -72,6 +78,8 @@ fileprivate nonisolated struct KeyPress {
     let keyCode: UInt16
     let flags: CGEventFlags
     let isRepeat: Bool
+    /// What the key types, like "a" or "A".
+    let characters: String
 }
 
 /// The C-style function macOS calls for every key press. It runs on the main
@@ -83,11 +91,15 @@ private nonisolated func handleTapEvent(
     guard event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker else {
         return Unmanaged.passUnretained(event)
     }
+    var length = 0
+    var characters = [UniChar](repeating: 0, count: 8)
+    event.keyboardGetUnicodeString(maxStringLength: characters.count, actualStringLength: &length, unicodeString: &characters)
     let keyPress = KeyPress(
         type: type,
         keyCode: UInt16(event.getIntegerValueField(.keyboardEventKeycode)),
         flags: event.flags,
-        isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0
+        isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
+        characters: String(utf16CodeUnits: characters, count: length)
     )
     let swallow = MainActor.assumeIsolated { ShortcutEngine.shared.handle(keyPress) }
     return swallow ? nil : Unmanaged.passUnretained(event)

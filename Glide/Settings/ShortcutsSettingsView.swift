@@ -427,6 +427,8 @@ extension Shortcut {
         if trafficLightClick != nil { return "Traffic Lights" }
         if gesture != nil { return "Gestures" }
         if mouseButtonClick != nil { return "Mouse" }
+        if abbreviation != nil { return "Text Shortcuts" }
+        if event != nil { return "Automations" }
         return action.kind.sectionName
     }
 }
