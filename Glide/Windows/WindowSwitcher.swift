@@ -11,23 +11,14 @@ import SwiftUI
 final class WindowSwitcher: NSObject, NSWindowDelegate {
     static let shared = WindowSwitcher()
 
-    private var panel: NSPanel?
+    private var panel: GlassPanel?
     private let model = WindowSwitcherModel()
 
     func show() {
         model.reload()
         let panel = self.panel ?? makePanel()
         self.panel = panel
-
-        // Centre it a little above the middle of the screen you're using, like Spotlight.
-        if let screen = NSScreen.main {
-            let frame = screen.visibleFrame
-            panel.setFrameOrigin(NSPoint(
-                x: frame.midX - panel.frame.width / 2,
-                y: frame.midY - panel.frame.height / 2 + frame.height / 8
-            ))
-        }
-        panel.makeKeyAndOrderFront(nil)
+        panel.showCentred()
     }
 
     func close() {
@@ -39,20 +30,8 @@ final class WindowSwitcher: NSObject, NSWindowDelegate {
         close()
     }
 
-    private func makePanel() -> NSPanel {
-        let panel = SwitcherPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 560, height: 430),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered, defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = .floating
-        panel.isReleasedWhenClosed = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        panel.delegate = self
-        panel.contentView = NSHostingView(rootView: WindowSwitcherView(
+    private func makePanel() -> GlassPanel {
+        let panel = GlassPanel(size: NSSize(width: 560, height: 430), content: WindowSwitcherView(
             model: model,
             choose: { [weak self] window in
                 self?.close()
@@ -60,14 +39,9 @@ final class WindowSwitcher: NSObject, NSWindowDelegate {
             },
             dismiss: { [weak self] in self?.close() }
         ))
+        panel.delegate = self
         return panel
     }
-}
-
-/// A borderless panel that can still take typing (borderless windows normally can't),
-/// without making BestTouchTool the active app.
-private final class SwitcherPanel: NSPanel {
-    override var canBecomeKey: Bool { true }
 }
 
 /// One window in the list.
@@ -193,7 +167,7 @@ struct WindowSwitcherView: View {
             list
         }
         .frame(width: 560, height: 430)
-        .background(background)
+        .background(GlassBackground())
         .onAppear { searchFocused = true }
     }
 
@@ -249,16 +223,5 @@ struct WindowSwitcherView: View {
         let windows = model.filtered
         guard windows.indices.contains(model.selection) else { return }
         choose(windows[model.selection])
-    }
-
-    /// Liquid Glass where it's available (macOS 26 and later), frosted glass before.
-    @ViewBuilder
-    private var background: some View {
-        let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
-        if #available(macOS 26, *) {
-            Color.clear.glassEffect(.regular, in: shape)
-        } else {
-            shape.fill(.regularMaterial)
-        }
     }
 }

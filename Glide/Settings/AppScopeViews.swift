@@ -105,7 +105,7 @@ struct AppScopePicker: View {
 }
 
 /// One chosen app: its icon and name, with a button to remove it.
-private struct AppChip: View {
+struct AppChip: View {
     let bundleID: String
     let remove: () -> Void
 

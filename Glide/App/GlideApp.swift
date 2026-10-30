@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = ShortcutStore.shared
         InputEngines.start()
         AutomationEngine.shared.start()
+        ClipboardHistory.shared.start()
         if HyperKey.shared.isEnabled { HyperKey.shared.apply() }
         NotchBar.shared.update()
 
@@ -79,4 +80,8 @@ enum DefaultsKey {
     static let dragResizeEnabled = "dragResizeEnabled"
     static let dragResizeModifiers = "dragResizeModifiers"
     static let dragSnapEnabled = "dragSnapEnabled"
+    static let clipboardEnabled = "clipboardEnabled"
+    static let clipboardLimit = "clipboardLimit"
+    static let clipboardExcludedApps = "clipboardExcludedApps"
+    static let clipboardShortcutAdded = "clipboardShortcutAdded"
 }

@@ -61,6 +61,8 @@ struct SettingsView: View {
             TextShortcutsSettingsView()
         case .automations:
             AutomationsSettingsView()
+        case .clipboard:
+            ClipboardSettingsView()
         case .menuBar:
             MenuBarSettingsView()
         case .gestures:
@@ -72,7 +74,7 @@ struct SettingsView: View {
 }
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, shortcuts, textShortcuts, windows, trafficLights, mouse, gestures, automations, menuBar, permissions
+    case general, shortcuts, textShortcuts, windows, trafficLights, mouse, gestures, automations, clipboard, menuBar, permissions
 
     var id: Self { self }
 
@@ -81,7 +83,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         (nil, [.general]),
         ("Triggers", [.shortcuts, .textShortcuts, .gestures, .mouse, .automations]),
         ("Windows", [.windows, .trafficLights]),
-        ("Mac", [.menuBar, .permissions]),
+        ("Mac", [.clipboard, .menuBar, .permissions]),
     ]
 
     var title: String {
@@ -94,6 +96,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .automations: "Automations"
         case .windows: "Window Snapping"
         case .trafficLights: "Window Buttons"
+        case .clipboard: "Clipboard"
         case .menuBar: "Menu Bar"
         case .permissions: "Permissions"
         }
@@ -110,6 +113,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .automations: "Do things when apps open or your Mac wakes."
         case .windows: "Snap windows with keys or by dragging."
         case .trafficLights: "New tricks for the red, yellow and green buttons."
+        case .clipboard: "Everything you copy, ready to paste again."
         case .menuBar: "Hide the notch with a black menu bar."
         case .permissions: "What BestTouchTool needs to work."
         }
@@ -124,6 +128,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .mouse: "computermouse.fill"
         case .textShortcuts: "character.cursor.ibeam"
         case .automations: "gearshape.2.fill"
+        case .clipboard: "doc.on.clipboard.fill"
         case .menuBar: "menubar.rectangle"
         case .gestures: "hand.draw.fill"
         case .permissions: "lock.fill"
@@ -139,6 +144,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .mouse: .teal
         case .textShortcuts: .brown
         case .automations: .indigo
+        case .clipboard: .cyan
         case .menuBar: .black
         case .gestures: .orange
         case .permissions: .green

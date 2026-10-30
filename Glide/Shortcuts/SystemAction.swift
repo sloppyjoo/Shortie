@@ -9,7 +9,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case playPause, nextTrack, previousTrack
     case volumeUp, volumeDown, mute, brightnessUp, brightnessDown
     case controlCentre, notificationCentre, missionControl, appExpose, showDesktop, apps, spotlight, emojiAndSymbols
-    case windowSwitcher
+    case windowSwitcher, clipboardHistory
     case screenshotTool, screenshotSelection, screenshotScreen
     case lockScreen, sleepDisplay, sleep
 
@@ -34,6 +34,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .spotlight: "Spotlight"
         case .emojiAndSymbols: "Emoji & Symbols"
         case .windowSwitcher: "Window Switcher"
+        case .clipboardHistory: "Clipboard History"
         case .screenshotTool: "Screenshot Tool"
         case .screenshotSelection: "Screenshot of Selection"
         case .screenshotScreen: "Screenshot of Screen"
@@ -62,6 +63,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .spotlight: "magnifyingglass"
         case .emojiAndSymbols: "face.smiling"
         case .windowSwitcher: "rectangle.on.rectangle"
+        case .clipboardHistory: "doc.on.clipboard"
         case .screenshotTool: "camera.viewfinder"
         case .screenshotSelection: "rectangle.dashed"
         case .screenshotScreen: "camera.fill"
@@ -75,7 +77,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     static let groups: [[SystemAction]] = [
         [.playPause, .nextTrack, .previousTrack],
         [.volumeUp, .volumeDown, .mute, .brightnessUp, .brightnessDown],
-        [.windowSwitcher, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .emojiAndSymbols],
+        [.windowSwitcher, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .emojiAndSymbols],
         [.screenshotTool, .screenshotSelection, .screenshotScreen],
         [.lockScreen, .sleepDisplay, .sleep],
     ]
@@ -112,6 +114,8 @@ enum SystemActionRunner {
             }
         case .windowSwitcher:
             WindowSwitcher.shared.show()
+        case .clipboardHistory:
+            ClipboardPanel.shared.show()
         case .emojiAndSymbols:
             KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_Space), modifiers: [.control, .command], keyName: "Space"))
 
