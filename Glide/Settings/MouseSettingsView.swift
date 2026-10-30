@@ -166,54 +166,22 @@ struct MouseButtonEditor: View {
     @State var apps: AppScope?
     let onSave: (MouseButtonClick, ShortcutAction, AppScope?) -> Void
 
-    @Environment(\.dismiss) private var dismiss
     @State private var isRecording = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Mouse Button Action")
-                .font(.headline)
-
+        TriggerEditor(title: "Mouse Button", action: $action, apps: $apps, save: { onSave(click, action, apps) }) {
             recorder
-
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
-                GridRow {
-                    Text("Button").gridColumnAlignment(.trailing)
-                    Picker("Button", selection: $click.button) {
-                        ForEach(MouseButtonClick.choices, id: \.self) { Text(MouseButtonClick.name(of: $0)).tag($0) }
-                    }
-                    .labelsHidden()
-                    .fixedSize()
-                }
-                GridRow {
-                    Text("While holding")
-                    ModifierToggles(modifiers: $click.modifiers)
-                }
-                GridRow {
-                    Text("Action")
-                    ActionKindPicker(action: $action)
-                }
-            }
-
-            ActionFields(action: $action)
-                .padding(.leading, 4)
-
-            AppScopePicker(scope: $apps)
-
             HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") {
-                    onSave(click, action, apps)
-                    dismiss()
+                Picker("Button", selection: $click.button) {
+                    ForEach(MouseButtonClick.choices, id: \.self) { Text(MouseButtonClick.name(of: $0)).tag($0) }
                 }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete || apps?.isValid == false)
+                .labelsHidden()
+                .fixedSize()
+                Text("while holding")
+                    .foregroundStyle(.secondary)
+                ModifierToggles(modifiers: $click.modifiers)
             }
         }
-        .padding(20)
-        .frame(width: 500)
         .onDisappear { MouseButtonEngine.shared.recordingHandler = nil }
     }
 

@@ -93,7 +93,6 @@ struct AutomationEditor: View {
     @State var action: ShortcutAction
     let onSave: (AutomationEvent, ShortcutAction) -> Void
 
-    @Environment(\.dismiss) private var dismiss
     @State private var appID: String
 
     init(event: AutomationEvent, action: ShortcutAction, onSave: @escaping (AutomationEvent, ShortcutAction) -> Void) {
@@ -104,53 +103,26 @@ struct AutomationEditor: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Automation")
-                .font(.headline)
-
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
-                GridRow {
-                    Text("When").gridColumnAlignment(.trailing)
-                    Picker("When", selection: kind) {
-                        Section("Apps") {
-                            ForEach(AutomationEvent.Kind.allCases.filter(\.needsApp)) { Text($0.title).tag($0) }
-                        }
-                        Section("Your Mac") {
-                            ForEach(AutomationEvent.Kind.allCases.filter { !$0.needsApp }) { Text($0.title).tag($0) }
-                        }
-                    }
-                    .labelsHidden()
-                    .fixedSize()
-                }
-                if event.kind.needsApp {
-                    GridRow {
-                        Text("App")
-                        appChooser
-                    }
-                }
-                GridRow {
-                    Text("Action")
-                    ActionKindPicker(action: $action)
-                }
-            }
-
-            ActionFields(action: $action)
-                .padding(.leading, 4)
-
+        TriggerEditor(
+            title: "Automation", action: $action, apps: nil, canSave: !(event.kind.needsApp && appID.isEmpty),
+            save: { onSave(event, action) }
+        ) {
             HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") {
-                    onSave(event, action)
-                    dismiss()
+                Picker("When", selection: kind) {
+                    Section("Apps") {
+                        ForEach(AutomationEvent.Kind.allCases.filter(\.needsApp)) { Text($0.title).tag($0) }
+                    }
+                    Section("Your Mac") {
+                        ForEach(AutomationEvent.Kind.allCases.filter { !$0.needsApp }) { Text($0.title).tag($0) }
+                    }
                 }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete || (event.kind.needsApp && appID.isEmpty))
+                .labelsHidden()
+                .fixedSize()
+                if event.kind.needsApp {
+                    appChooser
+                }
             }
         }
-        .padding(20)
-        .frame(width: 500)
     }
 
     private var kind: Binding<AutomationEvent.Kind> {

@@ -206,61 +206,26 @@ struct TrafficLightEditor: View {
     @State var apps: AppScope?
     let onSave: (TrafficLightClick, ShortcutAction, AppScope?) -> Void
 
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Traffic Light Action")
-                .font(.headline)
-
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
-                GridRow {
-                    Text("Button").gridColumnAlignment(.trailing)
-                    TrafficLightButtonPicker(selection: $click.button)
+        TriggerEditor(title: "Window Button", action: $action, apps: $apps, save: { onSave(click, action, apps) }) {
+            TrafficLightButtonPicker(selection: $click.button)
+            HStack {
+                Picker("Click", selection: $click.mouseButton) {
+                    ForEach(MouseButton.allCases) { Text($0.title).tag($0) }
                 }
-                GridRow {
-                    Text("Click")
-                    Picker("Click", selection: $click.mouseButton) {
-                        ForEach(MouseButton.allCases) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden()
-                    .fixedSize()
-                }
-                GridRow {
-                    Text("While holding")
-                    ModifierToggles(modifiers: $click.modifiers)
-                }
-                GridRow {
-                    Text("Action")
-                    ActionKindPicker(action: $action)
-                }
+                .labelsHidden()
+                .fixedSize()
+                Text("while holding")
+                    .foregroundStyle(.secondary)
+                ModifierToggles(modifiers: $click.modifiers)
             }
-
-            ActionFields(action: $action)
-                .padding(.leading, 4)
-
-            AppScopePicker(scope: $apps)
-
             if click.mouseButton == .left && click.modifiers.isEmpty {
-                Label("This replaces the button's normal click.", systemImage: "info.circle")
+                Label("Replaces the button's normal click.", systemImage: "info.circle")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-
-            HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") {
-                    onSave(click, action, apps)
-                    dismiss()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete || apps?.isValid == false)
-            }
         }
-        .padding(20)
-        .frame(width: 480)
     }
 }
 

@@ -82,56 +82,23 @@ struct TextShortcutEditor: View {
     @State var apps: AppScope?
     let onSave: (String, ShortcutAction, AppScope?) -> Void
 
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Text Shortcut")
-                .font(.headline)
-
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
-                GridRow {
-                    Text("When I type").gridColumnAlignment(.trailing)
-                    TextField("Abbreviation", text: $abbreviation, prompt: Text(";email"))
-                        .font(.body.monospaced())
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 180)
-                }
-                GridRow {
-                    Text("Action")
-                    ActionKindPicker(action: $action)
-                }
-            }
-
-            ActionFields(action: $action)
-                .padding(.leading, 4)
-
-            AppScopePicker(scope: $apps)
-
-            if let problem {
-                Label(problem, systemImage: "info.circle")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                Text("Starting with ; keeps it out of ordinary writing.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
+        TriggerEditor(
+            title: "Text Shortcut", action: $action, apps: $apps, canSave: problem == nil,
+            save: { onSave(abbreviation, action, apps) }
+        ) {
             HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") {
-                    onSave(abbreviation, action, apps)
-                    dismiss()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(problem != nil || !action.isComplete || apps?.isValid == false)
+                Text("I type")
+                TextField("Abbreviation", text: $abbreviation, prompt: Text(";email"))
+                    .font(.body.monospaced())
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 180)
             }
+            Text(problem ?? "Starting with ; keeps it out of ordinary writing.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
-        .padding(20)
-        .frame(width: 500)
     }
 
     /// Why the abbreviation can't be used yet, if it can't.

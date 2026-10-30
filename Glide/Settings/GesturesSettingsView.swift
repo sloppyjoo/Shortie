@@ -139,52 +139,32 @@ struct GestureEditor: View {
     @State var apps: AppScope?
     let onSave: (Gesture, ShortcutAction, AppScope?) -> Void
 
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Gesture Action")
-                .font(.headline)
-
+        TriggerEditor(title: "Trackpad Gesture", action: $action, apps: $apps, save: { onSave(gesture, action, apps) }) {
             GestureRecorder(gesture: $gesture)
-
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
-                GridRow {
-                    Text("Gesture").gridColumnAlignment(.trailing)
-                    HStack {
-                        Picker("Gesture", selection: kind) {
-                            ForEach(Gesture.Kind.allCases) { Text($0.title).tag($0) }
-                        }
-                        .labelsHidden()
-                        .fixedSize()
-
-                        if let range = gesture.kind.fingerRange {
-                            Picker("Fingers", selection: fingers) {
-                                ForEach(Array(range), id: \.self) { Text(gesture.kind.fingerTitle($0)).tag($0) }
-                            }
-                            .labelsHidden()
-                            .fixedSize()
-                        }
-                        if !gesture.kind.variants.isEmpty {
-                            Picker("Variant", selection: variant) {
-                                ForEach(gesture.kind.variants, id: \.id) { Text($0.title).tag($0.id) }
-                            }
-                            .labelsHidden()
-                            .fixedSize()
-                        }
-                    }
+            HStack {
+                Picker("Gesture", selection: kind) {
+                    ForEach(Gesture.Kind.allCases) { Text($0.title).tag($0) }
                 }
-                GridRow {
-                    Text("Action")
-                    ActionKindPicker(action: $action)
+                .labelsHidden()
+                .fixedSize()
+
+                if let range = gesture.kind.fingerRange {
+                    Picker("Fingers", selection: fingers) {
+                        ForEach(Array(range), id: \.self) { Text(gesture.kind.fingerTitle($0)).tag($0) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                if !gesture.kind.variants.isEmpty {
+                    Picker("Variant", selection: variant) {
+                        ForEach(gesture.kind.variants, id: \.id) { Text($0.title).tag($0.id) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
                 }
             }
-
-            ActionFields(action: $action)
-                .padding(.leading, 4)
-
-            AppScopePicker(scope: $apps)
-
             if let warning = SystemGestures.warning(for: gesture) {
                 HStack(alignment: .firstTextBaseline) {
                     Label(warning, systemImage: "exclamationmark.triangle.fill")
@@ -197,21 +177,7 @@ struct GestureEditor: View {
                     }
                 }
             }
-
-            HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") {
-                    onSave(gesture, action, apps)
-                    dismiss()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete || apps?.isValid == false)
-            }
         }
-        .padding(20)
-        .frame(width: 500)
     }
 
     private var kind: Binding<Gesture.Kind> {

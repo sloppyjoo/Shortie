@@ -12,16 +12,13 @@ struct AppScopePicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Works in")
-                Picker("Works in", selection: choice) {
-                    Text("All Apps").tag(Choice.all)
-                    Text("Only These Apps").tag(Choice.only)
-                    Text("All Apps Except").tag(Choice.except)
-                }
-                .labelsHidden()
-                .fixedSize()
+            Picker("Works in", selection: choice) {
+                Text("All Apps").tag(Choice.all)
+                Text("Only These Apps").tag(Choice.only)
+                Text("All Apps Except").tag(Choice.except)
             }
+            .labelsHidden()
+            .fixedSize()
 
             if let scope {
                 FlowRow {

@@ -56,8 +56,8 @@ struct ShortcutListView<Extra: View, Top: View>: View {
         }
         .formStyle(.grouped)
         .sheet(item: $editing) { request in
-            ActionEditor(action: request.action, apps: request.apps) { action, apps in
-                save(action, apps: apps, to: request.shortcutID)
+            ActionEditor(keyCombo: request.keyCombo, action: request.action, apps: request.apps) { keys, action, apps in
+                save(action, keys: keys, apps: apps, to: request.shortcutID)
             }
         }
     }
@@ -160,36 +160,27 @@ struct ShortcutListView<Extra: View, Top: View>: View {
     }
 
     private func add(_ kind: ShortcutAction.Kind) {
-        if kind == .openApp {
-            if let path = chooseApp() { save(.openApp(path: path), to: nil) }
-        } else {
-            editing = EditorRequest(shortcutID: nil, action: kind.emptyAction)
-        }
+        editing = EditorRequest(shortcutID: nil, action: kind.emptyAction)
     }
 
     private func edit(_ shortcut: Shortcut) {
-        if shortcut.action.kind == .openApp {
-            if let path = chooseApp() { save(.openApp(path: path), apps: shortcut.apps, to: shortcut.id) }
-        } else {
-            editing = EditorRequest(shortcutID: shortcut.id, action: shortcut.action, apps: shortcut.apps)
-        }
+        editing = EditorRequest(shortcutID: shortcut.id, keyCombo: shortcut.keyCombo, action: shortcut.action, apps: shortcut.apps)
     }
 
-    /// Updates an existing shortcut, or adds a new one and starts recording its keys straight away.
-    private func save(_ action: ShortcutAction, apps: AppScope? = nil, to id: Shortcut.ID?) {
+    /// Updates an existing shortcut, or adds a new one. A new one with no keys
+    /// yet starts recording them straight away, right in its row.
+    private func save(_ action: ShortcutAction, keys: KeyCombo? = nil, apps: AppScope? = nil, to id: Shortcut.ID?) {
         if let id, var shortcut = store.shortcuts.first(where: { $0.id == id }) {
+            shortcut.keyCombo = keys
             shortcut.action = action
             shortcut.apps = apps
             store.update(shortcut)
         } else {
-            let shortcut = Shortcut(action: action, apps: apps)
+            var shortcut = Shortcut(keyCombo: keys, action: action)
+            shortcut.apps = apps
             store.shortcuts.append(shortcut)
-            recordingID = shortcut.id
+            if keys == nil { recordingID = shortcut.id }
         }
-    }
-
-    private func chooseApp() -> String? {
-        AppChooser.choose()
     }
 }
 
@@ -197,6 +188,7 @@ private struct EditorRequest: Identifiable {
     let id = UUID()
     /// `nil` when adding a new shortcut.
     let shortcutID: Shortcut.ID?
+    var keyCombo: KeyCombo?
     let action: ShortcutAction
     var apps: AppScope?
 }

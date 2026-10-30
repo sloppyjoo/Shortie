@@ -1,37 +1,22 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The small sheet for setting up what a shortcut does.
+/// The editor for a keyboard shortcut.
 struct ActionEditor: View {
+    @State var keyCombo: KeyCombo?
     @State var action: ShortcutAction
     @State var apps: AppScope?
-    let onSave: (ShortcutAction, AppScope?) -> Void
+    let onSave: (KeyCombo?, ShortcutAction, AppScope?) -> Void
 
-    @Environment(\.dismiss) private var dismiss
+    @State private var isRecording = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label(action.kind.editorTitle, systemImage: action.kind.systemImage)
-                .font(.headline)
-
-            ActionFields(action: $action)
-
-            AppScopePicker(scope: $apps)
-
+        TriggerEditor(title: "Keyboard Shortcut", action: $action, apps: $apps, save: { onSave(keyCombo, action, apps) }) {
             HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") {
-                    onSave(action, apps)
-                    dismiss()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!action.isComplete || apps?.isValid == false)
+                Text("I press")
+                ShortcutRecorder(keyCombo: $keyCombo, isRecording: $isRecording)
             }
         }
-        .padding(20)
-        .frame(width: 440)
     }
 }
 
@@ -197,6 +182,84 @@ extension ShortcutAction.Kind {
         case .mouseClick: "Mouse Click"
         case .system: "System & Media"
         case .pressKeys: "Press Keys"
+        }
+    }
+}
+
+/// The one editor layout every trigger uses, in three plain steps:
+/// **When** (the trigger), **Do** (the action), **Works In** (which apps).
+struct TriggerEditor<When: View>: View {
+    let title: String
+    @Binding var action: ShortcutAction
+    /// `nil` hides "Works In", for triggers that aren't about the app in front.
+    var apps: Binding<AppScope?>?
+    var canSave = true
+    let save: () -> Void
+    @ViewBuilder let when: When
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(title)
+                .font(.title3.weight(.semibold))
+                .padding(.bottom, 2)
+
+            EditorCard("When") { when }
+
+            EditorCard("Do") {
+                ActionKindPicker(action: $action)
+                ActionFields(action: $action)
+            }
+
+            if let apps {
+                EditorCard("Works In") {
+                    AppScopePicker(scope: apps)
+                }
+            }
+
+            HStack {
+                Spacer()
+                Button("Cancel", role: .cancel) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Save") {
+                    save()
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+                .disabled(!canSave || !action.isComplete || apps?.wrappedValue?.isValid == false)
+            }
+            .padding(.top, 4)
+        }
+        .padding(22)
+        .frame(width: 520)
+        .animation(.smooth(duration: 0.2), value: action.kind)
+    }
+}
+
+/// A softly tinted, rounded group with a small heading, like a section of
+/// System Settings.
+struct EditorCard<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 10) {
+                content
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(.quaternary.opacity(0.45), in: .rect(cornerRadius: 12, style: .continuous))
         }
     }
 }
