@@ -196,7 +196,7 @@ final class WindowMover: NSObject {
 
     // MARK: - Reading and setting windows
 
-    private func frame(of window: AXUIElement) -> CGRect? {
+    func frame(of window: AXUIElement) -> CGRect? {
         var positionValue: CFTypeRef?
         var sizeValue: CFTypeRef?
         guard
@@ -226,7 +226,7 @@ final class WindowMover: NSObject {
     }
 
     /// The quicker version for each frame of a glide.
-    private func setPositionAndSize(of window: AXUIElement, to frame: CGRect) {
+    func setPositionAndSize(of window: AXUIElement, to frame: CGRect) {
         var origin = frame.origin
         var size = frame.size
         if let positionValue = AXValueCreate(.cgPoint, &origin) {
@@ -263,14 +263,31 @@ final class WindowMover: NSObject {
     }
 
     /// Converts an AppKit rectangle (bottom-left origin) to Accessibility coordinates (top-left origin).
-    private static func flipped(_ rect: CGRect) -> CGRect {
+    static func flipped(_ rect: CGRect) -> CGRect {
         let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
         return CGRect(x: rect.minX, y: primaryHeight - rect.maxY, width: rect.width, height: rect.height)
     }
 
     /// The part of a screen windows should fill: everything except the menu bar and Dock.
-    private static func usableArea(of screen: NSScreen) -> CGRect {
+    static func usableArea(of screen: NSScreen) -> CGRect {
         flipped(screen.visibleFrame)
+    }
+
+    /// The screen a point is on (in Accessibility coordinates).
+    static func screen(at point: CGPoint) -> NSScreen? {
+        NSScreen.screens.first { flipped($0.frame).contains(point) }
+    }
+
+    /// Where a position would put a window on a screen, without moving anything.
+    static func frame(for position: WindowPosition, on screen: NSScreen) -> CGRect? {
+        guard let unit = position.unitRect() else { return nil }
+        let area = usableArea(of: screen)
+        return CGRect(
+            x: area.minX + unit.minX * area.width,
+            y: area.minY + unit.minY * area.height,
+            width: unit.width * area.width,
+            height: unit.height * area.height
+        )
     }
 
     /// The screen showing most of the window.

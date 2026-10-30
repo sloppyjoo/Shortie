@@ -13,6 +13,8 @@ struct WindowsSettingsView: View {
             footnote: "Press a half or corner shortcut again to cycle its width: ½ → ⅓ → ⅔."
         ) {
             Button("Add Standard Shortcuts", action: addStandardShortcuts)
+        } topSections: {
+            WindowDraggingSettings()
         }
         .alert("Window Shortcuts Added", isPresented: Binding(
             get: { addedMessage != nil },
@@ -94,6 +96,39 @@ struct WindowPositionIcon: View {
                 }
                 .offset(x: screen.minX, y: screen.minY)
             }
+        }
+    }
+}
+
+/// Settings for moving, resizing and snapping windows with the mouse.
+struct WindowDraggingSettings: View {
+    @AppStorage(DefaultsKey.dragSnapEnabled) private var snaps = true
+    @AppStorage(DefaultsKey.dragMoveEnabled) private var moves = true
+    @AppStorage(DefaultsKey.dragMoveModifiers) private var moveKeys = WindowDragEngine.defaultMoveModifiers.rawValue
+    @AppStorage(DefaultsKey.dragResizeEnabled) private var resizes = true
+    @AppStorage(DefaultsKey.dragResizeModifiers) private var resizeKeys = WindowDragEngine.defaultResizeModifiers.rawValue
+
+    var body: some View {
+        Section {
+            Toggle("Drag windows to screen edges to snap them", isOn: $snaps)
+            modifierRow("Hold to move a window from anywhere", isOn: $moves, keys: $moveKeys)
+            modifierRow("Hold to resize a window from anywhere", isOn: $resizes, keys: $resizeKeys)
+        } header: {
+            Text("Dragging Windows")
+        } footer: {
+            Text("Snap: drag a window to the left or right edge for half the screen, the top to maximise, or right into a corner for a quarter. Move and resize: hold the keys and drag anywhere inside a window; resizing moves the corner nearest where you grabbed.")
+        }
+    }
+
+    private func modifierRow(_ title: String, isOn: Binding<Bool>, keys: Binding<Int>) -> some View {
+        HStack {
+            Toggle(title, isOn: isOn)
+            Spacer()
+            ModifierToggles(modifiers: Binding(
+                get: { Modifiers(rawValue: keys.wrappedValue) },
+                set: { keys.wrappedValue = $0.rawValue }
+            ))
+            .disabled(!isOn.wrappedValue)
         }
     }
 }

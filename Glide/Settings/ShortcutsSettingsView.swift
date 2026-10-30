@@ -15,7 +15,7 @@ struct ShortcutsSettingsView: View {
 
 /// A list of shortcuts, each with its keys and an on/off switch. Shows only
 /// shortcuts whose action is one of `kinds`, so each dashboard section can have its own.
-struct ShortcutListView<Extra: View>: View {
+struct ShortcutListView<Extra: View, Top: View>: View {
     let kinds: [ShortcutAction.Kind]
     let emptyTitle: String
     let emptySymbol: String
@@ -23,6 +23,8 @@ struct ShortcutListView<Extra: View>: View {
     var footnote: String?
     /// Extra buttons shown next to "Add Shortcut".
     @ViewBuilder var extraActions: Extra
+    /// Extra settings shown above the list.
+    @ViewBuilder var topSections: Top
 
     private var store = ShortcutStore.shared
 
@@ -36,7 +38,8 @@ struct ShortcutListView<Extra: View>: View {
         emptySymbol: String,
         emptyDescription: String,
         footnote: String? = nil,
-        @ViewBuilder extraActions: () -> Extra = { EmptyView() }
+        @ViewBuilder extraActions: () -> Extra = { EmptyView() },
+        @ViewBuilder topSections: () -> Top = { EmptyView() }
     ) {
         self.kinds = kinds
         self.emptyTitle = emptyTitle
@@ -44,16 +47,19 @@ struct ShortcutListView<Extra: View>: View {
         self.emptyDescription = emptyDescription
         self.footnote = footnote
         self.extraActions = extraActions()
+        self.topSections = topSections()
     }
 
     var body: some View {
-        Group {
+        Form {
+            topSections
             if store.shortcuts.contains(where: belongsHere) {
                 list
             } else {
-                emptyState
+                Section { emptyState }
             }
         }
+        .formStyle(.grouped)
         .sheet(item: $editing) { request in
             ActionEditor(action: request.action, apps: request.apps) { action, apps in
                 save(action, apps: apps, to: request.shortcutID)
@@ -81,44 +87,41 @@ struct ShortcutListView<Extra: View>: View {
     private var list: some View {
         @Bindable var store = store
 
-        return Form {
-            Section {
-                ForEach($store.shortcuts) { $shortcut in
-                    if belongsHere(shortcut) {
-                        ShortcutRow(
-                            shortcut: $shortcut,
-                            isRecording: recordingBinding(for: shortcut.id),
-                            conflicts: conflicts(with: shortcut),
-                            edit: { edit(shortcut) },
-                            delete: { store.delete(id: shortcut.id) },
-                            disable: { store.setEnabled(false, id: $0) }
-                        )
-                    }
+        return Section {
+            ForEach($store.shortcuts) { $shortcut in
+                if belongsHere(shortcut) {
+                    ShortcutRow(
+                        shortcut: $shortcut,
+                        isRecording: recordingBinding(for: shortcut.id),
+                        conflicts: conflicts(with: shortcut),
+                        edit: { edit(shortcut) },
+                        delete: { store.delete(id: shortcut.id) },
+                        disable: { store.setEnabled(false, id: $0) }
+                    )
                 }
-            } header: {
-                HStack {
-                    Spacer()
-                    extraActions
-                    addMenu
-                }
-            } footer: {
-                VStack(alignment: .leading, spacing: 6) {
-                    if let footnote {
-                        Text(footnote)
-                    }
-                    HStack(spacing: 4) {
-                        Text("Saved in shortcuts.json.")
-                        Button("Show in Finder") {
-                            NSWorkspace.shared.activateFileViewerSelecting([store.fileURL])
-                        }
-                        .buttonStyle(.link)
-                    }
-                }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
             }
+        } header: {
+            HStack {
+                Spacer()
+                extraActions
+                addMenu
+            }
+        } footer: {
+            VStack(alignment: .leading, spacing: 6) {
+                if let footnote {
+                    Text(footnote)
+                }
+                HStack(spacing: 4) {
+                    Text("Saved in shortcuts.json.")
+                    Button("Show in Finder") {
+                        NSWorkspace.shared.activateFileViewerSelecting([store.fileURL])
+                    }
+                    .buttonStyle(.link)
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
         }
-        .formStyle(.grouped)
     }
 
     private var addMenu: some View {

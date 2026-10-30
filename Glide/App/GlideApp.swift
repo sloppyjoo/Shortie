@@ -59,6 +59,7 @@ enum InputEngines {
         TrafficLightEngine.shared.start()
         GestureEngine.shared.start()
         MouseButtonEngine.shared.start()
+        WindowDragEngine.shared.start()
     }
 }
 
@@ -73,4 +74,9 @@ enum DefaultsKey {
     static let notchBarScreens = "notchBarScreens"
     static let hyperKey = "hyperKey"
     static let hyperTapAction = "hyperTapAction"
+    static let dragMoveEnabled = "dragMoveEnabled"
+    static let dragMoveModifiers = "dragMoveModifiers"
+    static let dragResizeEnabled = "dragResizeEnabled"
+    static let dragResizeModifiers = "dragResizeModifiers"
+    static let dragSnapEnabled = "dragSnapEnabled"
 }
