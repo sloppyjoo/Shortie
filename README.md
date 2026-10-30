@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://GITHUB_USER.github.io/Shortie/"><b>Website</b></a> ·
+  <a href="https://sloppyjoo.github.io/Shortie/"><b>Website</b></a> ·
   <a href="#install"><b>Install</b></a> ·
   <a href="ROADMAP.md"><b>Roadmap</b></a>
 </p>
@@ -66,7 +66,7 @@ Every rule in Shortie is three plain steps:
 There's no signed download yet, so build it with Xcode:
 
 ```bash
-git clone https://github.com/GITHUB_USER/Shortie.git
+git clone https://github.com/sloppyjoo/Shortie.git
 cd Shortie
 open Glide.xcodeproj
 ```
@@ -85,4 +85,4 @@ In Xcode, choose your own team under **Signing & Capabilities**, then press **�
 
 ---
 
-<sub>Shortie is an independent project, not made by or affiliated with Apple. Mac and macOS are trademarks of Apple Inc.</sub>
+<sub>Released under the [MIT licence](LICENSE). Shortie is an independent project, not made by or affiliated with Apple. Mac and macOS are trademarks of Apple Inc.</sub>
