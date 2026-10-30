@@ -1,7 +1,8 @@
 // Draws the app icon's glyph: the pixel hand, white on transparent, 1024 × 1024.
-// Usage: swift Scripts/pixel-glyph.swift <output.png> [outline] [preview]
-//   (default) the white outline, with a faint fill inside
+// Usage: swift Scripts/pixel-glyph.swift <output.png> [outline|framed] [preview]
+//   (default) a solid white hand with no outline; the gaps between the fingers show through
 //   outline   only the outline, like the website's icons
+//   framed    the outline, with a faint fill inside
 //   preview   draws it on the icon's gradient, to look at
 // To update the app icon: swift Scripts/pixel-glyph.swift Glide/AppIcon.icon/Assets/glyph.png
 // The pixels match PixelArt.hand in Glide/App/PixelArt.swift.
@@ -28,7 +29,7 @@ let hand = [
 
 let arguments = CommandLine.arguments
 let output = URL(fileURLWithPath: arguments[1])
-let style = arguments.contains("outline") ? "outline" : "filled"
+let style = arguments.contains("outline") ? "outline" : arguments.contains("framed") ? "framed" : "solid"
 let preview = arguments.contains("preview")
 
 // The inside of the hand: empty pixels that can't be reached from the edge.
@@ -42,7 +43,9 @@ while let (x, y) = queue.popLast() {
 }
 
 let size = 1024
-let pixel = 34  // 16 × 34 = 544 points across, centred like the old glyph
+// 16 × 34 = 544 points across, centred like the old glyph. The solid hand has no
+// outline, so it is drawn a little larger to fill the same space.
+let pixel = style == "solid" ? 38 : 34
 let origin = (size - 16 * pixel) / 2
 
 let rep = NSBitmapImageRep(
@@ -66,10 +69,10 @@ for y in 0..<16 {
         let isOutline = hand[y][x] == "#"
         let isInside = !isOutline && !outside[y][x]
         let alpha: CGFloat
-        if style == "outline" {
-            alpha = isOutline ? 1 : 0
-        } else {
-            alpha = isOutline ? 1 : isInside ? 0.3 : 0
+        switch style {
+        case "outline": alpha = isOutline ? 1 : 0
+        case "framed": alpha = isOutline ? 1 : isInside ? 0.3 : 0
+        default: alpha = isInside ? 1 : 0
         }
         guard alpha > 0 else { continue }
         NSColor.white.withAlphaComponent(alpha).setFill()
