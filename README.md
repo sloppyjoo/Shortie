@@ -5,8 +5,8 @@
 <h1 align="center">Shortie</h1>
 
 <p align="center">
-  A menu bar app for macOS. Set up trackpad gestures, keyboard shortcuts and mouse buttons<br>
-  to snap windows, control media, run scripts and more.
+  <b>Shortcuts for everything on your Mac.</b><br>
+  Turn a key press, trackpad gesture or mouse button into an action: snap a window, open an app, control music, or run a script.
 </p>
 
 <p align="center">
