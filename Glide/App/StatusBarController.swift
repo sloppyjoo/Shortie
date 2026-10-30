@@ -65,10 +65,9 @@ final class StatusBarController: NSObject {
 
     @objc private func updateIcon() {
         let isPaused = UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
-        statusItem.button?.image = NSImage(
-            systemSymbolName: isPaused ? "hand.raised.slash" : "hand.draw",
-            accessibilityDescription: "Shortie"
-        )
+        let image = PixelArt.menuBarImage(slashed: isPaused)
+        image.accessibilityDescription = isPaused ? "Shortie (paused)" : "Shortie"
+        statusItem.button?.image = image
     }
 
     @objc private func showOnboarding() {
