@@ -25,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar = StatusBarController()
         ShortcutEngine.shared.start()
         ScrollEngine.shared.start()
+        NotchBar.shared.update()
 
         // Show the welcome window until Glide has everything it needs.
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: DefaultsKey.hasCompletedOnboarding)
@@ -49,4 +50,5 @@ enum DefaultsKey {
     static let wheelDirection = "wheelDirection"
     static let smoothScrolling = "smoothScrolling"
     static let scrollSpeed = "scrollSpeed"
+    static let notchBarScreens = "notchBarScreens"
 }
