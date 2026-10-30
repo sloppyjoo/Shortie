@@ -241,19 +241,25 @@ struct TrafficLightEditor: View {
 /// Chooses what kind of action to run. Changing it starts that kind afresh.
 struct ActionKindPicker: View {
     @Binding var action: ShortcutAction
+    /// Inside a list of steps: "Wait" is offered, and steps can't hold more steps.
+    var forSteps = false
 
     /// Clicks and window commands first, since they're what you'll usually want
     /// from a gesture or window button.
     private static let order: [ShortcutAction.Kind] = [
         .mouseClick, .system, .pressKeys, .appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText,
+        .menuItem, .appleScript, .shellScript, .steps,
     ]
+
+    /// What a single step can be.
+    static let stepKinds: [ShortcutAction.Kind] = order.filter { $0 != .steps } + [.wait]
 
     var body: some View {
         Picker("Action", selection: Binding(
             get: { action.kind },
             set: { if $0 != action.kind { action = $0.emptyAction } }
         )) {
-            ForEach(Self.order) { kind in
+            ForEach(forSteps ? Self.stepKinds : Self.order) { kind in
                 Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
             }
         }

@@ -29,6 +29,14 @@ struct ActionFields: View {
     @State private var availableShortcuts: [String]?
     @State private var isRecordingKeys = false
 
+    /// The length, for "Wait" steps.
+    private var seconds: Binding<Double> {
+        Binding(
+            get: { if case .wait(let seconds) = action { seconds } else { 0.5 } },
+            set: { action = .wait(seconds: ($0 * 10).rounded() / 10) }
+        )
+    }
+
     /// The keys, for "Press Keys" actions.
     private var keys: Binding<KeyCombo?> {
         Binding(
@@ -108,6 +116,28 @@ struct ActionFields: View {
                     .foregroundStyle(.secondary)
                 ShortcutRecorder(keyCombo: keys, isRecording: $isRecordingKeys, allowsPlainKeys: true)
             }
+        case .menuItem:
+            HStack {
+                TextField("Menu item", text: payload, prompt: Text("File › Export as PDF…"))
+                    .textFieldStyle(.roundedBorder)
+                InfoButton("Chooses this from the menus of the app in front. Separate menus with › or >. Capitals and a trailing … don't matter.")
+            }
+        case .appleScript, .shellScript:
+            TextEditor(text: payload)
+                .font(.body.monospaced())
+                .frame(height: 110)
+                .scrollContentBackground(.hidden)
+                .padding(6)
+                .background(.background, in: .rect(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
+        case .wait:
+            Stepper(value: seconds, in: 0.1...10, step: 0.1) {
+                Text("\(seconds.wrappedValue.formatted(.number.precision(.fractionLength(1)))) seconds")
+                    .monospacedDigit()
+            }
+            .fixedSize()
+        case .steps:
+            StepsEditor(action: $action)
         case .mouseClick:
             Picker("Click", selection: payload) {
                 ForEach(MouseAction.allCases) { Text($0.title).tag($0.rawValue) }
@@ -127,8 +157,11 @@ struct ActionFields: View {
     private var shortcutPicker: some View {
         Group {
             if let availableShortcuts, !availableShortcuts.isEmpty {
-                Picker("Shortcut", selection: payload) {
-                    ForEach(availableShortcuts, id: \.self) { Text($0).tag($0) }
+                HStack {
+                    Picker("Shortcut", selection: payload) {
+                        ForEach(availableShortcuts, id: \.self) { Text($0).tag($0) }
+                    }
+                    InfoButton("Tip: to switch Do Not Disturb or another Focus, make a shortcut in the Shortcuts app with its \"Set Focus\" action, then pick it here.")
                 }
             } else if availableShortcuts != nil {
                 Text("You don't have any shortcuts yet. Make one in the Shortcuts app, then come back.")
@@ -182,6 +215,11 @@ extension ShortcutAction.Kind {
         case .mouseClick: "Mouse Click"
         case .system: "System & Media"
         case .pressKeys: "Press Keys"
+        case .menuItem: "Choose Menu Item"
+        case .appleScript: "Run AppleScript"
+        case .shellScript: "Run Shell Script"
+        case .wait: "Wait"
+        case .steps: "Several Actions"
         }
     }
 }
@@ -261,5 +299,83 @@ struct EditorCard<Content: View>: View {
             .padding(12)
             .background(.quaternary.opacity(0.45), in: .rect(cornerRadius: 12, style: .continuous))
         }
+    }
+}
+
+/// The list of steps in a "Several Actions" action: each one an ordinary
+/// action, run in order, with optional waits in between.
+struct StepsEditor: View {
+    @Binding var action: ShortcutAction
+
+    private var steps: [ShortcutAction] {
+        if case .steps(let actions) = action { actions } else { [] }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(Array(steps.indices), id: \.self) { index in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("\(index + 1)")
+                            .font(.callout.monospacedDigit().weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 18)
+                        ActionKindPicker(action: step(index), forSteps: true)
+                        Spacer()
+                        Button { move(index, by: -1) } label: { Image(systemName: "chevron.up") }
+                            .disabled(index == 0)
+                        Button { move(index, by: 1) } label: { Image(systemName: "chevron.down") }
+                            .disabled(index == steps.count - 1)
+                        Button { remove(index) } label: { Image(systemName: "minus.circle") }
+                    }
+                    .buttonStyle(.borderless)
+                    // A step's own details (wrapped so a list of steps can hold more steps' fields).
+                    AnyView(ActionFields(action: step(index)))
+                        .padding(.leading, 26)
+                }
+                .padding(10)
+                .background(.background.opacity(0.6), in: .rect(cornerRadius: 9, style: .continuous))
+            }
+
+            Menu("Add Step", systemImage: "plus") {
+                ForEach(ActionKindPicker.stepKinds) { kind in
+                    Button(kind.editorTitle, systemImage: kind.systemImage) {
+                        set(steps + [kind.emptyAction])
+                    }
+                }
+            }
+            .fixedSize()
+        }
+        .animation(.smooth(duration: 0.2), value: steps)
+    }
+
+    private func step(_ index: Int) -> Binding<ShortcutAction> {
+        Binding(
+            get: { steps.indices.contains(index) ? steps[index] : .wait(seconds: 0.5) },
+            set: { newValue in
+                var updated = steps
+                guard updated.indices.contains(index) else { return }
+                updated[index] = newValue
+                set(updated)
+            }
+        )
+    }
+
+    private func move(_ index: Int, by offset: Int) {
+        var updated = steps
+        let target = index + offset
+        guard updated.indices.contains(target) else { return }
+        updated.swapAt(index, target)
+        set(updated)
+    }
+
+    private func remove(_ index: Int) {
+        var updated = steps
+        updated.remove(at: index)
+        set(updated)
+    }
+
+    private func set(_ actions: [ShortcutAction]) {
+        action = .steps(actions: actions)
     }
 }

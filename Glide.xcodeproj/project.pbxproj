@@ -173,6 +173,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				DEVELOPMENT_TEAM = 5H354LVSGV;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = Glide/BestTouchTool.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = NO;
@@ -181,6 +182,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = BestTouchTool;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Your \"Run AppleScript\" actions use this to control other apps.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -203,6 +205,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				DEVELOPMENT_TEAM = 5H354LVSGV;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = Glide/BestTouchTool.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = NO;
@@ -211,6 +214,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = BestTouchTool;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Your \"Run AppleScript\" actions use this to control other apps.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

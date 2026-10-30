@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick],
+            kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick, .menuItem, .appleScript, .shellScript, .steps],
             emptyText: "No shortcuts yet."
         )
     }
@@ -347,6 +347,11 @@ extension ShortcutAction.Kind {
         case .mouseClick: "Mouse Click…"
         case .system: "System & Media…"
         case .pressKeys: "Press Keys…"
+        case .menuItem: "Choose Menu Item…"
+        case .appleScript: "Run AppleScript…"
+        case .shellScript: "Run Shell Script…"
+        case .wait: "Wait…"
+        case .steps: "Several Actions…"
         }
     }
 
@@ -366,6 +371,11 @@ extension ShortcutAction.Kind {
         case .mouseClick: "cursorarrow.click"
         case .system: "switch.2"
         case .pressKeys: "keyboard"
+        case .menuItem: "filemenu.and.selection"
+        case .appleScript: "applescript"
+        case .shellScript: "terminal"
+        case .wait: "hourglass"
+        case .steps: "list.number"
         }
     }
 
@@ -380,6 +390,11 @@ extension ShortcutAction.Kind {
         case .mouseClick: .orange
         case .system: .purple
         case .pressKeys: .gray
+        case .menuItem: .blue
+        case .appleScript: .gray
+        case .shellScript: .black
+        case .wait: .gray
+        case .steps: .green
         }
     }
 
@@ -394,6 +409,11 @@ extension ShortcutAction.Kind {
         case .mouseClick: .mouseClick(click: .rightClick)
         case .system: .system(action: .controlCentre)
         case .pressKeys: .pressKeys(combo: nil)
+        case .menuItem: .menuItem(path: "")
+        case .appleScript: .appleScript(source: "")
+        case .shellScript: .shellScript(source: "")
+        case .wait: .wait(seconds: 0.5)
+        case .steps: .steps(actions: [])
         }
     }
 }

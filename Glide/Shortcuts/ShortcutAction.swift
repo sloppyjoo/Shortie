@@ -2,7 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 
 /// What a shortcut does when you press it.
-nonisolated enum ShortcutAction: Codable, Hashable {
+nonisolated indirect enum ShortcutAction: Codable, Hashable {
     case openApp(path: String)
     /// Runs a shortcut from Apple's Shortcuts app, by name.
     case runShortcut(name: String)
@@ -19,9 +19,18 @@ nonisolated enum ShortcutAction: Codable, Hashable {
     case system(action: SystemAction)
     /// Presses a keyboard shortcut in the app in front. `nil` until chosen.
     case pressKeys(combo: KeyCombo?)
+    /// Chooses an item from the front app's menus, like "File › Export as PDF…".
+    case menuItem(path: String)
+    case appleScript(source: String)
+    case shellScript(source: String)
+    /// Pauses between the steps of a multi-step action.
+    case wait(seconds: Double)
+    /// Several actions, one after another.
+    case steps(actions: [ShortcutAction])
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
+        case menuItem, appleScript, shellScript, wait, steps
         var id: Self { self }
     }
 
@@ -36,6 +45,11 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .mouseClick: .mouseClick
         case .system: .system
         case .pressKeys: .pressKeys
+        case .menuItem: .menuItem
+        case .appleScript: .appleScript
+        case .shellScript: .shellScript
+        case .wait: .wait
+        case .steps: .steps
         }
     }
 
@@ -51,6 +65,11 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .mouseClick(let click): click.rawValue
         case .system(let action): action.rawValue
         case .pressKeys(let combo): combo?.displayString ?? ""
+        case .menuItem(let path): path
+        case .appleScript(let source): source
+        case .shellScript(let source): source
+        case .wait(let seconds): String(seconds)
+        case .steps(let actions): actions.isEmpty ? "" : "steps"
         }
     }
 
@@ -64,13 +83,20 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .appCommand: .appCommand(command: AppCommand(rawValue: payload) ?? .closeWindow)
         case .mouseClick: .mouseClick(click: MouseAction(rawValue: payload) ?? .rightClick)
         case .system: .system(action: SystemAction(rawValue: payload) ?? .controlCentre)
-        // Keys are edited directly (see `ActionFields`), not as text.
-        case .pressKeys: self
+        case .menuItem: .menuItem(path: payload)
+        case .appleScript: .appleScript(source: payload)
+        case .shellScript: .shellScript(source: payload)
+        case .wait: .wait(seconds: Double(payload) ?? 0.5)
+        // Keys and steps are edited directly (see `ActionFields`), not as text.
+        case .pressKeys, .steps: self
         }
     }
 
     var isComplete: Bool {
-        !payload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if case .steps(let actions) = self {
+            return !actions.isEmpty && actions.allSatisfy(\.isComplete)
+        }
+        return !payload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     /// A short human description, like "Open Safari" or "Type “Thanks!”".
@@ -96,6 +122,16 @@ nonisolated enum ShortcutAction: Codable, Hashable {
             KeyPreset.matching(combo).map(\.title) ?? "Press \(combo.displayString)"
         case .pressKeys(nil):
             "Press Keys"
+        case .menuItem(let path):
+            "Choose \(MenuClicker.steps(of: path).joined(separator: " › "))"
+        case .appleScript:
+            "Run AppleScript"
+        case .shellScript:
+            "Run Shell Script"
+        case .wait(let seconds):
+            "Wait \(seconds.formatted()) s"
+        case .steps(let actions):
+            actions.map(\.title).joined(separator: ", then ")
         }
     }
 
@@ -156,6 +192,27 @@ enum ActionRunner {
             SystemActionRunner.run(action)
         case .pressKeys(let combo):
             combo.map(KeyPresser.press)
+        case .menuItem(let path):
+            let processID = target?.processID ?? NSWorkspace.shared.frontmostApplication?.processIdentifier
+            if let processID, !MenuClicker.choose(path, in: processID) { NSSound.beep() }
+        case .appleScript(let source):
+            ScriptRunner.runAppleScript(source)
+        case .shellScript(let source):
+            ScriptRunner.runShellScript(source)
+        case .wait:
+            break // Only means something between steps.
+        case .steps(let actions):
+            Task {
+                for step in actions {
+                    if case .wait(let seconds) = step {
+                        try? await Task.sleep(for: .seconds(seconds))
+                    } else {
+                        run(step, on: target)
+                        // A moment for each step to take effect before the next.
+                        try? await Task.sleep(for: .milliseconds(80))
+                    }
+                }
+            }
         }
     }
 }
