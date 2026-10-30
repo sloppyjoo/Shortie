@@ -70,7 +70,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .shortcuts: "Shortcuts"
         case .windows: "Windows"
         case .trafficLights: "Traffic Lights"
-        case .mouse: "Mouse & Scrolling"
+        case .mouse: "Mouse"
         case .menuBar: "Menu Bar"
         case .gestures: "Gestures"
         case .permissions: "Permissions"

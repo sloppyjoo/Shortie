@@ -1,11 +1,12 @@
 import Foundation
 
-/// What sets a shortcut off: some keys, a click on a window button, or a
-/// trackpad gesture.
+/// What sets a shortcut off: some keys, a click on a window button, a
+/// trackpad gesture, or an extra mouse button.
 nonisolated enum Trigger: Codable, Hashable {
     case keys(combo: KeyCombo)
     case trafficLight(click: TrafficLightClick)
     case gesture(gesture: Gesture)
+    case mouseButton(click: MouseButtonClick)
 
     /// Whether two triggers would fire on the same thing.
     func clashes(with other: Trigger) -> Bool {
@@ -15,6 +16,8 @@ nonisolated enum Trigger: Codable, Hashable {
         case let (.trafficLight(a), .trafficLight(b)):
             a == b
         case let (.gesture(a), .gesture(b)):
+            a == b
+        case let (.mouseButton(a), .mouseButton(b)):
             a == b
         default:
             false
@@ -70,5 +73,31 @@ nonisolated struct TrafficLightClick: Codable, Hashable {
     /// E.g. "⌥ Right-click".
     var clickDescription: String {
         modifiers.isEmpty ? mouseButton.title : "\(modifiers.symbols) \(mouseButton.title)"
+    }
+}
+
+/// Pressing one of a mouse's extra buttons, optionally while holding ⌃⌥⇧⌘.
+/// Left and right click aren't included, so ordinary clicking always works.
+nonisolated struct MouseButtonClick: Codable, Hashable {
+    /// How macOS numbers mouse buttons: 2 is the middle button (usually pressing
+    /// the wheel), 3 and 4 are usually the thumb buttons for back and forward.
+    var button: Int
+    var modifiers: Modifiers
+
+    /// The buttons you can choose from.
+    static let choices = Array(2...9)
+
+    static func name(of button: Int) -> String {
+        switch button {
+        case 2: "Middle Button"
+        case 3: "Back Button"
+        case 4: "Forward Button"
+        default: "Button \(button + 1)"
+        }
+    }
+
+    /// E.g. "⌥ Back Button".
+    var title: String {
+        modifiers.isEmpty ? Self.name(of: button) : "\(modifiers.symbols) \(Self.name(of: button))"
     }
 }

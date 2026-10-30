@@ -421,6 +421,7 @@ extension Shortcut {
     var sectionName: String {
         if trafficLightClick != nil { return "Traffic Lights" }
         if gesture != nil { return "Gestures" }
+        if mouseButtonClick != nil { return "Mouse" }
         return action.kind.sectionName
     }
 }

@@ -40,6 +40,11 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
         if case .gesture(let gesture) = trigger { gesture } else { nil }
     }
 
+    /// The button, for mouse button actions.
+    var mouseButtonClick: MouseButtonClick? {
+        if case .mouseButton(let click) = trigger { click } else { nil }
+    }
+
     var isKeyboardShortcut: Bool {
         trigger == nil || keyCombo != nil
     }
