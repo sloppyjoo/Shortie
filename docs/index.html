@@ -41,14 +41,14 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -85,9 +85,9 @@ nav .links a:hover { color: var(--text); text-decoration: none; }
 .pill svg { width: 18px; height: 18px; }
 
 /* Hero */
-.hero { position: relative; text-align: center; padding: 96px 0 40px; }
+.hero { position: relative; text-align: center; padding: 110px 0 30px; }
 .hero::before {
-  content: ""; position: absolute; inset: -200px -20% auto; height: 760px; z-index: -1;
+  content: ""; position: absolute; inset: -200px 0 auto; height: 760px; z-index: -1;
   background:
     radial-gradient(40% 50% at 30% 40%, rgba(74, 108, 255, 0.22), transparent 70%),
     radial-gradient(40% 50% at 70% 35%, rgba(155, 60, 240, 0.20), transparent 70%);
@@ -99,7 +99,6 @@ nav .links a:hover { color: var(--text); text-decoration: none; }
 .hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 .hero .note { margin-top: 18px; font-size: 14px; color: var(--faint); }
 
-.showpiece { position: relative; margin: 64px auto 0; max-width: 440px; }
 
 /* Screenshot frames */
 .frame {
@@ -133,7 +132,7 @@ section { padding: 110px 0 0; }
 .flow .arrow { display: grid; place-items: center; color: var(--faint); font-size: 26px; }
 
 /* Feature grid */
-.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .card { padding: 28px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); transition: transform .25s ease, box-shadow .25s ease; }
 .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 .card h3 { font-size: 20px; margin: 18px 0 8px; }
@@ -177,6 +176,8 @@ section { padding: 110px 0 0; }
 
 /* Install */
 .install { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* Let long lines (like the git command) scroll inside their box instead of widening the page. */
+.install > *, .grid > *, .row > *, .flow > * { min-width: 0; }
 .install .card { padding: 32px; }
 pre {
   margin: 16px 0 0; padding: 16px 18px; border-radius: 14px; overflow-x: auto;
@@ -251,16 +252,6 @@ footer p { margin: 0; max-width: 640px; }
       <a class="pill secondary" href="#features">See what it does</a>
     </div>
     <p class="note">Free and open source · macOS 15 or later</p>
-
-    <div class="showpiece reveal">
-      <div class="frame">
-        <picture>
-          <source srcset="images/gesture-editor-dark.png" media="(prefers-color-scheme: dark)">
-          <img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052">
-        </picture>
-      </div>
-    </div>
-
   </div>
 </header>
 
@@ -295,11 +286,6 @@ footer p { margin: 0; max-width: 640px; }
       <h2>Features</h2>
     </div>
     <div class="grid">
-      <div class="card reveal">
-        <div class="tile t-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 013 0v5m0-1a1.5 1.5 0 013 0v2m0-1a1.5 1.5 0 013 0v4a6 6 0 01-6 6h-1a6 6 0 01-5-2.7L4 15a1.5 1.5 0 012.5-1.6L9 16"/></svg></div>
-        <h3>Trackpad gestures</h3>
-        <p>About 70, including multi-finger taps, swipes, pinches, TipTaps, edge swipes, corner clicks and force click. You can also record a gesture instead of picking it from a list.</p>
-      </div>
       <div class="card reveal">
         <div class="tile t-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6a3 3 0 10-3 3h12a3 3 0 10-3-3v12a3 3 0 103-3H6a3 3 0 103 3z"/></svg></div>
         <h3>Keyboard shortcuts</h3>
@@ -353,6 +339,24 @@ footer p { margin: 0; max-width: 640px; }
   <div class="wrap">
     <div class="row reveal">
       <div class="copy">
+        <h3>Trackpad gestures</h3>
+        <p>Pick a gesture from the list or record one by doing it on the trackpad. Then choose what it does, and which apps it works in.</p>
+        <ul>
+          <li>Taps, swipes, pinches, clicks and more, with 2 to 5 fingers</li>
+          <li>A warning when macOS already uses the same gesture</li>
+          <li>Different actions for the same gesture in different apps</li>
+        </ul>
+      </div>
+      <div class="frame">
+        <picture>
+          <source srcset="images/gesture-editor-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052" loading="lazy">
+        </picture>
+      </div>
+    </div>
+
+    <div class="row flip reveal">
+      <div class="copy">
         <h3>Window snapping</h3>
         <p>Press a half or corner shortcut again to cycle its width through ½, ⅓ and ⅔. Drag a window to a screen edge to snap it, or hold ⌃⌘ and drag anywhere inside a window to move it.</p>
         <ul>
@@ -369,7 +373,7 @@ footer p { margin: 0; max-width: 640px; }
       </div>
     </div>
 
-    <div class="row flip reveal">
+    <div class="row reveal">
       <div class="copy">
         <h3>Several actions at once</h3>
         <p>One trigger can run a list of actions, with optional pauses between them. There are also actions for AppleScript, shell scripts and choosing an item from the current app's menus.</p>
@@ -387,7 +391,7 @@ footer p { margin: 0; max-width: 640px; }
       </div>
     </div>
 
-    <div class="row reveal">
+    <div class="row flip reveal">
       <div class="copy">
         <h3>Window buttons</h3>
         <p>A click or right-click on a window's red, yellow or green button can run any action. It applies to the window you clicked, even if it's in the background.</p>
