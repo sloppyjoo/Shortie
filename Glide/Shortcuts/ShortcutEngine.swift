@@ -81,6 +81,10 @@ fileprivate nonisolated struct KeyPress {
 private nonisolated func handleTapEvent(
     proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, userInfo: UnsafeMutableRawPointer?
 ) -> Unmanaged<CGEvent>? {
+    // Keys Glide presses itself (a "Press Keys" action) must never set off a shortcut.
+    guard event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker else {
+        return Unmanaged.passUnretained(event)
+    }
     let keyPress = KeyPress(
         type: type,
         keyCode: UInt16(event.getIntegerValueField(.keyboardEventKeycode)),

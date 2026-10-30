@@ -291,7 +291,9 @@ struct ActionKindPicker: View {
 
     /// Clicks and window commands first, since they're what you'll usually want
     /// from a gesture or window button.
-    private static let order: [ShortcutAction.Kind] = [.mouseClick, .appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText]
+    private static let order: [ShortcutAction.Kind] = [
+        .mouseClick, .system, .pressKeys, .appCommand, .moveWindow, .openApp, .runShortcut, .open, .typeText,
+    ]
 
     var body: some View {
         Picker("Action", selection: Binding(

@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
-            kinds: [.openApp, .runShortcut, .open, .typeText, .mouseClick],
+            kinds: [.openApp, .runShortcut, .open, .typeText, .pressKeys, .system, .mouseClick],
             emptyTitle: "No Shortcuts Yet",
             emptySymbol: "command",
             emptyDescription: "Press a few keys from anywhere on your Mac to open an app, run a Shortcut, open a website or type some text."
@@ -130,6 +130,16 @@ struct ShortcutListView<Extra: View>: View {
                         Section {
                             ForEach(group) { position in
                                 Button(position.title) { save(.moveWindow(position: position), to: nil) }
+                            }
+                        }
+                    }
+                } else if kind == .system {
+                    Menu("System & Media", systemImage: kind.systemImage) {
+                        ForEach(SystemAction.groups, id: \.self) { group in
+                            Section {
+                                ForEach(group) { action in
+                                    Button(action.title, systemImage: action.systemImage) { save(.system(action: action), to: nil) }
+                                }
                             }
                         }
                     }
@@ -333,6 +343,9 @@ struct ActionIcon: View {
         case .mouseClick(let click):
             SettingsIcon(systemImage: click.systemImage, color: action.kind.color)
                 .padding(2)
+        case .system(let systemAction):
+            SettingsIcon(systemImage: systemAction.systemImage, color: action.kind.color)
+                .padding(2)
         default:
             SettingsIcon(systemImage: action.kind.systemImage, color: action.kind.color)
                 .padding(2)
@@ -350,6 +363,8 @@ extension ShortcutAction.Kind {
         case .moveWindow: "Move Window…"
         case .appCommand: "Window or App Command…"
         case .mouseClick: "Mouse Click…"
+        case .system: "System & Media…"
+        case .pressKeys: "Press Keys…"
         }
     }
 
@@ -367,6 +382,8 @@ extension ShortcutAction.Kind {
         case .moveWindow: "macwindow"
         case .appCommand: "macwindow.badge.plus"
         case .mouseClick: "cursorarrow.click"
+        case .system: "switch.2"
+        case .pressKeys: "keyboard"
         }
     }
 
@@ -379,6 +396,8 @@ extension ShortcutAction.Kind {
         case .moveWindow: .blue
         case .appCommand: .gray
         case .mouseClick: .orange
+        case .system: .purple
+        case .pressKeys: .gray
         }
     }
 
@@ -391,6 +410,8 @@ extension ShortcutAction.Kind {
         case .moveWindow: .moveWindow(position: .maximize)
         case .appCommand: .appCommand(command: .closeWindow)
         case .mouseClick: .mouseClick(click: .rightClick)
+        case .system: .system(action: .controlCentre)
+        case .pressKeys: .pressKeys(combo: nil)
         }
     }
 }

@@ -15,9 +15,13 @@ nonisolated enum ShortcutAction: Codable, Hashable {
     case appCommand(command: AppCommand)
     /// Clicks wherever the pointer is.
     case mouseClick(click: MouseAction)
+    /// Media keys, Control Centre, Mission Control, screenshots, locking…
+    case system(action: SystemAction)
+    /// Presses a keyboard shortcut in the app in front. `nil` until chosen.
+    case pressKeys(combo: KeyCombo?)
 
     enum Kind: CaseIterable, Identifiable {
-        case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick
+        case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         var id: Self { self }
     }
 
@@ -30,6 +34,8 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .moveWindow: .moveWindow
         case .appCommand: .appCommand
         case .mouseClick: .mouseClick
+        case .system: .system
+        case .pressKeys: .pressKeys
         }
     }
 
@@ -43,6 +49,8 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .moveWindow(let position): position.rawValue
         case .appCommand(let command): command.rawValue
         case .mouseClick(let click): click.rawValue
+        case .system(let action): action.rawValue
+        case .pressKeys(let combo): combo?.displayString ?? ""
         }
     }
 
@@ -55,6 +63,9 @@ nonisolated enum ShortcutAction: Codable, Hashable {
         case .moveWindow: .moveWindow(position: WindowPosition(rawValue: payload) ?? .maximize)
         case .appCommand: .appCommand(command: AppCommand(rawValue: payload) ?? .closeWindow)
         case .mouseClick: .mouseClick(click: MouseAction(rawValue: payload) ?? .rightClick)
+        case .system: .system(action: SystemAction(rawValue: payload) ?? .controlCentre)
+        // Keys are edited directly (see `ActionFields`), not as text.
+        case .pressKeys: self
         }
     }
 
@@ -79,6 +90,12 @@ nonisolated enum ShortcutAction: Codable, Hashable {
             command.title
         case .mouseClick(let click):
             click.title
+        case .system(let action):
+            action.title
+        case .pressKeys(let combo?):
+            KeyPreset.matching(combo).map(\.title) ?? "Press \(combo.displayString)"
+        case .pressKeys(nil):
+            "Press Keys"
         }
     }
 
@@ -135,6 +152,10 @@ enum ActionRunner {
             }
         case .mouseClick(let click):
             MouseClicker.perform(click)
+        case .system(let action):
+            SystemActionRunner.run(action)
+        case .pressKeys(let combo):
+            combo.map(KeyPresser.press)
         }
     }
 }
@@ -201,6 +222,7 @@ enum TextTyper {
         for isDown in [true, false] {
             let event = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: isDown)
             event?.flags = []
+            event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
             event?.keyboardSetUnicodeString(stringLength: characters.count, unicodeString: &characters)
             event?.post(tap: .cghidEventTap)
         }
@@ -210,6 +232,7 @@ enum TextTyper {
         for isDown in [true, false] {
             let event = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: isDown)
             event?.flags = []
+            event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
             event?.post(tap: .cghidEventTap)
         }
     }

@@ -7,6 +7,9 @@ import SwiftUI
 struct ShortcutRecorder: View {
     @Binding var keyCombo: KeyCombo?
     @Binding var isRecording: Bool
+    /// For keys Glide will press (rather than listen for), a single key like
+    /// ↩ or → is fine, since it won't stop you typing.
+    var allowsPlainKeys = false
 
     @State private var monitor: Any?
 
@@ -70,7 +73,7 @@ struct ShortcutRecorder: View {
         } else if modifiers.isEmpty && (keyCode == kVK_Delete || keyCode == kVK_ForwardDelete) {
             keyCombo = nil
             isRecording = false
-        } else if modifiers.isEmpty && !KeyNames.isFunctionKey(event.keyCode) {
+        } else if modifiers.isEmpty && !allowsPlainKeys && !KeyNames.isFunctionKey(event.keyCode) {
             // A plain letter as a shortcut would stop you typing that letter.
             NSSound.beep()
         } else {

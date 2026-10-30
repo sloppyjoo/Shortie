@@ -39,6 +39,15 @@ struct ActionFields: View {
 
     /// Names from the Shortcuts app; `nil` while still loading.
     @State private var availableShortcuts: [String]?
+    @State private var isRecordingKeys = false
+
+    /// The keys, for "Press Keys" actions.
+    private var keys: Binding<KeyCombo?> {
+        Binding(
+            get: { if case .pressKeys(let combo) = action { combo } else { nil } },
+            set: { action = .pressKeys(combo: $0) }
+        )
+    }
 
     /// Edits the one piece of text the action carries.
     private var payload: Binding<String> {
@@ -84,6 +93,32 @@ struct ActionFields: View {
                         ForEach(group) { Text($0.title).tag($0.rawValue) }
                     }
                 }
+            }
+        case .system:
+            Picker("Action", selection: payload) {
+                ForEach(SystemAction.groups, id: \.self) { group in
+                    Section {
+                        ForEach(group) { Text($0.title).tag($0.rawValue) }
+                    }
+                }
+            }
+        case .pressKeys:
+            HStack {
+                Menu("Common Shortcuts") {
+                    ForEach(KeyPreset.groups, id: \.title) { group in
+                        Section(group.title) {
+                            ForEach(group.presets) { preset in
+                                Button("\(preset.title)   \(preset.combo.displayString)") {
+                                    action = .pressKeys(combo: preset.combo)
+                                }
+                            }
+                        }
+                    }
+                }
+                .fixedSize()
+                Text("or")
+                    .foregroundStyle(.secondary)
+                ShortcutRecorder(keyCombo: keys, isRecording: $isRecordingKeys, allowsPlainKeys: true)
             }
         case .mouseClick:
             Picker("Click", selection: payload) {
@@ -157,6 +192,8 @@ extension ShortcutAction.Kind {
         case .moveWindow: "Move Window"
         case .appCommand: "Window or App Command"
         case .mouseClick: "Mouse Click"
+        case .system: "System & Media"
+        case .pressKeys: "Press Keys"
         }
     }
 }
