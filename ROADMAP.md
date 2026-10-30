@@ -23,6 +23,9 @@ We build one piece at a time and save a git checkpoint after each piece works.
 10. **Mouse buttons** – middle, back, forward and more (with ⌃⌥⇧⌘) run any action; Back/Forward suggestions.
 11. **Renamed to BestTouchTool.**
 12. **Per-app rules** – any trigger can work in all apps, only some, or all but some; app-specific rules win.
+13. **Text shortcuts** – type an abbreviation like ;email anywhere to expand it (or run any action).
+14. **Automations** – run actions when apps open, quit or come forward; on wake, sleep, lock, unlock, charger.
+15. **Hyper key** – hold Caps Lock for ⌃⌥⇧⌘; tap it and it's still Caps Lock.
 
 ## Next ideas
 
@@ -32,8 +35,7 @@ We build one piece at a time and save a git checkpoint after each piece works.
 
 ## Later: the rest of BetterTouchTool
 
-- **More triggers** – key sequences, typed-word triggers (text expansion), Caps Lock as a "Hyper" key,
-  app launched/quit, Mac wakes or sleeps, a device connected, Wi-Fi changed.
+- **More triggers** – key sequences, a device connected, Wi-Fi changed.
 - **More actions** – Do Not Disturb, click a menu item, AppleScript and shell scripts,
   chains of several actions.
 - **More window tools** – drag a window to a screen edge to snap, move or resize with a modifier key plus the mouse,
