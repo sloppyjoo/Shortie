@@ -87,6 +87,11 @@ final class WindowDragEngine {
         self.tap = tap
     }
 
+    /// Only watch drags while snapping, moving or resizing is switched on.
+    func updateNeed() {
+        if let tap { CGEvent.tapEnable(tap: tap, enable: snapsAtEdges || movesWithKeys || resizesWithKeys) }
+    }
+
     /// Returns `true` to swallow the event.
     fileprivate func handle(_ type: CGEventType, at location: CGPoint, flags: CGEventFlags) -> Bool {
         switch type {

@@ -48,5 +48,7 @@ typedef int (*MTContactCallbackFunction)(MTDeviceRef device, const MTTouch *touc
 typedef CFArrayRef (*MTDeviceCreateListFunction)(void);
 typedef void (*MTRegisterContactFrameCallbackFunction)(MTDeviceRef device, MTContactCallbackFunction callback);
 typedef void (*MTDeviceStartFunction)(MTDeviceRef device, int mode);
+typedef void (*MTDeviceStopFunction)(MTDeviceRef device);
+typedef void (*MTUnregisterContactFrameCallbackFunction)(MTDeviceRef device, MTContactCallbackFunction callback);
 /// Width and height of the touch surface, in hundredths of a millimetre.
 typedef int (*MTDeviceGetSensorSurfaceDimensionsFunction)(MTDeviceRef device, int *width, int *height);

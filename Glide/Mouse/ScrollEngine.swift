@@ -83,6 +83,13 @@ final class ScrollEngine: NSObject {
         self.tap = tap
     }
 
+    /// Only watch scrolling while smooth scrolling or a wheel direction is set.
+    func updateNeed() {
+        let smooth = UserDefaults.standard.object(forKey: DefaultsKey.smoothScrolling) as? Bool ?? true
+        let direction = UserDefaults.standard.string(forKey: DefaultsKey.wheelDirection) ?? WheelDirection.system.rawValue
+        if let tap { CGEvent.tapEnable(tap: tap, enable: smooth || direction != WheelDirection.system.rawValue) }
+    }
+
     fileprivate func reenable() {
         if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
     }

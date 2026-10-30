@@ -11,7 +11,9 @@ final class MouseButtonEngine {
 
     /// While set, the next button press goes here (to the recorder) instead of
     /// running an action.
-    var recordingHandler: ((MouseButtonClick) -> Void)?
+    var recordingHandler: ((MouseButtonClick) -> Void)? {
+        didSet { updateNeed() }
+    }
 
     private var tap: CFMachPort?
     /// After swallowing a press, also swallow that button's release.
@@ -35,6 +37,13 @@ final class MouseButtonEngine {
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
         self.tap = tap
+    }
+
+    /// Only watch the buttons while you have button rules, or are recording one.
+    func updateNeed() {
+        let needed = recordingHandler != nil
+            || ShortcutStore.shared.shortcuts.contains { $0.isEnabled && $0.mouseButtonClick != nil }
+        if let tap { CGEvent.tapEnable(tap: tap, enable: needed) }
     }
 
     /// Returns `true` to swallow the press.

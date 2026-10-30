@@ -27,7 +27,9 @@ final class GestureEngine {
     /// Fingers currently on the trackpad. Only kept up to date while something
     /// is watching (the Gesture Lab), to save work the rest of the time.
     private(set) var liveTouches: [TouchPoint] = []
-    var isWatching = false
+    var isWatching = false {
+        didSet { updateListening() }
+    }
 
     /// The trackpad's shape, for drawing it. Width ÷ height.
     private(set) var aspectRatio = 1.6
@@ -37,7 +39,9 @@ final class GestureEngine {
 
     /// While set, the next gesture goes here (to the gesture recorder) instead
     /// of running an action.
-    @ObservationIgnored var recordingHandler: ((Gesture) -> Void)?
+    @ObservationIgnored var recordingHandler: ((Gesture) -> Void)? {
+        didSet { updateListening() }
+    }
 
     @ObservationIgnored private var recognizers: [Int: GestureRecognizer] = [:]
     /// The fingers touching each trackpad right now.
@@ -47,6 +51,14 @@ final class GestureEngine {
     /// Swallow clicks until this time; see `handleTap`.
     @ObservationIgnored private var ignoreClicksUntil = Date.distantPast
     @ObservationIgnored private var devices: CFArray?
+    @ObservationIgnored private var deviceList: [MTDeviceRef] = []
+    @ObservationIgnored private var registerFrames: MTRegisterContactFrameCallbackFunction?
+    @ObservationIgnored private var unregisterFrames: MTUnregisterContactFrameCallbackFunction?
+    @ObservationIgnored private var startDevice: MTDeviceStartFunction?
+    @ObservationIgnored private var stopDevice: MTDeviceStopFunction?
+    /// Whether finger data is flowing. It's only switched on when something
+    /// needs it, since reading the trackpad ~100 times a second costs battery.
+    @ObservationIgnored private var isListening = false
     @ObservationIgnored private var pressureMonitors: [Any] = []
     @ObservationIgnored private var lastPressureStage = 0
     @ObservationIgnored private var clickTap: CFMachPort?
@@ -66,8 +78,11 @@ final class GestureEngine {
             return
         }
         let createList = unsafeBitCast(createListSymbol, to: MTDeviceCreateListFunction.self)
-        let register = unsafeBitCast(registerSymbol, to: MTRegisterContactFrameCallbackFunction.self)
-        let startDevice = unsafeBitCast(startSymbol, to: MTDeviceStartFunction.self)
+        registerFrames = unsafeBitCast(registerSymbol, to: MTRegisterContactFrameCallbackFunction.self)
+        startDevice = unsafeBitCast(startSymbol, to: MTDeviceStartFunction.self)
+        stopDevice = dlsym(framework, "MTDeviceStop").map { unsafeBitCast($0, to: MTDeviceStopFunction.self) }
+        unregisterFrames = dlsym(framework, "MTUnregisterContactFrameCallback")
+            .map { unsafeBitCast($0, to: MTUnregisterContactFrameCallbackFunction.self) }
         let getDimensions = dlsym(framework, "MTDeviceGetSensorSurfaceDimensions")
             .map { unsafeBitCast($0, to: MTDeviceGetSensorSurfaceDimensionsFunction.self) }
 
@@ -91,12 +106,44 @@ final class GestureEngine {
             if index == 0 { aspectRatio = size.width / size.height }
 
             recognizers[Int(bitPattern: device)] = GestureRecognizer(surfaceSize: size)
-            register(device, handleTouchFrame)
-            startDevice(device, 0)
+            deviceList.append(device)
         }
         status = .running(trackpads: CFArrayGetCount(list))
 
         watchClicks()
+        updateListening()
+    }
+
+    /// Switches finger data (and click watching) on only while something needs
+    /// it: a gesture rule, the gesture recorder, or the Gesture Lab being open.
+    /// Call whenever your gestures change.
+    func updateListening() {
+        guard case .running = status else { return }
+        let hasRules = ShortcutStore.shared.shortcuts.contains { $0.isEnabled && $0.gesture != nil }
+        let needed = hasRules || isWatching || recordingHandler != nil
+
+        if let clickTap { CGEvent.tapEnable(tap: clickTap, enable: needed) }
+        guard needed != isListening, let registerFrames, let startDevice else { return }
+        isListening = needed
+
+        for device in deviceList {
+            if needed {
+                registerFrames(device, handleTouchFrame)
+                startDevice(device, 0)
+            } else {
+                // If the framework can't stop, carry on listening rather than break.
+                guard let stopDevice, let unregisterFrames else {
+                    isListening = true
+                    return
+                }
+                stopDevice(device)
+                unregisterFrames(device, handleTouchFrame)
+            }
+        }
+        if !needed {
+            touching.removeAll()
+            liveTouches = []
+        }
     }
 
     /// Called for every frame of finger data.

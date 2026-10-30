@@ -31,16 +31,21 @@ final class CustomMenuStore {
 
     var menus: [CustomMenu] = [] {
         didSet {
+            // Loading the file at startup isn't a change worth reacting to.
+            guard isLoaded else { return }
             save()
             MenuBarMenus.shared.refresh()
         }
     }
+
+    @ObservationIgnored private var isLoaded = false
 
     @ObservationIgnored private let fileURL = URL.applicationSupportDirectory
         .appending(path: "BestTouchTool", directoryHint: .isDirectory)
         .appending(path: "menus.json")
 
     private init() {
+        defer { isLoaded = true }
         if let data = try? Data(contentsOf: fileURL),
            let saved = try? JSONDecoder().decode([CustomMenu].self, from: data) {
             menus = saved

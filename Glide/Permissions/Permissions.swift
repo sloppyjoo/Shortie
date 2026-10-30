@@ -22,10 +22,22 @@ final class Permissions {
     var allGranted: Bool { accessibility }
 
     private init() {
+        // While you're granting permission, check every second so the checkmark
+        // appears straight away. Once it's granted, macOS's notice whenever the
+        // Accessibility list changes does the work; a slow check every 30 seconds
+        // is just a safety net in case a notice is missed.
         Task {
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1))
+                try? await Task.sleep(for: accessibility ? .seconds(30) : .seconds(1))
                 refresh()
+            }
+        }
+        DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.apple.accessibility.api"), object: nil, queue: .main
+        ) { _ in
+            // The change takes a moment to apply after the notice.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                Permissions.shared.refresh()
             }
         }
     }

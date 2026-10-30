@@ -51,6 +51,12 @@ final class TrafficLightEngine {
         self.tap = tap
     }
 
+    /// Only watch clicks while you have window button rules.
+    func updateNeed() {
+        let needed = ShortcutStore.shared.shortcuts.contains { $0.isEnabled && $0.trafficLightClick != nil }
+        if let tap { CGEvent.tapEnable(tap: tap, enable: needed) }
+    }
+
     /// Returns `true` to swallow the click.
     fileprivate func handle(_ click: MouseClick) -> Bool {
         switch click.type {

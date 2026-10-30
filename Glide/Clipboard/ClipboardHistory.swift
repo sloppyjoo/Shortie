@@ -55,6 +55,7 @@ final class ClipboardHistory {
 
     @ObservationIgnored private var lastChangeCount = NSPasteboard.general.changeCount
     @ObservationIgnored private var timer: Timer?
+    @ObservationIgnored private let thumbnails = NSCache<NSString, NSImage>()
     @ObservationIgnored private let folder: URL
     @ObservationIgnored private let imagesFolder: URL
 
@@ -81,6 +82,8 @@ final class ClipboardHistory {
         let timer = Timer(timeInterval: 0.5, repeats: true) { _ in
             MainActor.assumeIsolated { ClipboardHistory.shared.check() }
         }
+        // Let macOS fold this check in with other wake-ups, which saves battery.
+        timer.tolerance = 0.25
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }
@@ -199,14 +202,29 @@ final class ClipboardHistory {
         save()
     }
 
+    /// A small preview of a copied image, for the list. Previews are made once
+    /// and cached; macOS frees the cache by itself if memory gets tight.
     func image(for fileName: String) -> NSImage? {
-        NSImage(contentsOf: imagesFolder.appending(path: fileName))
+        if let cached = thumbnails.object(forKey: fileName as NSString) { return cached }
+        let url = imagesFolder.appending(path: fileName)
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceThumbnailMaxPixelSize: 320,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+        ]
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+        else { return nil }
+        let image = NSImage(cgImage: thumbnail, size: .zero)
+        thumbnails.setObject(image, forKey: fileName as NSString)
+        return image
     }
 
     // MARK: - Storage
 
     private func deleteFiles(of entry: ClipboardEntry) {
         if case .image(let fileName) = entry.content {
+            thumbnails.removeObject(forKey: fileName as NSString)
             try? FileManager.default.removeItem(at: imagesFolder.appending(path: fileName))
         }
     }

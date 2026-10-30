@@ -23,6 +23,8 @@ final class WindowSwitcher: NSObject, NSWindowDelegate {
 
     func close() {
         panel?.orderOut(nil)
+        // Let go of the window list (icons and all) until the next time it opens.
+        model.clear()
     }
 
     /// Clicking anywhere else closes it.
@@ -85,6 +87,10 @@ final class WindowSwitcherModel {
                 window.title.localizedCaseInsensitiveContains(word) || window.appName.localizedCaseInsensitiveContains(word)
             }
         }
+    }
+
+    func clear() {
+        windows = []
     }
 
     func moveSelection(by step: Int) {

@@ -126,10 +126,16 @@ final class ShortcutStore {
     static let shared = ShortcutStore()
 
     var shortcuts: [Shortcut] = [] {
-        didSet { save() }
+        didSet {
+            // Loading the file at startup isn't a change worth reacting to.
+            guard isLoaded else { return }
+            save()
+            InputEngines.updateNeeds()
+        }
     }
 
     let fileURL: URL
+    @ObservationIgnored private var isLoaded = false
 
     private init() {
         let folder = URL.applicationSupportDirectory.appending(path: "BestTouchTool", directoryHint: .isDirectory)
@@ -140,6 +146,7 @@ final class ShortcutStore {
         }
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         fileURL = folder.appending(path: "shortcuts.json")
+        defer { isLoaded = true }
 
         guard let data = try? Data(contentsOf: fileURL) else { return }
         do {

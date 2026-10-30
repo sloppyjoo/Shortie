@@ -30,6 +30,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ClipboardHistory.shared.start()
         MenuBarMenus.shared.refresh()
         if HyperKey.shared.isEnabled { HyperKey.shared.apply() }
+        // Settings like smooth scrolling or window snapping can switch listeners on or off.
+        NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { InputEngines.updateNeeds() }
+        }
         NotchBar.shared.update()
 
         // Show the welcome window until Glide has everything it needs.
@@ -62,6 +66,17 @@ enum InputEngines {
         GestureEngine.shared.start()
         MouseButtonEngine.shared.start()
         WindowDragEngine.shared.start()
+        updateNeeds()
+    }
+
+    /// Switches each listener on or off depending on whether anything needs it.
+    /// Called when your shortcuts or settings change.
+    static func updateNeeds() {
+        ScrollEngine.shared.updateNeed()
+        TrafficLightEngine.shared.updateNeed()
+        GestureEngine.shared.updateListening()
+        MouseButtonEngine.shared.updateNeed()
+        WindowDragEngine.shared.updateNeed()
     }
 }
 
