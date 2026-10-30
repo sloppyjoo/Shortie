@@ -7,12 +7,13 @@ We build one piece at a time and save a git checkpoint after each piece works.
 
 1. **App shell** – menu bar icon (left-click opens the dashboard, right-click shows About/Quit), welcome window, permissions.
 2. **Keyboard shortcuts** – open an app, run an Apple Shortcut, open a website or file, type text. Saved to `shortcuts.json`.
-3. **Window snapping** – halves, corners, thirds, maximise, centre, restore, next display; size cycling ½ → ⅓ → ⅔. *(Waiting for your test.)*
+3. **Window snapping** – halves, corners, thirds, maximise, centre, restore, next display; size cycling ½ → ⅓ → ⅔.
+4. **Scrolling fix** (replaces LinearMouse) – separate wheel direction, smooth momentum scrolling with a speed slider.
 
 ## Next
 
-4. **Scrolling fix** (replaces LinearMouse) – natural scrolling on the trackpad, traditional on the mouse wheel.
-   Can grow later: linear wheel scrolling, smooth scrolling, pointer speed and acceleration per device.
+Possible scrolling extras: per-device settings, pointer speed and acceleration.
+
 5. **Notch bar** – a black bar across the menu bar that hides the notch, switched on per screen.
 6. **Trackpad and mouse gestures** – multi-finger taps, swipes and clicks; Magic Mouse; extra mouse buttons.
    Includes a gesture recorder: do the gesture rather than picking it from a list.
