@@ -189,7 +189,28 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         ("Mac", [.clipboard, .menus, .menuBar, .permissions]),
     ]
 
-    var title: String {
+    /// The page's title from its saved name, from any thread.
+    nonisolated static func title(of rawValue: String) -> String {
+        let pane: SettingsPane? = switch rawValue {
+        case "general": .general
+        case "shortcuts": .shortcuts
+        case "textShortcuts": .textShortcuts
+        case "windows": .windows
+        case "layouts": .layouts
+        case "trafficLights": .trafficLights
+        case "mouse": .mouse
+        case "gestures": .gestures
+        case "automations": .automations
+        case "clipboard": .clipboard
+        case "menus": .menus
+        case "menuBar": .menuBar
+        case "permissions": .permissions
+        default: nil
+        }
+        return pane?.title ?? rawValue
+    }
+
+    nonisolated var title: String {
         switch self {
         case .general: "General"
         case .shortcuts: "Keyboard Shortcuts"

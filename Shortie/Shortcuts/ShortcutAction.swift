@@ -340,7 +340,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .remapKey(let from, let to):
             "Make \(KeyRemapper.name(for: from)) Act as \(KeyRemapper.name(for: to))"
         case .openSettingsPane(let pane):
-            "Open Shortie Settings: \(SettingsPane(rawValue: pane)?.title ?? pane)"
+            "Open Shortie Settings: \(SettingsPane.title(of: pane))"
         case .callService(let name):
             "Run “\(name)” Service"
         case .soundInput(let uid, let name):
