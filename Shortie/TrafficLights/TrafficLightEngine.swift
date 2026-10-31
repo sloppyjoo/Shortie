@@ -95,7 +95,10 @@ final class TrafficLightEngine {
         let action = match.action
         let target = hit.target
         // Run it just after we return, so the click is never held up.
-        DispatchQueue.main.async { ActionRunner.run(action, on: target) }
+        DispatchQueue.main.async {
+            Haptics.actionRan()
+            ActionRunner.run(action, on: target)
+        }
         return true
     }
 

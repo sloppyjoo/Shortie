@@ -4,6 +4,7 @@ import SwiftUI
 /// yellow and green buttons on every window.
 struct TrafficLightsSettingsView: View {
     private var store = ShortcutStore.shared
+    @Environment(\.listSearch) private var search
     @State private var editing: TrafficLightEditorRequest?
 
     var body: some View {
@@ -16,8 +17,12 @@ struct TrafficLightsSettingsView: View {
                 if !store.shortcuts.contains(where: { $0.trafficLightClick != nil }) {
                     EmptyState("No window button actions yet.", pixels: PixelArt.windowButtons)
                 }
+                if !search.isEmpty, store.shortcuts.contains(where: { $0.trafficLightClick != nil }),
+                   !store.shortcuts.contains(where: { $0.trafficLightClick != nil && $0.matches(search) }) {
+                    Text("No matches.").foregroundStyle(.secondary)
+                }
                 ForEach($store.shortcuts) { $shortcut in
-                    if let click = shortcut.trafficLightClick {
+                    if let click = shortcut.trafficLightClick, shortcut.matches(search) {
                         TrafficLightRow(
                             shortcut: $shortcut,
                             click: click,
@@ -245,7 +250,7 @@ struct ActionKindPicker: View {
 
     /// Clicks and window commands first, since they're what you'll usually want
     /// from a gesture or window button.
-    private static let order: [ShortcutAction.Kind] = [
+    static let order: [ShortcutAction.Kind] = [
         .mouseClick, .system, .setVolume, .soundOutput, .pressKeys, .appCommand, .moveWindow, .restoreLayout,
         .openApp, .runShortcut, .open, .typeText, .text, .showMessage, .speak,
         .menuItem, .appleScript, .shellScript, .steps, .showMenu,
@@ -255,16 +260,19 @@ struct ActionKindPicker: View {
     static let stepKinds: [ShortcutAction.Kind] = order.filter { $0 != .steps } + [.wait]
 
     var body: some View {
-        Picker("Action", selection: Binding(
-            get: { action.kind },
-            set: { if $0 != action.kind { action = $0.emptyAction } }
-        )) {
-            ForEach(forSteps ? Self.stepKinds : Self.order) { kind in
-                Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
+        HStack(spacing: 6) {
+            Picker("Action", selection: Binding(
+                get: { action.kind },
+                set: { if $0 != action.kind { action = $0.emptyAction } }
+            )) {
+                ForEach(forSteps ? Self.stepKinds : Self.order) { kind in
+                    Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
+                }
             }
+            .labelsHidden()
+            .fixedSize()
+            ActionSearchButton(action: $action, forSteps: forSteps)
         }
-        .labelsHidden()
-        .fixedSize()
     }
 }
 

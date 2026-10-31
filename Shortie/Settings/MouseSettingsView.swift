@@ -2,6 +2,7 @@ import SwiftUI
 
 /// The Mouse section of the dashboard: extra mouse buttons, then scrolling.
 struct MouseSettingsView: View {
+    @Environment(\.listSearch) private var search
     @AppStorage(DefaultsKey.wheelDirection) private var wheelDirection = WheelDirection.system
     @AppStorage(DefaultsKey.smoothScrolling) private var smoothScrolling = true
     @AppStorage(DefaultsKey.scrollSpeed) private var scrollSpeed = 1.0
@@ -83,8 +84,12 @@ struct MouseSettingsView: View {
             if !store.shortcuts.contains(where: { $0.mouseButtonClick != nil }) {
                 EmptyState("No button actions yet.", pixels: PixelArt.mouse)
             }
+            if !search.isEmpty, store.shortcuts.contains(where: { $0.mouseButtonClick != nil }),
+               !store.shortcuts.contains(where: { $0.mouseButtonClick != nil && $0.matches(search) }) {
+                Text("No matches.").foregroundStyle(.secondary)
+            }
             ForEach($store.shortcuts) { $shortcut in
-                if let click = shortcut.mouseButtonClick {
+                if let click = shortcut.mouseButtonClick, shortcut.matches(search) {
                     TriggerRow(
                         shortcut: $shortcut,
                         conflicts: store.conflicts(with: shortcut),

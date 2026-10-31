@@ -5,6 +5,9 @@ struct GeneralSettingsView: View {
     @AppStorage(DefaultsKey.isPaused) private var isPaused = false
     @AppStorage(DefaultsKey.hyperKey) private var hyperKey = false
     @AppStorage(DefaultsKey.hyperTapAction) private var hyperTapAction = HyperTapAction.capsLock
+    @AppStorage(DefaultsKey.haptics) private var haptics = true
+    @AppStorage(DefaultsKey.hapticStrength) private var hapticStrength = Haptics.Strength.medium
+    @State private var isImporting = false
 
     var body: some View {
         Form {
@@ -14,6 +17,18 @@ struct GeneralSettingsView: View {
                 LabeledContent("Look") { LookPicker() }
                 LaunchAtLoginToggle()
                 Toggle("Pause All Shortcuts and Gestures", isOn: $isPaused)
+                HStack {
+                    Toggle("Haptic Feedback", isOn: $haptics)
+                    InfoButton("A light tap on the trackpad when a gesture or a window-button click runs its action, and when a dragged window reaches a snap zone. Needs a Force Touch trackpad.")
+                }
+                if haptics {
+                    Picker("Strength", selection: $hapticStrength) {
+                        ForEach(Haptics.Strength.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    // Feel the new strength straight away (you're touching the trackpad to choose it).
+                    .onChange(of: hapticStrength) { Haptics.tap(hapticStrength) }
+                }
             }
 
             Section {
@@ -38,10 +53,19 @@ struct GeneralSettingsView: View {
                         NSWorkspace.shared.activateFileViewerSelecting([ShortcutStore.shared.fileURL])
                     }
                 }
+                LabeledContent("BetterTouchTool") {
+                    Button("Import…") { isImporting = true }
+                }
             }
         }
         .animation(.smooth(duration: 0.2), value: hyperKey)
+        .animation(.smooth(duration: 0.2), value: haptics)
         .formStyle(.grouped)
+        .sheet(isPresented: $isImporting) {
+            BTTImportView(done: { isImporting = false }, back: { isImporting = false }, backTitle: "Cancel")
+                .padding(28)
+                .frame(width: 500)
+        }
     }
 
     private static var version: String {

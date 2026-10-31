@@ -17,6 +17,10 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case screenSaver, forceQuit, ejectAll
     case logOut, restart, shutDown
     case openDashboard, togglePause
+    case volumeUpSmall, volumeDownSmall, brightnessUpSmall, brightnessDownSmall
+    case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
+    case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
+    case toggleCapsLock, emptyTrash
 
     var id: Self { self }
 
@@ -62,6 +66,23 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .shutDown: "Shut Down…"
         case .openDashboard: "Open Shortie Settings"
         case .togglePause: "Pause or Resume Shortie"
+        case .volumeUpSmall: "Volume Up a Little"
+        case .volumeDownSmall: "Volume Down a Little"
+        case .brightnessUpSmall: "Brightness Up a Little"
+        case .brightnessDownSmall: "Brightness Down a Little"
+        case .previousApp: "Previous App"
+        case .hideAllApps: "Hide All Apps"
+        case .showAllApps: "Show All Hidden Apps"
+        case .siri: "Siri"
+        case .spaceLeft: "Space to the Left"
+        case .spaceRight: "Space to the Right"
+        case .screenshotWindow: "Screenshot of Window"
+        case .screenshotSelectionToClipboard: "Copy Screenshot of Selection"
+        case .screenshotWindowToClipboard: "Copy Screenshot of Window"
+        case .copyTextFromScreen: "Copy Text from Screen"
+        case .pickColour: "Pick Colour from Screen"
+        case .toggleCapsLock: "Caps Lock On or Off"
+        case .emptyTrash: "Empty Bin…"
         }
     }
 
@@ -107,18 +128,37 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .shutDown: "power"
         case .openDashboard: "gearshape.fill"
         case .togglePause: "hand.raised.slash"
+        case .volumeUpSmall: "speaker.wave.2"
+        case .volumeDownSmall: "speaker.wave.1"
+        case .brightnessUpSmall: "sun.max"
+        case .brightnessDownSmall: "sun.min"
+        case .previousApp: "arrow.uturn.backward.square"
+        case .hideAllApps: "eye.slash"
+        case .showAllApps: "eye"
+        case .siri: "waveform.circle"
+        case .spaceLeft: "rectangle.lefthalf.inset.filled.arrow.left"
+        case .spaceRight: "rectangle.righthalf.inset.filled.arrow.right"
+        case .screenshotWindow: "macwindow"
+        case .screenshotSelectionToClipboard: "rectangle.dashed.badge.record"
+        case .screenshotWindowToClipboard: "macwindow.badge.plus"
+        case .copyTextFromScreen: "text.viewfinder"
+        case .pickColour: "eyedropper"
+        case .toggleCapsLock: "capslock"
+        case .emptyTrash: "trash"
         }
     }
 
     /// For menus, so related actions sit together.
     static let groups: [[SystemAction]] = [
         [.playPause, .nextTrack, .previousTrack],
-        [.volumeUp, .volumeDown, .mute, .toggleMicrophone],
-        [.brightnessUp, .brightnessDown, .keyboardBrightnessUp, .keyboardBrightnessDown],
-        [.windowSwitcher, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .emojiAndSymbols],
-        [.toggleDarkMode, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons],
-        [.screenshotTool, .screenshotSelection, .screenshotScreen],
-        [.screenSaver, .forceQuit, .ejectAll],
+        [.volumeUp, .volumeDown, .volumeUpSmall, .volumeDownSmall, .mute, .toggleMicrophone],
+        [.brightnessUp, .brightnessDown, .brightnessUpSmall, .brightnessDownSmall, .keyboardBrightnessUp, .keyboardBrightnessDown],
+        [.windowSwitcher, .previousApp, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .siri, .emojiAndSymbols],
+        [.spaceLeft, .spaceRight, .hideAllApps, .showAllApps],
+        [.toggleDarkMode, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
+        [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow],
+        [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .copyTextFromScreen, .pickColour],
+        [.screenSaver, .forceQuit, .ejectAll, .emptyTrash],
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
         [.openDashboard, .togglePause],
     ]
@@ -209,6 +249,52 @@ enum SystemActionRunner {
 
         case .openDashboard:
             WindowManager.shared.show(.settings)
+        case .volumeUpSmall: MediaKey.press(NX_KEYTYPE_SOUND_UP, small: true)
+        case .volumeDownSmall: MediaKey.press(NX_KEYTYPE_SOUND_DOWN, small: true)
+        case .brightnessUpSmall: MediaKey.press(NX_KEYTYPE_BRIGHTNESS_UP, small: true)
+        case .brightnessDownSmall: MediaKey.press(NX_KEYTYPE_BRIGHTNESS_DOWN, small: true)
+
+        case .previousApp:
+            // A quick ⌘-Tab goes back to the app you used before.
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_Tab), modifiers: .command, keyName: "Tab"))
+        case .hideAllApps:
+            for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular {
+                app.hide()
+            }
+        case .showAllApps:
+            for app in NSWorkspace.shared.runningApplications where app.isHidden {
+                app.unhide()
+            }
+        case .siri:
+            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Siri.app"))
+        // macOS's own Mission Control shortcuts. Arrow keys count as function keys,
+        // so they need those flags too.
+        case .spaceLeft:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_LeftArrow), modifiers: .control, keyName: "←"), extraFlags: [.maskSecondaryFn, .maskNumericPad])
+        case .spaceRight:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_RightArrow), modifiers: .control, keyName: "→"), extraFlags: [.maskSecondaryFn, .maskNumericPad])
+
+        case .screenshotWindow:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_4), modifiers: [.shift, .command], keyName: "4"))
+            // Space switches the crosshair to picking a window.
+            Task {
+                try? await Task.sleep(for: .milliseconds(250))
+                KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_Space), modifiers: [], keyName: "Space"))
+            }
+        case .screenshotSelectionToClipboard:
+            run("/usr/sbin/screencapture", ["-i", "-c"])
+        case .screenshotWindowToClipboard:
+            run("/usr/sbin/screencapture", ["-i", "-W", "-c"])
+        case .copyTextFromScreen:
+            ScreenText.copy()
+        case .pickColour:
+            ColourPicker.pick()
+        case .toggleCapsLock:
+            CapsLockState.set(!CapsLockState.isOn)
+        case .emptyTrash:
+            // Finder asks first, unless you've turned that off in Finder's settings.
+            ScriptRunner.runAppleScript(#"tell application "Finder" to empty trash"#)
+
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)
@@ -232,9 +318,11 @@ enum SystemActionRunner {
 /// The media keys on a Mac keyboard (play, volume, brightness…) aren't ordinary
 /// keys: they're sent as special "system" events, which we imitate here.
 private enum MediaKey {
-    static func press(_ key: Int32) {
+    /// `small` holds ⇧⌥, which makes volume and brightness move a quarter step.
+    static func press(_ key: Int32, small: Bool = false) {
+        let modifiers: NSEvent.ModifierFlags = small ? [.shift, .option] : []
         for isDown in [true, false] {
-            let flags = NSEvent.ModifierFlags(rawValue: isDown ? 0xA00 : 0xB00)
+            let flags = NSEvent.ModifierFlags(rawValue: (isDown ? 0xA00 : 0xB00) | modifiers.rawValue)
             let data1 = (Int(key) << 16) | ((isDown ? 0xA : 0xB) << 8)
             let event = NSEvent.otherEvent(
                 with: .systemDefined, location: .zero, modifierFlags: flags, timestamp: 0,

@@ -6,6 +6,9 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     case closeWindow, minimizeWindow, toggleFullScreen
     case closeAllWindows, minimizeAllWindows
     case hideApp, hideOtherApps, quitApp, quitOtherApps
+    case closeWindowOrQuit
+    case closePointerWindow, minimizePointerWindow, zoomPointerWindow, raisePointerWindow
+    case hidePointerApp, quitPointerApp
 
     var id: Self { self }
 
@@ -20,6 +23,13 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .hideOtherApps: "Hide Other Apps"
         case .quitApp: "Quit App"
         case .quitOtherApps: "Quit Other Apps"
+        case .closeWindowOrQuit: "Close Window, or Quit if It's the Last"
+        case .closePointerWindow: "Close Window Under Pointer"
+        case .minimizePointerWindow: "Minimise Window Under Pointer"
+        case .zoomPointerWindow: "Zoom Window Under Pointer"
+        case .raisePointerWindow: "Bring Window Under Pointer to Front"
+        case .hidePointerApp: "Hide App Under Pointer"
+        case .quitPointerApp: "Quit App Under Pointer"
         }
     }
 
@@ -34,6 +44,13 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .hideOtherApps: "eye.slash.fill"
         case .quitApp: "power"
         case .quitOtherApps: "power.circle"
+        case .closeWindowOrQuit: "xmark.square"
+        case .closePointerWindow: "xmark.circle"
+        case .minimizePointerWindow: "minus.circle"
+        case .zoomPointerWindow: "plus.circle"
+        case .raisePointerWindow: "macwindow.on.rectangle"
+        case .hidePointerApp: "eye.slash.circle"
+        case .quitPointerApp: "power.circle.fill"
         }
     }
 
@@ -41,8 +58,17 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     static let groups: [[AppCommand]] = [
         [.closeWindow, .minimizeWindow, .toggleFullScreen],
         [.closeAllWindows, .minimizeAllWindows],
-        [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps],
+        [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps, .closeWindowOrQuit],
+        [.closePointerWindow, .minimizePointerWindow, .zoomPointerWindow, .raisePointerWindow, .hidePointerApp, .quitPointerApp],
     ]
+
+    /// Commands that act on whatever is under the pointer rather than the window you're using.
+    var usesPointer: Bool {
+        switch self {
+        case .closePointerWindow, .minimizePointerWindow, .zoomPointerWindow, .raisePointerWindow, .hidePointerApp, .quitPointerApp: true
+        default: false
+        }
+    }
 }
 
 /// The window an action should apply to. From a keyboard shortcut that's the
@@ -58,17 +84,53 @@ nonisolated struct ActionTarget: @unchecked Sendable {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         return ActionTarget(window: AX.focusedWindow(of: app.processIdentifier), processID: app.processIdentifier)
     }
+
+    /// The window under the pointer, and its app.
+    @MainActor static var underPointer: ActionTarget? {
+        guard let point = CGEvent(source: nil)?.location else { return nil }
+        var element: AXUIElement?
+        guard AXUIElementCopyElementAtPosition(AXUIElementCreateSystemWide(), Float(point.x), Float(point.y), &element) == .success,
+              let element
+        else { return nil }
+        var processID: pid_t = 0
+        AXUIElementGetPid(element, &processID)
+        let window = AX.string(element, kAXRoleAttribute) == kAXWindowRole ? element : AX.element(element, kAXWindowAttribute)
+        return ActionTarget(window: window, processID: processID)
+    }
 }
 
 enum AppCommandRunner {
     static func run(_ command: AppCommand, on target: ActionTarget) {
+        var target = target
+        if command.usesPointer {
+            guard let underPointer = MainActor.assumeIsolated({ ActionTarget.underPointer }) else { return }
+            target = underPointer
+        }
         let app = NSRunningApplication(processIdentifier: target.processID)
 
         switch command {
-        case .closeWindow:
+        case .closeWindow, .closePointerWindow:
             target.window.map(AX.close)
-        case .minimizeWindow:
+        case .minimizeWindow, .minimizePointerWindow:
             target.window.map(AX.minimize)
+        case .zoomPointerWindow:
+            if let window = target.window, let button = AX.element(window, kAXZoomButtonAttribute) {
+                AXUIElementPerformAction(button, kAXPressAction as CFString)
+            }
+        case .raisePointerWindow:
+            target.window.map { AXUIElementPerformAction($0, kAXRaiseAction as CFString) }
+            app?.activate()
+        case .hidePointerApp:
+            app?.hide()
+        case .quitPointerApp:
+            if app?.bundleIdentifier != "com.apple.finder" { app?.terminate() }
+        case .closeWindowOrQuit:
+            // Minimised windows count as open, so the app only quits when none are left.
+            if AX.windows(of: target.processID).count <= 1, app?.bundleIdentifier != "com.apple.finder" {
+                app?.terminate()
+            } else {
+                target.window.map(AX.close)
+            }
         case .toggleFullScreen:
             if let window = target.window {
                 let isFullScreen = AX.bool(window, "AXFullScreen") ?? false

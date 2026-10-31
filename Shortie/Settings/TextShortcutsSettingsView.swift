@@ -4,6 +4,7 @@ import SwiftUI
 /// and it's replaced with longer text (or runs any other action).
 struct TextShortcutsSettingsView: View {
     private var store = ShortcutStore.shared
+    @Environment(\.listSearch) private var search
     @State private var editing: TextShortcutEditorRequest?
 
     var body: some View {
@@ -16,8 +17,12 @@ struct TextShortcutsSettingsView: View {
                 if !store.shortcuts.contains(where: { $0.abbreviation != nil }) {
                     EmptyState("No text shortcuts yet.", pixels: PixelArt.typing)
                 }
+                if !search.isEmpty, store.shortcuts.contains(where: { $0.abbreviation != nil }),
+                   !store.shortcuts.contains(where: { $0.abbreviation != nil && $0.matches(search) }) {
+                    Text("No matches.").foregroundStyle(.secondary)
+                }
                 ForEach($store.shortcuts) { $shortcut in
-                    if let abbreviation = shortcut.abbreviation {
+                    if let abbreviation = shortcut.abbreviation, shortcut.matches(search) {
                         TriggerRow(
                             shortcut: $shortcut,
                             conflicts: store.conflicts(with: shortcut),

@@ -4,6 +4,7 @@ import SwiftUI
 /// or opened at the pointer.
 struct CustomMenusSettingsView: View {
     private var store = CustomMenuStore.shared
+    @Environment(\.listSearch) private var search
     @State private var editing: CustomMenu?
 
     var body: some View {
@@ -16,8 +17,13 @@ struct CustomMenusSettingsView: View {
                 if store.menus.isEmpty {
                     EmptyState("No menus yet.", pixels: PixelArt.menu)
                 }
+                if !search.isEmpty, !store.menus.isEmpty, !store.menus.contains(where: { $0.name.localizedCaseInsensitiveContains(search) }) {
+                    Text("No matches.").foregroundStyle(.secondary)
+                }
                 ForEach($store.menus) { $menu in
-                    CustomMenuRow(menu: $menu, edit: { editing = menu }, delete: { store.delete(id: menu.id) })
+                    if search.isEmpty || menu.name.localizedCaseInsensitiveContains(search) {
+                        CustomMenuRow(menu: $menu, edit: { editing = menu }, delete: { store.delete(id: menu.id) })
+                    }
                 }
             } header: {
                 HStack {

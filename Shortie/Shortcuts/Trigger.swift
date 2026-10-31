@@ -116,15 +116,22 @@ nonisolated enum AutomationEvent: Codable, Hashable {
     case appLaunched(bundleID: String)
     case appQuit(bundleID: String)
     case appActivated(bundleID: String)
+    case appDeactivated(bundleID: String)
     case macWoke
     case macWillSleep
     case screenLocked
     case screenUnlocked
     case chargerConnected
     case chargerDisconnected
+    case displaySlept, displayWoke, screenSaverStarted, screenSaverStopped
+    case spaceChanged, displayConnected, displayDisconnected
+    case diskMounted, diskEjected, internetConnected, internetDisconnected
 
     enum Kind: String, CaseIterable, Identifiable {
-        case appLaunched, appQuit, appActivated, macWoke, macWillSleep, screenLocked, screenUnlocked, chargerConnected, chargerDisconnected
+        case appLaunched, appQuit, appActivated, appDeactivated, macWoke, macWillSleep, screenLocked, screenUnlocked
+        case displaySlept, displayWoke, screenSaverStarted, screenSaverStopped
+        case chargerConnected, chargerDisconnected, spaceChanged, displayConnected, displayDisconnected
+        case diskMounted, diskEjected, internetConnected, internetDisconnected
         var id: Self { self }
 
         var title: String {
@@ -132,17 +139,29 @@ nonisolated enum AutomationEvent: Codable, Hashable {
             case .appLaunched: "An App Opens"
             case .appQuit: "An App Quits"
             case .appActivated: "An App Comes to the Front"
+            case .appDeactivated: "An App Goes to the Back"
             case .macWoke: "Mac Wakes"
             case .macWillSleep: "Mac Goes to Sleep"
             case .screenLocked: "Screen Locks"
             case .screenUnlocked: "Screen Unlocks"
             case .chargerConnected: "Charger Connected"
             case .chargerDisconnected: "Charger Disconnected"
+            case .displaySlept: "Display Turns Off"
+            case .displayWoke: "Display Turns On"
+            case .screenSaverStarted: "Screen Saver Starts"
+            case .screenSaverStopped: "Screen Saver Stops"
+            case .spaceChanged: "You Switch Space"
+            case .displayConnected: "A Display Is Connected"
+            case .displayDisconnected: "A Display Is Disconnected"
+            case .diskMounted: "A Disk Is Connected"
+            case .diskEjected: "A Disk Is Ejected"
+            case .internetConnected: "Internet Connects"
+            case .internetDisconnected: "Internet Disconnects"
             }
         }
 
         var needsApp: Bool {
-            self == .appLaunched || self == .appQuit || self == .appActivated
+            self == .appLaunched || self == .appQuit || self == .appActivated || self == .appDeactivated
         }
     }
 
@@ -151,12 +170,24 @@ nonisolated enum AutomationEvent: Codable, Hashable {
         case .appLaunched: self = .appLaunched(bundleID: bundleID)
         case .appQuit: self = .appQuit(bundleID: bundleID)
         case .appActivated: self = .appActivated(bundleID: bundleID)
+        case .appDeactivated: self = .appDeactivated(bundleID: bundleID)
         case .macWoke: self = .macWoke
         case .macWillSleep: self = .macWillSleep
         case .screenLocked: self = .screenLocked
         case .screenUnlocked: self = .screenUnlocked
         case .chargerConnected: self = .chargerConnected
         case .chargerDisconnected: self = .chargerDisconnected
+        case .displaySlept: self = .displaySlept
+        case .displayWoke: self = .displayWoke
+        case .screenSaverStarted: self = .screenSaverStarted
+        case .screenSaverStopped: self = .screenSaverStopped
+        case .spaceChanged: self = .spaceChanged
+        case .displayConnected: self = .displayConnected
+        case .displayDisconnected: self = .displayDisconnected
+        case .diskMounted: self = .diskMounted
+        case .diskEjected: self = .diskEjected
+        case .internetConnected: self = .internetConnected
+        case .internetDisconnected: self = .internetDisconnected
         }
     }
 
@@ -165,19 +196,31 @@ nonisolated enum AutomationEvent: Codable, Hashable {
         case .appLaunched: .appLaunched
         case .appQuit: .appQuit
         case .appActivated: .appActivated
+        case .appDeactivated: .appDeactivated
         case .macWoke: .macWoke
         case .macWillSleep: .macWillSleep
         case .screenLocked: .screenLocked
         case .screenUnlocked: .screenUnlocked
         case .chargerConnected: .chargerConnected
         case .chargerDisconnected: .chargerDisconnected
+        case .displaySlept: .displaySlept
+        case .displayWoke: .displayWoke
+        case .screenSaverStarted: .screenSaverStarted
+        case .screenSaverStopped: .screenSaverStopped
+        case .spaceChanged: .spaceChanged
+        case .displayConnected: .displayConnected
+        case .displayDisconnected: .displayDisconnected
+        case .diskMounted: .diskMounted
+        case .diskEjected: .diskEjected
+        case .internetConnected: .internetConnected
+        case .internetDisconnected: .internetDisconnected
         }
     }
 
     /// The app, for app events.
     var bundleID: String? {
         switch self {
-        case .appLaunched(let id), .appQuit(let id), .appActivated(let id): id
+        case .appLaunched(let id), .appQuit(let id), .appActivated(let id), .appDeactivated(let id): id
         default: nil
         }
     }
@@ -193,6 +236,18 @@ nonisolated enum AutomationEvent: Codable, Hashable {
         case .screenUnlocked: "lock.open"
         case .chargerConnected: "powerplug"
         case .chargerDisconnected: "battery.75percent"
+        case .appDeactivated: "rectangle.on.rectangle.slash"
+        case .displaySlept: "display"
+        case .displayWoke: "sun.max"
+        case .screenSaverStarted: "sparkles.tv"
+        case .screenSaverStopped: "tv"
+        case .spaceChanged: "square.split.2x1"
+        case .displayConnected: "display.2"
+        case .displayDisconnected: "display.trianglebadge.exclamationmark"
+        case .diskMounted: "externaldrive.badge.plus"
+        case .diskEjected: "eject"
+        case .internetConnected: "wifi"
+        case .internetDisconnected: "wifi.slash"
         }
     }
 }

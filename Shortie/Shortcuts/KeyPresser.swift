@@ -3,13 +3,14 @@ import CoreGraphics
 
 /// Presses a keyboard shortcut, as if you'd typed it, in whatever app is in front.
 enum KeyPresser {
-    static func press(_ combo: KeyCombo) {
+    /// `extraFlags` is for keys macOS expects with more than ⌃⌥⇧⌘, like arrows.
+    static func press(_ combo: KeyCombo, extraFlags: CGEventFlags = []) {
         // A private event source, so modifier keys you're physically holding
         // (say, from the shortcut that triggered this) don't get mixed in.
         let source = CGEventSource(stateID: .privateState)
         for isDown in [true, false] {
             let event = CGEvent(keyboardEventSource: source, virtualKey: combo.keyCode, keyDown: isDown)
-            event?.flags = combo.modifiers.eventFlags
+            event?.flags = combo.modifiers.eventFlags.union(extraFlags)
             event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
             event?.post(tap: .cghidEventTap)
         }

@@ -320,7 +320,10 @@ final class GestureEngine {
 
         let action = shortcut.action
         // Run it just after we return, so the trackpad is never held up.
-        DispatchQueue.main.async { ActionRunner.run(action) }
+        DispatchQueue.main.async {
+            Haptics.actionRan()
+            ActionRunner.run(action)
+        }
         return true
     }
 }

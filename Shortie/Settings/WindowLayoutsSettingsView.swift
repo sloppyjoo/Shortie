@@ -19,6 +19,7 @@ struct WindowLayoutsSettingsView: View {
 
 private struct SavedLayoutsSection: View {
     private var store = WindowLayoutStore.shared
+    @Environment(\.listSearch) private var search
 
     @State private var naming: NameRequest?
 
@@ -27,7 +28,7 @@ private struct SavedLayoutsSection: View {
             if store.layouts.isEmpty {
                 EmptyState("No layouts yet. Arrange your windows how you like them, then save.", pixels: PixelArt.layout)
             }
-            ForEach(store.layouts) { layout in
+            ForEach(store.layouts.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }) { layout in
                 LayoutRow(
                     layout: layout,
                     rename: { naming = NameRequest(layoutID: layout.id, name: layout.name) },

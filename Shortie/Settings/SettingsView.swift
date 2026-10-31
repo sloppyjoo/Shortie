@@ -4,6 +4,8 @@ import SwiftUI
 /// under plain headings, and the chosen section on the right.
 struct SettingsView: View {
     @State private var selection: SettingsPane?
+    /// What's typed in the toolbar's search field. Pages with lists filter by it.
+    @State private var search = ""
 
     init(initialPane: SettingsPane = .general) {
         _selection = State(initialValue: initialPane)
@@ -73,12 +75,16 @@ struct SettingsView: View {
         } detail: {
             let pane = selection ?? .general
             detail(for: pane)
+                .environment(\.listSearch, search)
+                .modifier(PaneSearch(isOn: pane.hasList, text: $search))
                 .frame(minWidth: 500, maxWidth: .infinity, maxHeight: .infinity)
                 .navigationTitle(pane.title)
                 .id(pane)
                 .transition(.opacity)
         }
         .animation(.smooth(duration: 0.2), value: selection)
+        // Each page starts with an empty search.
+        .onChange(of: selection) { search = "" }
         // Don't let the sidebar be collapsed (for example by dragging its edge).
         .onChange(of: columns) { _, newValue in
             if newValue != .all { columns = .all }
@@ -118,6 +124,45 @@ struct SettingsView: View {
     }
 }
 
+extension EnvironmentValues {
+    /// What's typed in the dashboard's search field, for lists to filter by.
+    @Entry var listSearch = ""
+}
+
+/// The toolbar search field, only on pages that have a list to search.
+private struct PaneSearch: ViewModifier {
+    let isOn: Bool
+    @Binding var text: String
+
+    func body(content: Content) -> some View {
+        if isOn {
+            content.searchable(text: $text, placement: .toolbar, prompt: "Search")
+        } else {
+            content
+        }
+    }
+}
+
+extension Shortcut {
+    /// Whether this rule's trigger or action mentions every word in `query`.
+    func matches(_ query: String) -> Bool {
+        let words = query.lowercased().split(separator: " ")
+        guard !words.isEmpty else { return true }
+        var text = [action.title, action.kind.editorTitle]
+        if let keyCombo {
+            text.append(keyCombo.displayString)
+            if keyCombo.modifiers == [.control, .option, .shift, .command] { text.append("hyper") }
+        }
+        if let gesture { text.append(gesture.title) }
+        if let click = trafficLightClick { text.append("\(click.button.title) \(click.clickDescription)") }
+        if let click = mouseButtonClick { text.append(click.title) }
+        if let abbreviation { text.append(abbreviation) }
+        if let event { text.append(event.kind.title) }
+        let haystack = text.joined(separator: " ").lowercased()
+        return words.allSatisfy { haystack.contains($0) }
+    }
+}
+
 enum SettingsPane: String, CaseIterable, Identifiable {
     case general, shortcuts, textShortcuts, windows, layouts, trafficLights, mouse, gestures, automations, clipboard, menus, menuBar, permissions
 
@@ -152,7 +197,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     /// One short line under the title at the top of the page.
     var subtitle: String {
         switch self {
-        case .general: "Start-up, pausing and the Hyper key."
+        case .general: "Look, start-up, haptics and the Hyper key."
         case .shortcuts: "Key combinations that run actions."
         case .textShortcuts: "Abbreviations that expand as you type."
         case .gestures: "Trackpad taps, swipes, pinches and clicks."
@@ -168,6 +213,14 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         }
     }
 
+
+    /// Pages with a list worth searching.
+    var hasList: Bool {
+        switch self {
+        case .shortcuts, .textShortcuts, .gestures, .mouse, .automations, .windows, .layouts, .trafficLights, .menus: true
+        case .general, .clipboard, .menuBar, .permissions: false
+        }
+    }
 
     /// The Modern look's icon.
     var systemImage: String {

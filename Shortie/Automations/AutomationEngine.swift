@@ -1,9 +1,10 @@
 import AppKit
 import IOKit.ps
+import Network
 
-/// Runs your automations when things happen: apps opening, quitting or coming
-/// to the front, the Mac waking or sleeping, the screen locking, or the charger
-/// being plugged in or out.
+/// Runs your automations when things happen: apps opening, quitting or switching,
+/// the Mac waking or sleeping, the screen locking, the charger, displays, disks,
+/// Spaces and the internet connection.
 ///
 /// These all come from notifications macOS already sends to every app, so no
 /// extra permission is needed.
@@ -12,6 +13,9 @@ final class AutomationEngine {
 
     private var isStarted = false
     private var wasOnCharger: Bool?
+    private var displayCount = NSScreen.screens.count
+    private var isOnline: Bool?
+    private let network = NWPathMonitor()
 
     func start() {
         guard !isStarted else { return }
@@ -21,12 +25,32 @@ final class AutomationEngine {
         observe(workspace, NSWorkspace.didLaunchApplicationNotification) { .appLaunched(bundleID: $0) }
         observe(workspace, NSWorkspace.didTerminateApplicationNotification) { .appQuit(bundleID: $0) }
         observe(workspace, NSWorkspace.didActivateApplicationNotification) { .appActivated(bundleID: $0) }
+        observe(workspace, NSWorkspace.didDeactivateApplicationNotification) { .appDeactivated(bundleID: $0) }
         observe(workspace, NSWorkspace.didWakeNotification, .macWoke)
         observe(workspace, NSWorkspace.willSleepNotification, .macWillSleep)
+        observe(workspace, NSWorkspace.screensDidSleepNotification, .displaySlept)
+        observe(workspace, NSWorkspace.screensDidWakeNotification, .displayWoke)
+        observe(workspace, NSWorkspace.activeSpaceDidChangeNotification, .spaceChanged)
+        observe(workspace, NSWorkspace.didMountNotification, .diskMounted)
+        observe(workspace, NSWorkspace.didUnmountNotification, .diskEjected)
 
         let distributed = DistributedNotificationCenter.default()
         observe(distributed, Notification.Name("com.apple.screenIsLocked"), .screenLocked)
         observe(distributed, Notification.Name("com.apple.screenIsUnlocked"), .screenUnlocked)
+        observe(distributed, Notification.Name("com.apple.screensaver.didstart"), .screenSaverStarted)
+        observe(distributed, Notification.Name("com.apple.screensaver.didstop"), .screenSaverStopped)
+
+        // Displays: compare how many there are each time the arrangement changes.
+        NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { AutomationEngine.shared.screensChanged() }
+        }
+
+        // Internet: the first answer is just how things are now, not a change.
+        network.pathUpdateHandler = { path in
+            let isOnline = path.status == .satisfied
+            DispatchQueue.main.async { AutomationEngine.shared.networkChanged(isOnline) }
+        }
+        network.start(queue: .global(qos: .utility))
 
         // Power changes come through IOKit instead.
         wasOnCharger = Self.isOnCharger
@@ -48,6 +72,19 @@ final class AutomationEngine {
         center.addObserver(forName: name, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated { AutomationEngine.shared.fire(event) }
         }
+    }
+
+    private func screensChanged() {
+        let count = NSScreen.screens.count
+        defer { displayCount = count }
+        if count > displayCount { fire(.displayConnected) }
+        if count < displayCount { fire(.displayDisconnected) }
+    }
+
+    private func networkChanged(_ online: Bool) {
+        defer { isOnline = online }
+        guard let isOnline, isOnline != online else { return }
+        fire(online ? .internetConnected : .internetDisconnected)
     }
 
     fileprivate func powerChanged() {

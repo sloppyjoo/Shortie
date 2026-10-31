@@ -20,6 +20,11 @@ enum Snapshots {
             }
             let editors: [(String, AnyView)] = [
                 ("onboarding", AnyView(OnboardingView())),
+                ("get-started", AnyView(GetStartedView(choose: { _ in }, back: {}).padding(40).frame(width: 540))),
+                ("import", AnyView(BTTImportView(done: {}).padding(40).frame(width: 540))),
+                ("action-search", AnyView(ActionSearchList(forSteps: false) { _ in })),
+                ("action-search-max", AnyView(ActionSearchList(forSteps: false, query: "max") { _ in })),
+                ("action-search-typed", AnyView(ActionSearchList(forSteps: false, typedLater: "desktop") { _ in })),
                 ("editor-keyboard", AnyView(ActionEditor(keyCombo: nil, action: .openApp(path: "/System/Applications/Safari.app"), apps: nil) { _, _, _ in })),
                 ("editor-gesture", AnyView(GestureEditor(gesture: .swipe(fingers: 3, direction: .down), action: .system(action: .controlCentre), apps: AppScope(mode: .only, bundleIDs: ["com.apple.Safari", "com.apple.finder"])) { _, _, _ in })),
                 ("editor-window-button", AnyView(TrafficLightEditor(click: TrafficLightClick(button: .zoom, mouseButton: .left, modifiers: []), action: .moveWindow(position: .maximize), apps: nil) { _, _, _ in })),

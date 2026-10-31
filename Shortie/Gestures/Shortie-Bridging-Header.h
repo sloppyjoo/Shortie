@@ -52,3 +52,11 @@ typedef void (*MTDeviceStopFunction)(MTDeviceRef device);
 typedef void (*MTUnregisterContactFrameCallbackFunction)(MTDeviceRef device, MTContactCallbackFunction callback);
 /// Width and height of the touch surface, in hundredths of a millimetre.
 typedef int (*MTDeviceGetSensorSurfaceDimensionsFunction)(MTDeviceRef device, int *width, int *height);
+
+// Haptics: the trackpad's actuator, the motor that makes its click and taps.
+// These work from a background app, unlike NSHapticFeedbackManager.
+typedef int (*MTDeviceGetDeviceIDFunction)(MTDeviceRef device, uint64_t *deviceID);
+typedef void *(*MTActuatorCreateFromDeviceIDFunction)(uint64_t deviceID);
+typedef int (*MTActuatorOpenFunction)(void *actuator);
+/// `actuationID` picks the feel of the tap; the other values are passed as other apps do.
+typedef int (*MTActuatorActuateFunction)(void *actuator, int32_t actuationID, uint32_t unknown1, float unknown2, float unknown3);

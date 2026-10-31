@@ -32,7 +32,9 @@ final class WindowMover: NSObject {
     private var originalFrames: [(window: AXUIElement, frame: CGRect)] = []
 
     /// Moves `window`, or the window you're using if none is given.
-    func move(_ position: WindowPosition, window: AXUIElement? = nil) {
+    /// With `animated` off, the window lands straight away (used when you've dragged
+    /// it there yourself, where a glide would only feel like lag).
+    func move(_ position: WindowPosition, window: AXUIElement? = nil, animated: Bool = true) {
         // If a window is still gliding, land it first so we start from where it's going.
         finishSlide()
 
@@ -121,7 +123,7 @@ final class WindowMover: NSObject {
 
         rememberOriginalFrame(of: window, current)
         lastMove = LastMove(window: window, position: position, cycle: cycle, frame: target.integral)
-        animate(window, from: current, to: target.integral)
+        animate([(window, current, target.integral)], animated: animated)
     }
 
     /// Moves several windows at once, all gliding along the same spring.
@@ -184,7 +186,7 @@ final class WindowMover: NSObject {
         animate([(window, start, end)])
     }
 
-    private func animate(_ moves: [(window: AXUIElement, from: CGRect, to: CGRect)]) {
+    private func animate(_ moves: [(window: AXUIElement, from: CGRect, to: CGRect)], animated: Bool = true) {
         finishSlide()
         guard !moves.isEmpty else { return }
 
@@ -193,7 +195,7 @@ final class WindowMover: NSObject {
         }
 
         // Respect System Settings › Accessibility › Display › Reduce motion.
-        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
+        guard animated, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
               items.contains(where: { !$0.from.isClose(to: $0.to, tolerance: 1) }),
               let screen = NSScreen.main
         else {
@@ -220,8 +222,14 @@ final class WindowMover: NSObject {
             finishSlide()
             return
         }
+        let started = CACurrentMediaTime()
         for item in slide.items {
             setPositionAndSize(of: item.window, to: item.from.interpolated(to: item.to, progress))
+        }
+        // Some apps (Chrome and Electron apps especially) take a while to move their
+        // windows. If they can't keep up with the screen, land now instead of stuttering.
+        if CACurrentMediaTime() - started > 1.0 / 45 {
+            finishSlide()
         }
     }
 

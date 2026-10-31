@@ -3,6 +3,7 @@ import SwiftUI
 /// The Gestures section of the dashboard: trackpad gestures that run actions,
 /// plus the Gesture Lab for seeing what Shortie recognises.
 struct GesturesSettingsView: View {
+    @Environment(\.listSearch) private var search
     private var engine = GestureEngine.shared
     private var store = ShortcutStore.shared
     @State private var editing: GestureEditorRequest?
@@ -51,8 +52,12 @@ struct GesturesSettingsView: View {
             if !store.shortcuts.contains(where: { $0.gesture != nil }) {
                 EmptyState("No gestures yet.", pixels: PixelArt.hand)
             }
+            if !search.isEmpty, store.shortcuts.contains(where: { $0.gesture != nil }),
+               !store.shortcuts.contains(where: { $0.gesture != nil && $0.matches(search) }) {
+                Text("No matches.").foregroundStyle(.secondary)
+            }
             ForEach($store.shortcuts) { $shortcut in
-                if let gesture = shortcut.gesture {
+                if let gesture = shortcut.gesture, shortcut.matches(search) {
                     TriggerRow(
                         shortcut: $shortcut,
                         conflicts: store.conflicts(with: shortcut),

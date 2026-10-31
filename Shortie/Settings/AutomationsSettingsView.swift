@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 /// when something happens, like an app opening or the Mac waking up.
 struct AutomationsSettingsView: View {
     private var store = ShortcutStore.shared
+    @Environment(\.listSearch) private var search
     @State private var editing: AutomationEditorRequest?
 
     var body: some View {
@@ -17,8 +18,12 @@ struct AutomationsSettingsView: View {
                 if !store.shortcuts.contains(where: { $0.event != nil }) {
                     EmptyState("No automations yet.", pixels: PixelArt.bolt)
                 }
+                if !search.isEmpty, store.shortcuts.contains(where: { $0.event != nil }),
+                   !store.shortcuts.contains(where: { $0.event != nil && $0.matches(search) }) {
+                    Text("No matches.").foregroundStyle(.secondary)
+                }
                 ForEach($store.shortcuts) { $shortcut in
-                    if let event = shortcut.event {
+                    if let event = shortcut.event, shortcut.matches(search) {
                         TriggerRow(
                             shortcut: $shortcut,
                             conflicts: [],

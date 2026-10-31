@@ -29,6 +29,7 @@ struct ShortcutListView<Extra: View, Top: View>: View {
     @ViewBuilder var topSections: Top
 
     private var store = ShortcutStore.shared
+    @Environment(\.listSearch) private var search
 
     /// The row whose recorder is listening for keys, if any.
     @State private var recordingID: Shortcut.ID?
@@ -79,8 +80,12 @@ struct ShortcutListView<Extra: View, Top: View>: View {
             if !store.shortcuts.contains(where: belongsHere) {
                 EmptyState(emptyText, pixels: emptyIcon)
             }
+            if !search.isEmpty, store.shortcuts.contains(where: belongsHere),
+               !store.shortcuts.contains(where: { belongsHere($0) && $0.matches(search) }) {
+                Text("No matches.").foregroundStyle(.secondary)
+            }
             ForEach($store.shortcuts) { $shortcut in
-                if belongsHere(shortcut) {
+                if belongsHere(shortcut), shortcut.matches(search) {
                     ShortcutRow(
                         shortcut: $shortcut,
                         isRecording: recordingBinding(for: shortcut.id),

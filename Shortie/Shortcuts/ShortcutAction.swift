@@ -239,7 +239,7 @@ enum ActionRunner {
         case .system(let action):
             SystemActionRunner.run(action)
         case .pressKeys(let combo):
-            combo.map(KeyPresser.press)
+            combo.map { KeyPresser.press($0) }
         case .menuItem(let path):
             let processID = target?.processID ?? NSWorkspace.shared.frontmostApplication?.processIdentifier
             if let processID, !MenuClicker.choose(path, in: processID) { NSSound.beep() }

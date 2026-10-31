@@ -184,7 +184,7 @@ final class ShortcutStore {
     /// Whether two shortcuts with the same trigger could both want to run in
     /// some app. An app-specific shortcut alongside an everywhere one isn't a
     /// clash: the app-specific one simply takes over in its apps.
-    private static func scopesOverlap(_ a: AppScope?, _ b: AppScope?) -> Bool {
+    static func scopesOverlap(_ a: AppScope?, _ b: AppScope?) -> Bool {
         let aApps = a?.mode == .only ? Set(a?.bundleIDs ?? []) : nil
         let bApps = b?.mode == .only ? Set(b?.bundleIDs ?? []) : nil
         switch (aApps, bApps) {

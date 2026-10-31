@@ -201,6 +201,7 @@ final class WindowDragEngine {
             guard zone != watch.zone else { return false }
             watch.zone = zone
             drag = .watching(watch)
+            Haptics.snapZoneChanged()
             if let zone, let screen = WindowMover.screen(at: location), let target = WindowMover.frame(for: zone, on: screen) {
                 preview.show(at: target)
             } else {
@@ -221,8 +222,9 @@ final class WindowDragEngine {
         case let .watching(watch):
             preview.hide()
             if watch.isMoving, let window = watch.window, let zone = watch.zone {
-                // Let the app finish its own drag first, then glide into place.
-                DispatchQueue.main.async { WindowMover.shared.move(zone, window: window) }
+                // Let the app finish its own drag first, then land in place straight away:
+                // you've already moved it there yourself.
+                DispatchQueue.main.async { WindowMover.shared.move(zone, window: window, animated: false) }
             }
             return false
         case nil:
@@ -324,7 +326,7 @@ private final class SnapPreview {
         self.window = window
         if window.isVisible {
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.2
+                context.duration = 0.1
                 context.timingFunction = CAMediaTimingFunction(name: .easeOut)
                 window.animator().setFrame(target, display: true)
             }
@@ -333,7 +335,7 @@ private final class SnapPreview {
             window.alphaValue = 0
             window.orderFrontRegardless()
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.15
+                context.duration = 0.06
                 window.animator().alphaValue = 1
             }
         }
@@ -342,7 +344,7 @@ private final class SnapPreview {
     func hide() {
         guard let window, window.isVisible else { return }
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.15
+            context.duration = 0.08
             window.animator().alphaValue = 0
         } completionHandler: {
             MainActor.assumeIsolated { window.orderOut(nil) }
