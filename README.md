@@ -43,7 +43,7 @@ Each rule has a trigger, an action, and the apps it applies to. Any trigger can 
 
 - Written in Swift with SwiftUI and AppKit. Uses Liquid Glass on macOS 26 and later.
 - Input listeners only run while a rule needs them. Idle CPU use is 0%.
-- No account, no analytics, and the app doesn't connect to the internet. Settings are stored in `~/Library/Application Support/Shortie`.
+- No account, no analytics, and the app doesn't connect to the internet unless you set up a Web Request action. Settings are stored in `~/Library/Application Support/Shortie`.
 - The only permission it needs is Accessibility, to read input and move windows.
 
 ## Install
