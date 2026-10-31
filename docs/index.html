@@ -718,10 +718,11 @@ const cursorURL = (svg) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")
 
 // The classic Mac arrow: black, with a thin white edge.
 const arrowStyle = { fill: '#000', line: '#000', edge: '#fff' };
-// Over anything clickable, Shortie's pointing hand: white, with a violet outline.
-const handStyle = { fill: '#fff', line: '#4b3fd1', edge: '#fff' };
-document.documentElement.style.setProperty('--arrow', `${cursorURL(cursorSVG(ICONS.pointer, arrowStyle, 2))} 2 2, auto`);
-document.documentElement.style.setProperty('--hand', `${cursorURL(cursorSVG(ICONS.hand, handStyle, 2))} 15 2, pointer`);
+// Over anything clickable, Shortie's pointing hand: white, with a black outline, like the classic Mac hand.
+const handStyle = { fill: '#fff', line: '#000' };
+// One pixel per point, about the size of the Mac's own pointer, and crisp on Retina screens.
+document.documentElement.style.setProperty('--arrow', `${cursorURL(cursorSVG(ICONS.pointer, arrowStyle, 1))} 1 1, auto`);
+document.documentElement.style.setProperty('--hand', `${cursorURL(cursorSVG(ICONS.hand, handStyle, 1))} 7 1, pointer`);
 document.querySelectorAll('.cursor').forEach((el) => { el.innerHTML = cursorSVG(ICONS.pointer, arrowStyle, 1); });
 
 // The corner box (or a double-click on the title bar) rolls a window up to its title bar.
