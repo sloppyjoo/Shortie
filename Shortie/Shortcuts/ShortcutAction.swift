@@ -116,6 +116,11 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Finds a picture on screen (like a screenshot of a button) and clicks it.
     case clickImage(path: String)
 
+    /// A floating window showing a web page, or your own HTML if it starts with "<".
+    case webView(content: String)
+    /// A searchable list of choices, from lines of text or a script's output.
+    case searchList(source: String, fromScript: Bool, output: ListOutput)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -129,6 +134,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case bluetoothDevice, midi, osc, externalBrightness, contextMenuItem, slider
         case cycle
         case clickImage
+        case webView, searchList
         var id: Self { self }
     }
 
@@ -155,6 +161,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .webView: .webView
+        case .searchList: .searchList
         case .clickImage: .clickImage
         case .cycle: .cycle
         case .bluetoothDevice: .bluetoothDevice
@@ -224,6 +232,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .webView(let content): content
+        case .searchList(let source, _, _): source
         case .clickImage(let path): path
         case .cycle(let actions): actions.isEmpty ? "" : "cycle"
         case .bluetoothDevice(let address, _, _): address
@@ -287,6 +297,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .webView: .webView(content: payload)
+        case .searchList(_, let fromScript, let output): .searchList(source: payload, fromScript: fromScript, output: output)
         case .clickImage: .clickImage(path: payload)
         case .externalBrightness: .externalBrightness(percent: Int(payload) ?? 50)
         case .contextMenuItem: .contextMenuItem(name: payload)
@@ -388,6 +400,10 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .webView(let content):
+            content.hasPrefix("<") ? "Show Web Page" : "Show \(Self.shortName(for: content)) in a Floating Window"
+        case .searchList(_, let fromScript, let output):
+            fromScript ? "Choose from a Script's List, Then \(output.title)" : "Choose from a List, Then \(output.title)"
         case .clickImage(let path):
             "Click “\(((path as NSString).lastPathComponent as NSString).deletingPathExtension)” on Screen"
         case .cycle(let actions):
@@ -557,6 +573,10 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .webView(let content):
+            WebPanel.shared.show(content)
+        case .searchList(let source, let fromScript, let output):
+            SearchableList.show(source: source, fromScript: fromScript, output: output)
         case .clickImage(let path):
             Task {
                 if let point = await ScreenImage.find(path) {

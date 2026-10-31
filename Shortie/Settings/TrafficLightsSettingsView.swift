@@ -264,6 +264,7 @@ struct ActionKindPicker: View {
         .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, 
         .cycle, 
         .clickImage, 
+        .webView, .searchList, 
         .otherRule, .pauseShortie, .steps, .showMenu,
     ]
 

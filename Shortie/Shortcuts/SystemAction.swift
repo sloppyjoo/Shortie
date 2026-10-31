@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case launcherToggle, launcherShow, launcherHide, closeWebView
     case superBrightnessToggle, superBrightnessOn, superBrightnessOff, pinchOut, pinchIn, smartZoom, rotateGestureLeft, rotateGestureRight, smoothZoomIn, smoothZoomOut, smoothRotate
     case resetTypedText, notchBarToggle, notchBarOn, notchBarOff, hideCustomMenu, loginWindow, lockHorizontal, lockVertical
     case blockScroll
@@ -92,6 +93,10 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .launcherToggle: "Show or Hide Launcher"
+        case .launcherShow: "Show Launcher"
+        case .launcherHide: "Hide Launcher"
+        case .closeWebView: "Close Floating Web Page"
         case .superBrightnessToggle: "Super Brightness On or Off (XDR)"
         case .superBrightnessOn: "Super Brightness On (XDR)"
         case .superBrightnessOff: "Super Brightness Off (XDR)"
@@ -255,6 +260,10 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .launcherToggle: "sparkle.magnifyingglass"
+        case .launcherShow: "sparkle.magnifyingglass"
+        case .launcherHide: "sparkle.magnifyingglass"
+        case .closeWebView: "xmark.rectangle"
         case .superBrightnessToggle: "sun.max.circle"
         case .superBrightnessOn: "sun.max.circle.fill"
         case .superBrightnessOff: "sun.max.circle"
@@ -383,6 +392,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
         [.showAppMenus, .showShortcutsMenu, .cheatSheet, .resetKeyRemaps],
+        [.launcherToggle, .launcherShow, .launcherHide, .closeWebView],
         [.openDashboard, .showShortieMenu, .togglePause, .toggleGestures, .restartShortie, .quitShortie],
     ]
 }
@@ -722,6 +732,14 @@ enum SystemActionRunner {
             GestureSynth.toggleSmooth(zoom: true, step: -0.01)
         case .smoothRotate:
             GestureSynth.toggleSmooth(zoom: false, step: -0.5)
+        case .launcherToggle:
+            Launcher.toggle()
+        case .launcherShow:
+            Launcher.show()
+        case .launcherHide:
+            Launcher.hide()
+        case .closeWebView:
+            WebPanel.shared.close()
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

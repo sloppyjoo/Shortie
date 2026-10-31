@@ -567,3 +567,35 @@ struct ExtraActionFields: View {
         }
     }
 }
+
+/// The controls for a searchable list: where its lines come from, and what to do with the pick.
+struct SearchListFields: View {
+    @Binding var action: ShortcutAction
+
+    var body: some View {
+        if case .searchList(let source, let fromScript, let output) = action {
+            VStack(alignment: .leading, spacing: 8) {
+                Picker("From", selection: Binding(get: { fromScript }, set: { action = .searchList(source: source, fromScript: $0, output: output) })) {
+                    Text("These Lines").tag(false)
+                    Text("A Shell Script's Output").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+                TextEditor(text: Binding(get: { source }, set: { action = .searchList(source: $0, fromScript: fromScript, output: output) }))
+                    .font(fromScript ? .body.monospaced() : .body)
+                    .frame(height: 100)
+                    .scrollContentBackground(.hidden)
+                    .padding(6)
+                    .background(.background, in: .rect(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
+                Picker("Then", selection: Binding(get: { output }, set: { action = .searchList(source: source, fromScript: fromScript, output: $0) })) {
+                    ForEach(ListOutput.allCases) { Text($0.title).tag($0) }
+                }
+                .fixedSize()
+                Text(fromScript ? "Each line the script prints is one choice." : "One choice per line.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
