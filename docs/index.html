@@ -91,7 +91,7 @@ kbd { font: inherit; }
 .win.collapsed .box::after { content: ""; position: absolute; left: 2px; right: 2px; top: 5px; height: 2px; background: var(--ink); }
 .win.collapsed .titlebar { border-bottom-color: transparent; transition-delay: .3s; }
 .win:not(.collapsed) .titlebar { transition-delay: 0s; }
-.pane { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s var(--ease); }
+.pane { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .2s ease-out; }
 .pane > div { min-height: 0; overflow: hidden; }
 .win.collapsed .pane { grid-template-rows: 0fr; }
 
@@ -136,8 +136,7 @@ section { padding: 84px 0 0; }
 .screen .bar { position: absolute; inset: 0 0 auto; height: 8%; background: var(--s-paper); border-bottom: 2px solid var(--ink); transition: background .5s; }
 .screen .win-s {
   position: absolute; background: var(--s-paper); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
-  transition: left .6s var(--ease), top .6s var(--ease), width .6s var(--ease), height .6s var(--ease),
-              opacity .35s, transform .45s var(--ease), background .5s;
+  transition: opacity .12s, background .5s;
 }
 .screen .win-s::before {
   content: ""; position: absolute; inset: 0 0 auto; height: 14px; border-bottom: 2px solid var(--ink);
@@ -151,13 +150,13 @@ section { padding: 84px 0 0; }
 .screen .typed { position: absolute; left: 10px; right: 8px; top: 22px; font: 12px/1.2 var(--mono); color: var(--ink); white-space: nowrap; overflow: hidden; }
 .screen.dark .typed { color: #fff; }
 .screen .typed:not(:empty)::after { content: "▍"; color: var(--violet); }
-.screen .app { left: 34%; top: 18%; width: 52%; height: 62%; opacity: 0; transform: scale(.85); }
+.screen .app { left: 34%; top: 18%; width: 52%; height: 62%; opacity: 0; }
 .screen .app::after {
   content: ""; position: absolute; left: 10px; right: 10px; top: 24px; height: 10px;
   border: 2px solid var(--ink); border-radius: 6px; background: var(--s-paper);
 }
-.screen .hide { opacity: 0; transform: scale(.85); pointer-events: none; }
-.screen .show { opacity: 1; transform: none; }
+.screen .hide { opacity: 0; pointer-events: none; }
+.screen .show { opacity: 1; }
 .screen .hud {
   position: absolute; left: 50%; bottom: 12%; transform: translate(-50%, 10px); opacity: 0;
   display: flex; align-items: center; gap: 8px; padding: 6px 10px;
@@ -200,6 +199,59 @@ section { padding: 84px 0 0; }
 }
 .keys kbd.down { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); background: var(--violet); color: #fff; }
 .keys .what { margin-left: 8px; font: 400 16px var(--pixel); color: var(--muted); }
+
+/* Feature scenes: small animations instead of screenshots. */
+.screen.stage { aspect-ratio: 16 / 9; }
+.scene-win .keys { padding: 12px 16px 14px; border-top: 2px solid var(--ink); }
+.keys .tag { padding: 4px 10px; border: 2px solid var(--ink); border-radius: 6px; box-shadow: 0 3px 0 var(--ink); background: var(--paper); font: 700 15px var(--pixel); }
+.keys .tag.down { transform: translateY(3px); box-shadow: none; background: var(--violet); color: #fff; }
+.cursor { position: absolute; z-index: 6; width: 16px; height: 16px; pointer-events: none; transition: left .55s ease-in-out, top .55s ease-in-out; }
+.cursor svg { display: block; width: 100%; height: 100%; }
+.mon {
+  position: absolute; left: 50%; top: 10%; width: 46%; height: 80%; overflow: hidden; border: 2px solid var(--ink);
+  background-color: var(--desk);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%236c5cff' fill-opacity='.35'/%3E%3C/svg%3E");
+  background-size: 4px 4px;
+}
+.mon .bar { height: 10%; }
+/* Gestures */
+.pad { position: absolute; left: 5%; top: 14%; width: 38%; height: 72%; background: var(--paper); border: 2px solid var(--ink); border-radius: 10px; box-shadow: 3px 3px 0 var(--ink); }
+.pad .f { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--violet); border: 2px solid var(--ink); opacity: 0;
+  transition: left .5s ease-in-out, top .5s ease-in-out, opacity .12s, transform .12s; }
+.pad .f.on { opacity: 1; }
+.pad .f.tap { transform: scale(.65); }
+.mon .w1 { left: 8%; top: 22%; width: 56%; height: 50%; transition: transform .3s ease-out; }
+.mon .w2 { left: 36%; top: 42%; width: 54%; height: 46%; transition: transform .3s ease-out; }
+.mon.mc .w1 { transform: translate(-6%, -4%) scale(.62); }
+.mon.mc .w2 { transform: translate(6%, 4%) scale(.62); }
+.cc { position: absolute; right: 4%; top: 13%; width: 44%; height: 46%; opacity: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8%; padding: 9%;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 6px; box-shadow: 3px 3px 0 var(--ink); }
+.cc i { border: 2px solid var(--ink); border-radius: 4px; background: var(--desk); }
+.cc i:nth-child(1), .cc i:nth-child(4) { background: var(--violet); }
+.ctx { position: absolute; left: 40%; top: 36%; width: 34%; padding: 3px; opacity: 0; background: var(--paper); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.ctx i { display: block; height: 10px; margin: 2px 0; background: linear-gradient(var(--muted), var(--muted)) 4px 4px / 60% 2px no-repeat; opacity: .7; }
+.ctx i:first-child { background-color: rgba(108, 92, 255, .25); }
+/* Window snapping */
+.zone { position: absolute; left: 0; top: 8%; width: 50%; height: 92%; opacity: 0; background: rgba(108, 92, 255, .2); border: 2px dashed var(--violet); transition: opacity .12s; }
+.zone.show { opacity: 1; }
+/* Several actions */
+.chain-list { position: absolute; left: 4%; top: 14%; width: 41%; background: var(--paper); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.chain-list .s { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font: 600 14px var(--pixel); border-bottom: 1px dotted var(--ink); }
+.chain-list .s:last-child { border-bottom: 0; }
+.chain-list .s b { min-width: 18px; color: var(--muted); }
+.chain-list .s.on { background: var(--violet); color: #fff; }
+.chain-list .s.on b { color: #fff; }
+.mon .doc { left: 8%; top: 22%; width: 70%; height: 60%; }
+.mon .doc::after { content: ""; position: absolute; left: 10%; right: 18%; top: 42px; height: 2px; background: var(--muted); box-shadow: 0 10px 0 var(--muted); opacity: .35; }
+.mon .doc .sel { position: absolute; left: 8%; top: 22px; width: 58%; height: 12px; background: rgba(108, 92, 255, .3); }
+.mon .browser { left: 22%; top: 18%; width: 70%; height: 70%; opacity: 0; }
+.mon .browser .url { position: absolute; left: 8%; right: 8%; top: 22px; height: 16px; padding: 0 6px; border: 2px solid var(--ink); border-radius: 8px; font: 10px/12px var(--mono); white-space: nowrap; overflow: hidden; background: var(--paper); }
+/* Window buttons */
+.lights .tl { position: absolute; top: 2px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--ink); z-index: 1; }
+.lights .tl.r { left: 6px; background: #ff5f57; }
+.lights .tl.y { left: 20px; background: #febc2e; }
+.lights .tl.g { left: 34px; background: #28c840; }
+.lights .tl.down { filter: brightness(.6); }
 
 /* Desktop icons, on wide screens only */
 .desk-icons { position: absolute; right: 24px; top: 92px; display: flex; flex-direction: column; gap: 28px; }
@@ -278,13 +330,22 @@ pre { margin: 12px 0; padding: 12px 14px; overflow-x: auto; background: var(--in
 footer { margin-top: 90px; background: var(--paper); border-top: 2px solid var(--ink); }
 footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 16px; font-size: 13px; }
 
-/* Windows ease into place as they scroll into view. */
-.reveal { opacity: 0; transform: translateY(18px) scale(.985); transition: opacity .7s ease, transform .9s var(--ease); }
-.reveal.in { opacity: 1; transform: none; }
+/* Windows open like on the classic Mac: a few outlines flash outwards, then the window is there. */
+.reveal { opacity: 0; }
+.reveal.in { opacity: 1; transition: opacity .1s; }
+.zr { position: absolute; z-index: 30; border: 2px dotted var(--ink); pointer-events: none; opacity: 0; animation: zr 70ms steps(1, end) forwards; }
+@keyframes zr { 0% { opacity: 1; } 100% { opacity: 0; } }
+/* Moving a window, classic style: a dotted outline travels, then the window jumps there. */
+.ghost { position: absolute; z-index: 4; border: 2px dotted var(--ink); pointer-events: none; opacity: 0;
+  transition: left .22s ease-out, top .22s ease-out, width .22s ease-out, height .22s ease-out; }
+.ghost.on { opacity: 1; }
+.ghost.drag { transition-duration: .5s; transition-timing-function: ease-in-out; }
+.ghost.snap { transition: none; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal { opacity: 1; }
+  .zr { display: none; }
   .pane, .screen *, .screen, .everything::details-content, .everything summary::before { transition: none !important; }
 }
 
@@ -318,7 +379,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
   .keys kbd { min-width: 32px; height: 32px; font-size: 15px; }
 }
 </style>
-<noscript><style>.reveal { opacity: 1; transform: none; }</style></noscript>
+<noscript><style>.reveal { opacity: 1; }</style></noscript>
 </head>
 <body>
 
@@ -350,10 +411,11 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
             </div>
             <p class="note">Free · macOS 15 or later</p>
           </div>
-          <div class="demo" aria-hidden="true">
+          <div class="demo" aria-hidden="true" data-scene="demo">
             <div class="screen">
               <div class="bar"></div>
               <div class="win-s mini"><div class="typed"></div></div>
+              <div class="ghost"></div>
               <div class="win-s app"></div>
               <div class="select"></div>
               <div class="panel"><i></i><i></i><i></i></div>
@@ -401,9 +463,15 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         <h3>Trackpad gestures</h3>
         <p>Taps, swipes, pinches and clicks with two to five fingers. Record a gesture by doing it, and Shortie tells you if macOS already uses it.</p>
       </div>
-      <div class="win reveal">
-        <div class="titlebar"><button class="box" type="button"></button><span>Trackpad Gesture</span></div>
-        <div class="pane"><div><img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052" loading="lazy"></div></div>
+      <div class="win scene-win reveal">
+        <div class="titlebar"><button class="box" type="button"></button><span>Trackpad Gestures</span></div>
+        <div class="pane"><div>
+          <div class="screen stage" data-scene="gestures" aria-hidden="true">
+            <div class="pad"><i class="f"></i><i class="f"></i><i class="f"></i></div>
+            <div class="mon"><div class="bar"></div><div class="win-s w1"></div><div class="win-s w2"></div><div class="cc"><i></i><i></i><i></i><i></i></div><div class="ctx"><i></i><i></i><i></i></div></div>
+          </div>
+          <div class="keys caption"></div>
+        </div></div>
       </div>
     </div>
 
@@ -412,9 +480,14 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         <h3>Window snapping</h3>
         <p>Halves, thirds, quarters and more, from the keyboard or by dragging a window to the edge of the screen. Press the same shortcut again to switch between ½, ⅓ and ⅔.</p>
       </div>
-      <div class="win reveal">
+      <div class="win scene-win reveal">
         <div class="titlebar"><button class="box" type="button"></button><span>Window Snapping</span></div>
-        <div class="pane"><div><img src="images/windows-light.png" alt="The Window Snapping page, with dragging settings and shortcuts for each half of the screen" width="1086" height="1100" loading="lazy"></div></div>
+        <div class="pane"><div>
+          <div class="screen stage" data-scene="snapping" aria-hidden="true">
+            <div class="bar"></div><div class="zone"></div><div class="win-s w"></div><div class="ghost"></div><span class="cursor"></span>
+          </div>
+          <div class="keys caption"></div>
+        </div></div>
       </div>
     </div>
 
@@ -423,9 +496,15 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         <h3>Several actions at once</h3>
         <p>Chain actions together, with pauses in between. You can also run AppleScript or shell scripts, or pick an item from the current app's menus.</p>
       </div>
-      <div class="win reveal">
-        <div class="titlebar"><button class="box" type="button"></button><span>Keyboard Shortcut</span></div>
-        <div class="pane"><div><img src="images/steps-editor-light.png" alt="A keyboard shortcut that presses ⌘C, waits 0.3 seconds, then opens google.com" width="1040" height="1284" loading="lazy"></div></div>
+      <div class="win scene-win reveal">
+        <div class="titlebar"><button class="box" type="button"></button><span>Several Actions</span></div>
+        <div class="pane"><div>
+          <div class="screen stage" data-scene="chain" aria-hidden="true">
+            <div class="chain-list"><div class="s"><b>1</b>Copy</div><div class="s"><b>2</b>Wait 0.3 s</div><div class="s"><b>3</b>Open google.com</div></div>
+            <div class="mon"><div class="bar"></div><div class="win-s doc"><span class="sel"></span></div><div class="win-s browser"><div class="url"></div></div><div class="hud"></div></div>
+          </div>
+          <div class="keys caption"></div>
+        </div></div>
       </div>
     </div>
 
@@ -434,9 +513,14 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         <h3>Window buttons</h3>
         <p>Give the red, yellow and green buttons new jobs. Make green maximise instead of going full screen, or right-click red to quit the app.</p>
       </div>
-      <div class="win reveal">
+      <div class="win scene-win reveal">
         <div class="titlebar"><button class="box" type="button"></button><span>Window Buttons</span></div>
-        <div class="pane"><div><img src="images/window-buttons-light.png" alt="The Window Buttons page: clicking green maximises, clicking red quits the app" width="1086" height="720" loading="lazy"></div></div>
+        <div class="pane"><div>
+          <div class="screen stage lights" data-scene="buttons" aria-hidden="true">
+            <div class="bar"></div><div class="win-s w"><span class="tl r"></span><span class="tl y"></span><span class="tl g"></span></div><div class="ghost"></div><span class="cursor"></span>
+          </div>
+          <div class="keys caption"></div>
+        </div></div>
       </div>
     </div>
   </div>
@@ -564,10 +648,9 @@ for (const el of document.querySelectorAll('.px[data-icon]')) {
   el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${pixelPath(rows)}" fill="${el.dataset.color || '#1d1838'}"/></svg>`;
 }
 
-// The pointing hand as the pointer over anything clickable: black outline, white inside.
-(function handCursor() {
-  const rows = ICONS.hand;
-  const outside = rows.map(r => [...r].map(() => false));
+// A pixel sprite with a black outline and a white inside, like the classic Mac pointers.
+function spriteSVG(rows, size) {
+  const outside = rows.map((r) => [...r].map(() => false));
   const queue = [];
   for (let i = 0; i < 16; i++) queue.push([i, 0], [i, 15], [0, i], [15, i]);
   while (queue.length) {
@@ -577,9 +660,12 @@ for (const el of document.querySelectorAll('.px[data-icon]')) {
     queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
   }
   const inside = rows.map((r, y) => [...r].map((c, x) => (c === '#' || outside[y][x]) ? '.' : '#').join(''));
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="${pixelPath(inside)}" fill="#fff"/><path d="${pixelPath(rows)}" fill="#000"/></svg>`;
-  document.documentElement.style.setProperty('--hand', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 13 1, pointer`);
-})();
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="${pixelPath(inside)}" fill="#fff"/><path d="${pixelPath(rows)}" fill="#000"/></svg>`;
+}
+
+// The pointing hand as the pointer over anything clickable.
+document.documentElement.style.setProperty('--hand', `url("data:image/svg+xml,${encodeURIComponent(spriteSVG(ICONS.hand, 32))}") 13 1, pointer`);
+document.querySelectorAll('.cursor').forEach((el) => { el.innerHTML = spriteSVG(ICONS.pointer, 16); });
 
 // The corner box (or a double-click on the title bar) rolls a window up to its title bar.
 for (const win of document.querySelectorAll('.win')) {
@@ -597,39 +683,118 @@ for (const win of document.querySelectorAll('.win')) {
   titlebar.addEventListener('dblclick', (event) => { if (event.target !== box) toggle(); });
 }
 
-// The demo: a shuffled deck of everyday shortcuts, each doing its thing on the little screen.
-(function demo() {
-  const screen = document.querySelector('.screen');
+// --- Shared bits for the little animated screens ---
+
+// Rectangles are left, top, width and height, in % of their screen.
+function setRect(el, rect) {
+  el.dataset.rect = rect.join(',');
+  const [l, t, w, h] = rect;
+  Object.assign(el.style, { left: l + '%', top: t + '%', width: w + '%', height: h + '%' });
+}
+const getRect = (el) => el.dataset.rect.split(',').map(Number);
+
+// Moving a window, classic style: a dotted outline travels, then the window jumps there.
+function ghostFrom(ghost, rect) {
+  ghost.classList.add('snap', 'on');
+  setRect(ghost, rect);
+  void ghost.offsetWidth;
+  ghost.classList.remove('snap');
+}
+function retroMove(win, ghost, rect, later) {
+  ghost.classList.remove('drag');
+  ghostFrom(ghost, getRect(win));
+  setRect(ghost, rect);
+  later(230, () => { setRect(win, rect); ghost.classList.remove('on'); });
+}
+
+// Opening a window, classic style: outlines flash outwards from the middle, then it's there.
+function zoomOpen(el, done) {
+  if (reduceMotion) { done(); return; }
+  const r = el.getBoundingClientRect();
+  [0.3, 0.55, 0.8].forEach((scale, i) => {
+    const z = document.createElement('div');
+    z.className = 'zr';
+    Object.assign(z.style, {
+      left: r.left + scrollX + 'px', top: r.top + scrollY + 'px', width: r.width + 'px', height: r.height + 'px',
+      transform: `scale(${scale})`, animationDelay: i * 50 + 'ms',
+    });
+    document.body.appendChild(z);
+    setTimeout(() => z.remove(), i * 50 + 120);
+  });
+  setTimeout(done, 150);
+}
+
+function caption(row, keys, what) {
+  row.innerHTML = keys.map((k) => `<kbd>${k}</kbd>`).join('') + (what ? `<span class="what">${what}</span>` : '');
+}
+function captionTag(row, tag, what) {
+  row.innerHTML = `<span class="tag">${tag}</span><span class="what">${what}</span>`;
+}
+function press(row, later) {
+  const caps = row.querySelectorAll('kbd, .tag');
+  requestAnimationFrame(() => caps.forEach((k) => k.classList.add('down')));
+  later(240, () => caps.forEach((k) => k.classList.remove('down')));
+}
+// Moves an element somewhere without animating, for setting up a scene.
+function jump(el, styles) {
+  el.style.transition = 'none';
+  Object.assign(el.style, styles);
+  void el.offsetWidth;
+  el.style.transition = '';
+}
+
+// Plays a scene on a loop while it's on screen, and stops it when it isn't.
+// A scene is { reset, steps: [[ms, fn]], length, still }.
+function runScene(el, make) {
+  const timers = [];
+  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const scene = make(later);
+  scene.reset();
+  if (reduceMotion) { scene.still(); return; }
+  let running = false;
+  function cycle() {
+    scene.reset();
+    scene.steps.forEach(([ms, fn]) => later(ms, fn));
+    later(scene.length, cycle);
+  }
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !running) { running = true; cycle(); }
+    else if (!entry.isIntersecting && running) { running = false; timers.splice(0).forEach(clearTimeout); }
+  }, { threshold: 0.25 }).observe(el);
+}
+
+// --- The demo: a shuffled deck of everyday shortcuts ---
+runScene(document.querySelector('[data-scene="demo"]'), (later) => {
+  const demo = document.querySelector('[data-scene="demo"]');
+  const screen = demo.querySelector('.screen');
   const mini = screen.querySelector('.mini');
+  const ghost = screen.querySelector('.ghost');
   const typed = screen.querySelector('.typed');
   const app = screen.querySelector('.app');
   const hud = screen.querySelector('.hud');
   const panel = screen.querySelector('.panel');
   const select = screen.querySelector('.select');
   const shade = screen.querySelector('.shade');
-  const keyRow = document.querySelector('.keys');
-  const timers = [];
-  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
-
-  // Where the window sits, as left, top, width, height in %, below the 8% menu bar.
-  const place = (l, t, w, h) => Object.assign(mini.style, { left: l + '%', top: t + '%', width: w + '%', height: h + '%' });
-  const centre = () => place(22, 24, 56, 58);
+  const keyRow = demo.querySelector('.keys');
+  const home = [22, 24, 56, 58];
+  const move = (rect) => retroMove(mini, ghost, rect, later);
   const bubble = (label, level) => {
     hud.innerHTML = label + (level === undefined ? '' :
       '<span class="segments">' + Array.from({ length: 8 }, (_, i) => `<i class="${i < level ? 'on' : ''}"></i>`).join('') + '</span>');
     hud.classList.add('show');
   };
+  setRect(mini, home);
 
   const deck = [
-    { keys: ['⌃', '⌥', '←'], what: 'Left half', run: () => place(0, 8, 50, 92) },
-    { keys: ['⌃', '⌥', '→'], what: 'Right half', run: () => place(50, 8, 50, 92) },
-    { keys: ['⌃', '⌥', '↩'], what: 'Maximise', run: () => place(0, 8, 100, 92) },
-    { keys: ['⌃', '⌥', 'U'], what: 'Top left', run: () => place(0, 8, 50, 46) },
-    { keys: ['⌃', '⌥', 'C'], what: 'Centre', run: centre },
-    { keys: ['Hyper', 'V'], what: 'Clipboard history', run: () => panel.classList.add('show') },
-    { keys: ['Hyper', 'S'], what: 'Open Safari', run: () => app.classList.add('show') },
+    { keys: ['⌃', '⌥', '←'], what: 'Left half', run: () => move([0, 8, 50, 92]) },
+    { keys: ['⌃', '⌥', '→'], what: 'Right half', run: () => move([50, 8, 50, 92]) },
+    { keys: ['⌃', '⌥', '↩'], what: 'Maximise', run: () => move([0, 8, 100, 92]) },
+    { keys: ['⌃', '⌥', 'U'], what: 'Top left', run: () => move([0, 8, 50, 46]) },
+    { keys: ['⌃', '⌥', 'C'], what: 'Centre', run: () => move(home) },
+    { keys: ['Hyper', 'V'], what: 'Clipboard history', run: () => zoomOpen(panel, () => panel.classList.add('show')) },
+    { keys: ['Hyper', 'S'], what: 'Open Safari', run: () => zoomOpen(app, () => app.classList.add('show')) },
     { keys: ['Hyper', 'Q'], what: 'Quit app', run: () => mini.classList.add('hide'), hidesWindow: true },
-    { keys: ['Hyper', 'H'], what: 'Show desktop', run: () => place(-60, 8, 56, 58), hidesWindow: true },
+    { keys: ['Hyper', 'H'], what: 'Show desktop', run: () => move([-60, 8, 56, 58]), hidesWindow: true },
     { keys: ['Hyper', 'P'], what: 'Play or pause', run: () => { bubble('▶ Playing'); later(900, () => bubble('❚❚ Paused')); } },
     { keys: ['Hyper', '↑'], what: 'Volume up', run: () => { bubble('Volume', 4); later(350, () => bubble('Volume', 5)); later(700, () => bubble('Volume', 6)); } },
     { keys: ['Hyper', 'M'], what: 'Mute', run: () => bubble('Muted', 0) },
@@ -642,23 +807,8 @@ for (const win of document.querySelectorAll('.win')) {
     } },
   ];
 
-  // Clear whatever the last shortcut left on screen.
-  let windowHidden = false;
-  function reset() {
-    timers.splice(0).forEach(clearTimeout);
-    [hud, panel, select, shade, app].forEach((el) => el.classList.remove('show'));
-    typed.textContent = '';
-    if (windowHidden) { mini.classList.remove('hide'); centre(); windowHidden = false; }
-  }
-
-  function showKeys(item) {
-    keyRow.innerHTML = item.keys.map((k) => `<kbd>${k}</kbd>`).join('') + `<span class="what">${item.what}</span>`;
-  }
-
-  if (reduceMotion) { showKeys(deck[0]); deck[0].run(); return; }
-
   // Deal from a shuffled deck, so everything comes round before anything repeats.
-  let pile = [], previous = null;
+  let pile = [], previous = null, windowHidden = false;
   function draw() {
     if (!pile.length) {
       pile = deck.slice().sort(() => Math.random() - 0.5);
@@ -667,17 +817,136 @@ for (const win of document.querySelectorAll('.win')) {
     return previous = pile.pop();
   }
 
-  function next() {
-    reset();
-    const item = draw();
-    showKeys(item);
-    const caps = keyRow.querySelectorAll('kbd');
-    requestAnimationFrame(() => caps.forEach((k) => k.classList.add('down')));
-    later(140, () => { item.run(); if (item.hidesWindow) windowHidden = true; });
-    later(360, () => caps.forEach((k) => k.classList.remove('down')));
-  }
-  later(700, () => { next(); setInterval(next, 2600); });
-})();
+  return {
+    // Clear whatever the last shortcut left on screen.
+    reset() {
+      [hud, panel, select, shade, app].forEach((el) => el.classList.remove('show'));
+      typed.textContent = '';
+      if (windowHidden) { mini.classList.remove('hide'); setRect(mini, home); windowHidden = false; }
+    },
+    length: 2600,
+    steps: [[0, () => {
+      const item = draw();
+      caption(keyRow, item.keys, item.what);
+      press(keyRow, later);
+      later(140, () => { item.run(); if (item.hidesWindow) windowHidden = true; });
+    }]],
+    still() { caption(keyRow, deck[0].keys, deck[0].what); setRect(mini, [0, 8, 50, 92]); },
+  };
+});
+
+// --- Trackpad gestures: fingers on a little trackpad, and the screen reacting ---
+runScene(document.querySelector('[data-scene="gestures"]'), (later) => {
+  const el = document.querySelector('[data-scene="gestures"]');
+  const fingers = [...el.querySelectorAll('.pad .f')];
+  const mon = el.querySelector('.mon'), cc = el.querySelector('.cc'), ctx = el.querySelector('.ctx');
+  const row = el.parentElement.querySelector('.caption');
+  const put = (points) => fingers.forEach((f, i) => {
+    const p = points[i];
+    f.classList.toggle('on', Boolean(p));
+    if (p) Object.assign(f.style, { left: p[0] + '%', top: p[1] + '%' });
+  });
+  const start = (points) => fingers.forEach((f, i) => {
+    const p = points[i];
+    if (p) jump(f, { left: p[0] + '%', top: p[1] + '%' });
+    f.classList.toggle('on', Boolean(p));
+  });
+  return {
+    reset() { put([]); fingers.forEach((f) => f.classList.remove('tap')); cc.style.opacity = 0; ctx.style.opacity = 0; mon.classList.remove('mc'); },
+    length: 8400,
+    steps: [
+      [200, () => { captionTag(row, '3-finger swipe down', 'Control Centre'); start([[32, 22], [50, 18], [68, 22]]); }],
+      [650, () => put([[32, 72], [50, 68], [68, 72]])],
+      [1200, () => { put([]); zoomOpen(cc, () => { cc.style.opacity = 1; }); }],
+      [2800, () => { cc.style.opacity = 0; captionTag(row, '2-finger tap', 'Right-click'); start([[42, 50], [58, 46]]); }],
+      [3200, () => fingers.forEach((f) => f.classList.add('tap'))],
+      [3350, () => { fingers.forEach((f) => f.classList.remove('tap')); put([]); zoomOpen(ctx, () => { ctx.style.opacity = 1; }); }],
+      [5100, () => { ctx.style.opacity = 0; captionTag(row, '3-finger pinch', 'Mission Control'); start([[22, 24], [78, 30], [50, 84]]); }],
+      [5500, () => put([[44, 46], [56, 48], [50, 58]])],
+      [6050, () => { put([]); mon.classList.add('mc'); }],
+    ],
+    still() { captionTag(row, '3-finger swipe down', 'Control Centre'); cc.style.opacity = 1; },
+  };
+});
+
+// --- Window snapping: drag to an edge, then press the shortcut again to change the width ---
+runScene(document.querySelector('[data-scene="snapping"]'), (later) => {
+  const el = document.querySelector('[data-scene="snapping"]');
+  const w = el.querySelector('.w'), ghost = el.querySelector('.ghost'), zone = el.querySelector('.zone'), cursor = el.querySelector('.cursor');
+  const row = el.parentElement.querySelector('.caption');
+  const home = [24, 26, 46, 50];
+  const at = (x, y) => Object.assign(cursor.style, { left: x + '%', top: y + '%' });
+  const key = (k, what, rect) => { caption(row, ['⌃', '⌥', k], what); press(row, later); later(120, () => retroMove(w, ghost, rect, later)); };
+  return {
+    reset() { setRect(w, home); zone.classList.remove('show'); ghost.classList.remove('on'); jump(cursor, { left: '78%', top: '84%' }); },
+    length: 8000,
+    steps: [
+      [200, () => { captionTag(row, 'Drag', 'to the left edge'); at(46, 29); }],
+      [900, () => { ghostFrom(ghost, home); ghost.classList.add('drag'); setRect(ghost, [-21, 41, 46, 50]); at(1, 44); }],
+      [1300, () => zone.classList.add('show')],
+      [1600, () => { ghost.classList.remove('on', 'drag'); zone.classList.remove('show'); setRect(w, [0, 8, 50, 92]); }],
+      [2700, () => key('←', '⅓ width', [0, 8, 33.4, 92])],
+      [3900, () => key('←', '⅔ width', [0, 8, 66.6, 92])],
+      [5100, () => key('←', '½ width', [0, 8, 50, 92])],
+      [6400, () => key('C', 'Centre', home)],
+    ],
+    still() { caption(row, ['⌃', '⌥', '←'], 'Left half'); setRect(w, [0, 8, 50, 92]); },
+  };
+});
+
+// --- Several actions: each step lights up, and the little screen shows it happening ---
+runScene(document.querySelector('[data-scene="chain"]'), (later) => {
+  const el = document.querySelector('[data-scene="chain"]');
+  const steps = [...el.querySelectorAll('.chain-list .s')];
+  const browser = el.querySelector('.browser'), url = el.querySelector('.url'), hud = el.querySelector('.hud');
+  const row = el.parentElement.querySelector('.caption');
+  const light = (i) => steps.forEach((s, j) => s.classList.toggle('on', j === i));
+  const bubble = (text) => { hud.textContent = text; hud.classList.add('show'); };
+  return {
+    reset() { light(-1); hud.classList.remove('show'); browser.style.opacity = 0; url.textContent = ''; },
+    length: 7000,
+    steps: [
+      [300, () => { caption(row, ['Hyper', 'G'], 'Search for the selection'); press(row, later); }],
+      [700, () => { light(0); bubble('Copied'); }],
+      [1800, () => { light(1); bubble('Waiting…'); }],
+      [2700, () => { light(2); hud.classList.remove('show'); zoomOpen(browser, () => { browser.style.opacity = 1; }); }],
+      [3000, () => {
+        const text = 'google.com/search';
+        [...text].forEach((_, i) => later(i * 45, () => { url.textContent = text.slice(0, i + 1); }));
+      }],
+      [5400, () => light(-1)],
+    ],
+    still() { caption(row, ['Hyper', 'G'], 'Search for the selection'); light(2); browser.style.opacity = 1; url.textContent = 'google.com/search'; },
+  };
+});
+
+// --- Window buttons: click green to maximise, right-click red to quit ---
+runScene(document.querySelector('[data-scene="buttons"]'), (later) => {
+  const el = document.querySelector('[data-scene="buttons"]');
+  const w = el.querySelector('.w'), ghost = el.querySelector('.ghost'), cursor = el.querySelector('.cursor');
+  const red = w.querySelector('.r'), green = w.querySelector('.g');
+  const row = el.parentElement.querySelector('.caption');
+  const home = [20, 24, 52, 54];
+  const pointAt = (target) => {
+    const s = el.getBoundingClientRect(), r = target.getBoundingClientRect();
+    Object.assign(cursor.style, { left: r.left - s.left + r.width / 2 + 'px', top: r.top - s.top + r.height / 2 + 'px' });
+  };
+  const click = (button) => { button.classList.add('down'); later(160, () => button.classList.remove('down')); };
+  return {
+    reset() { setRect(w, home); w.style.opacity = 1; jump(cursor, { left: '82%', top: '84%' }); },
+    length: 7400,
+    steps: [
+      [300, () => { captionTag(row, 'Click green', 'Maximise'); pointAt(green); }],
+      [1000, () => click(green)],
+      [1200, () => retroMove(w, ghost, [0, 8, 100, 92], later)],
+      [2800, () => { captionTag(row, 'Right-click red', 'Quit app'); pointAt(red); }],
+      [3500, () => click(red)],
+      [3700, () => { w.style.opacity = 0; }],
+      [5300, () => { row.innerHTML = ''; setRect(w, home); zoomOpen(w, () => { w.style.opacity = 1; }); }],
+    ],
+    still() { captionTag(row, 'Click green', 'Maximise'); setRect(w, [0, 8, 100, 92]); },
+  };
+});
 
 // The menu bar clock.
 const clock = document.querySelector('.clock');
@@ -685,13 +954,12 @@ function tick() { clock.textContent = new Date().toLocaleTimeString([], { hour: 
 tick();
 setInterval(tick, 10000);
 
-// Windows ease into place as they scroll into view.
+// Windows open with zoom rectangles as they scroll into view.
 const observer = new IntersectionObserver((entries) => {
   for (const entry of entries) {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('in');
-      observer.unobserve(entry.target);
-    }
+    if (!entry.isIntersecting) continue;
+    observer.unobserve(entry.target);
+    zoomOpen(entry.target, () => entry.target.classList.add('in'));
   }
 }, { rootMargin: '0px 0px -8% 0px' });
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));

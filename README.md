@@ -14,11 +14,6 @@
   <a href="https://sloppyjoo.github.io/Shortie/"><b>Website</b></a>
 </p>
 
-<p align="center">
-  <img src="docs/images/gesture-editor-light.png#gh-light-mode-only" width="440" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder">
-  <img src="docs/images/gesture-editor-dark.png#gh-dark-mode-only" width="440" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder">
-</p>
-
 ---
 
 ## How it works
@@ -43,14 +38,6 @@ Each rule has a trigger, an action, and the apps it applies to. Any trigger can 
 - **Custom menus:** in the menu bar or at the pointer.
 - **Automations:** run actions when an app opens or quits, or when your Mac wakes, sleeps, locks or is plugged in.
 - **Other actions:** media keys, volume and sound output, dark mode, Dock hiding, hidden files, screenshots, a window switcher, AppleScript and shell scripts, choosing menu items, and a black menu bar to hide the notch.
-
-<p align="center">
-  <img src="docs/images/windows-light.png#gh-light-mode-only" width="420" alt="The Window Snapping page">
-  <img src="docs/images/windows-dark.png#gh-dark-mode-only" width="420" alt="The Window Snapping page">
-  &nbsp;
-  <img src="docs/images/steps-editor-light.png#gh-light-mode-only" width="340" alt="A shortcut that runs several actions in a row">
-  <img src="docs/images/steps-editor-dark.png#gh-dark-mode-only" width="340" alt="A shortcut that runs several actions in a row">
-</p>
 
 ## Under the hood
 
