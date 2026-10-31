@@ -315,7 +315,9 @@ final class GestureEngine {
 
         guard let shortcut = ShortcutStore.shared.match(.gesture(gesture: gesture), in: FrontmostApp.bundleID),
               // While paused, the only gesture that works is the one that resumes.
-              !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) || shortcut.action == .system(action: .togglePause)
+              !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) || shortcut.action == .system(action: .togglePause),
+              // "Gestures Off" leaves only the gesture that switches them back on.
+              !UserDefaults.standard.bool(forKey: DefaultsKey.gesturesPaused) || shortcut.action == .system(action: .toggleGestures)
         else { return false }
 
         let action = shortcut.action

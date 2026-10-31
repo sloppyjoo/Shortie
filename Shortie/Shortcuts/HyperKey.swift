@@ -58,24 +58,14 @@ final class HyperKey {
 
     /// Puts Caps Lock back to normal, for when Shortie quits.
     func restoreCapsLock() {
-        if isEnabled { remapCapsLock(false) }
+        KeyRemapper.clearAll()
     }
 
     /// Note: this replaces any other `hidutil` key remappings, which is fine
     /// unless you've set some up yourself with other tools.
     private func remapCapsLock(_ remap: Bool) {
-        // Caps Lock and F18, as the keyboard hardware numbers them.
-        let capsLock = 0x7_0000_0039
-        let f18 = 0x7_0000_006D
-        let mapping = remap
-            ? #"{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":\#(capsLock),"HIDKeyboardModifierMappingDst":\#(f18)}]}"#
-            : #"{"UserKeyMapping":[]}"#
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/hidutil")
-        process.arguments = ["property", "--set", mapping]
-        process.standardOutput = FileHandle.nullDevice
-        try? process.run()
-        process.waitUntilExit()
+        // Shared with any keys remapped by actions, since there's one list for both.
+        KeyRemapper.write(hyper: remap)
     }
 
     /// Caps Lock (as F18) went down or up. Always swallowed: apps never see it.

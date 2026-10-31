@@ -85,6 +85,10 @@ struct SettingsView: View {
         .animation(.smooth(duration: 0.2), value: selection)
         // Each page starts with an empty search.
         .onChange(of: selection) { search = "" }
+        // The "Open Shortie Settings At…" action.
+        .onReceive(NotificationCenter.default.publisher(for: SettingsPane.showNotification)) { note in
+            if let pane = (note.object as? String).flatMap(SettingsPane.init(rawValue:)) { selection = pane }
+        }
         // Don't let the sidebar be collapsed (for example by dragging its edge).
         .onChange(of: columns) { _, newValue in
             if newValue != .all { columns = .all }
@@ -168,6 +172,14 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     case general, shortcuts, textShortcuts, windows, layouts, trafficLights, mouse, gestures, automations, clipboard, menus, menuBar, permissions
 
     var id: Self { self }
+
+    static let showNotification = Notification.Name("ShortieShowSettingsPane")
+
+    /// Opens Settings at this page.
+    func show() {
+        WindowManager.shared.show(.settings)
+        NotificationCenter.default.post(name: Self.showNotification, object: rawValue)
+    }
 
     /// The sidebar, grouped under plain headings like System Settings.
     static let groups: [(title: String?, panes: [SettingsPane])] = [

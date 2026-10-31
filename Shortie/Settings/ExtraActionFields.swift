@@ -360,9 +360,40 @@ struct ExtraActionFields: View {
                 ModifierToggles(modifiers: Binding(get: { click.modifiers }, set: { var c = click; c.modifiers = $0; action = .customClick(click: c) }))
             }
 
+        case .remapKey(let from, let to):
+            HStack {
+                Text("Make").foregroundStyle(.secondary)
+                keyPicker(from) { action = .remapKey(from: $0, to: to) }
+                Text("act as").foregroundStyle(.secondary)
+                keyPicker(to) { action = .remapKey(from: from, to: $0) }
+                InfoButton("Works in every app until \"Put All Remapped Keys Back\" runs or Shortie quits.")
+            }
+
+        case .openSettingsPane(let pane):
+            Picker("Page", selection: Binding(get: { pane }, set: { action = .openSettingsPane(pane: $0) })) {
+                ForEach(SettingsPane.allCases) { Text($0.title).tag($0.rawValue) }
+            }
+            .labelsHidden()
+            .fixedSize()
+
+        case .callService:
+            HStack {
+                TextField("Service", text: payload, prompt: Text("Its name in the Services menu, like Make New Sticky Note"))
+                    .textFieldStyle(.roundedBorder)
+                InfoButton("Runs on the selected text. If the service changes the text, the result replaces the selection.")
+            }
+
         default:
             EmptyView()
         }
+    }
+
+    private func keyPicker(_ keyCode: UInt16, set: @escaping (UInt16) -> Void) -> some View {
+        Picker("Key", selection: Binding(get: { keyCode }, set: set)) {
+            ForEach(KeyRemapper.keyCodes, id: \.self) { Text(KeyRemapper.name(for: $0)).tag($0) }
+        }
+        .labelsHidden()
+        .fixedSize()
     }
 
     @State private var inputs: [SoundOutput.Device] = []

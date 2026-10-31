@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -396,6 +396,9 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .remapKey: "Remap a Key…"
+        case .openSettingsPane: "Open Shortie Settings At…"
+        case .callService: "Run a Service…"
         case .soundInput: "Sound Input…"
         case .clipboardItem: "Paste from Clipboard History…"
         case .pointerSetting: "Pointer Speed or Size…"
@@ -462,6 +465,9 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .remapKey: "arrow.left.arrow.right"
+        case .openSettingsPane: "gearshape"
+        case .callService: "gearshape.2"
         case .soundInput: "mic.fill"
         case .clipboardItem: "list.clipboard"
         case .pointerSetting: "cursorarrow.motionlines"
@@ -519,6 +525,9 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .remapKey: .gray
+        case .openSettingsPane: .gray
+        case .callService: .gray
         case .soundInput: .red
         case .clipboardItem: .indigo
         case .pointerSetting: .orange
@@ -576,6 +585,9 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .remapKey: .remapKey(from: 0x39, to: 0x35)
+        case .openSettingsPane: .openSettingsPane(pane: "shortcuts")
+        case .callService: .callService(name: "")
         case .soundInput: .soundInput(uid: SoundInput.nextDeviceUID, name: "")
         case .clipboardItem: .clipboardItem(number: 1, remove: false)
         case .pointerSetting: .pointerSetting(setting: .mouseSpeed, value: 1, alternate: nil)

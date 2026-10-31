@@ -190,6 +190,17 @@ enum SelectedText {
         }
     }
 
+    /// The selected text, leaving the clipboard as it was.
+    static func selectedText() async -> String? {
+        await TextTyper.waitForModifiersReleased()
+        ClipboardHistory.shared.ignoreChanges(true)
+        let saved = savedClipboard()
+        let text = await read()
+        restoreClipboard(saved)
+        ClipboardHistory.shared.ignoreChanges(false)
+        return text
+    }
+
     /// Replaces the selection with whatever `transform` makes of it.
     static func replace(using transform: @escaping @MainActor (String) -> String?) {
         Task {

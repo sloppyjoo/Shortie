@@ -98,6 +98,7 @@ enum AppFolder {
 enum DefaultsKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let isPaused = "isPaused"
+    static let gesturesPaused = "gesturesPaused"
     static let look = "look"
     static let haptics = "haptics"
     static let hapticStrength = "hapticStrength"

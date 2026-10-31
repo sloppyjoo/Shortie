@@ -260,6 +260,7 @@ struct ActionKindPicker: View {
         .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification,
         .clickText, 
         .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, 
+        .remapKey, .openSettingsPane, .callService, 
         .otherRule, .pauseShortie, .steps, .showMenu,
     ]
 

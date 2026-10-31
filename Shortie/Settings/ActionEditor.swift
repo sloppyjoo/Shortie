@@ -192,6 +192,12 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .remapKey:
+            ExtraActionFields(action: $action)
+        case .openSettingsPane:
+            ExtraActionFields(action: $action)
+        case .callService:
+            ExtraActionFields(action: $action)
         case .soundInput:
             ExtraActionFields(action: $action)
         case .clipboardItem:
@@ -365,6 +371,9 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .remapKey: "Remap a Key"
+        case .openSettingsPane: "Open Shortie Settings At"
+        case .callService: "Run a Service"
         case .soundInput: "Sound Input"
         case .clipboardItem: "Paste from Clipboard History"
         case .pointerSetting: "Pointer Speed or Size"

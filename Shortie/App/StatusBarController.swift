@@ -9,9 +9,12 @@ import AppKit
 /// part uses AppKit's `NSStatusItem` directly.
 final class StatusBarController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    /// The one in the menu bar, for the "Show Shortie's Menu" action.
+    static weak var current: StatusBarController?
 
     override init() {
         super.init()
+        Self.current = self
 
         if let button = statusItem.button {
             button.target = self
@@ -36,7 +39,7 @@ final class StatusBarController: NSObject {
         }
     }
 
-    private func showMenu() {
+    func showMenu() {
         let menu = NSMenu()
 
         if !Permissions.shared.allGranted {

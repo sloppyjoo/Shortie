@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case resetKeyRemaps, showAppMenus, showShortcutsMenu, showShortieMenu, cheatSheet, toggleGestures
     case functionKeysToggle, stageManagerToggle, ignoreTrackpadToggle
     case releaseModifiers, contextMenuKey, lookUpSelection, trueToneToggle, bluetoothOn, bluetoothOff, closeNotifications, saveClipboard, restoreClipboard, hideClipboardHistory, colourPanel, hapticTap, newFileInFinder, compressFinderSelection, screenshotAndEdit, quitShortie, restartShortie
     case nightShiftToggle, nightShiftOn, nightShiftOff, toggleBluetooth, toggleMirroring, screenshotScreenToClipboard, desktop5, desktop6, desktop7, desktop8, desktop9
@@ -87,6 +88,12 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .resetKeyRemaps: "Put All Remapped Keys Back"
+        case .showAppMenus: "Show App's Menus at Pointer"
+        case .showShortcutsMenu: "Show Shortcuts at Pointer"
+        case .showShortieMenu: "Show Shortie's Menu"
+        case .cheatSheet: "Show or Hide Cheat Sheet"
+        case .toggleGestures: "Gestures On or Off"
         case .functionKeysToggle: "F1, F2… as Function Keys On or Off"
         case .stageManagerToggle: "Stage Manager On or Off"
         case .ignoreTrackpadToggle: "Ignore Trackpad While a Mouse Is Connected On or Off"
@@ -208,6 +215,12 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .resetKeyRemaps: "keyboard"
+        case .showAppMenus: "filemenu.and.selection"
+        case .showShortcutsMenu: "bolt.fill"
+        case .showShortieMenu: "hand.point.up.left"
+        case .cheatSheet: "list.bullet.rectangle"
+        case .toggleGestures: "hand.raised"
         case .functionKeysToggle: "fn"
         case .stageManagerToggle: "squares.leading.rectangle"
         case .ignoreTrackpadToggle: "rectangle.and.hand.point.up.left"
@@ -287,7 +300,8 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .screenshotScreenToClipboard, .copyTextFromScreen, .pickColour],
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
-        [.openDashboard, .togglePause, .restartShortie, .quitShortie],
+        [.showAppMenus, .showShortcutsMenu, .cheatSheet, .resetKeyRemaps],
+        [.openDashboard, .showShortieMenu, .togglePause, .toggleGestures, .restartShortie, .quitShortie],
     ]
 }
 
@@ -540,6 +554,20 @@ enum SystemActionRunner {
             SettingToggles.toggleStageManager()
         case .ignoreTrackpadToggle:
             SettingToggles.toggleIgnoreTrackpad()
+        case .resetKeyRemaps:
+            KeyRemapper.reset()
+        case .showAppMenus:
+            PointerMenus.shared.showAppMenus()
+        case .showShortcutsMenu:
+            PointerMenus.shared.showShortcuts()
+        case .showShortieMenu:
+            StatusBarController.current?.showMenu()
+        case .cheatSheet:
+            CheatSheet.shared.toggle()
+        case .toggleGestures:
+            let off = !UserDefaults.standard.bool(forKey: DefaultsKey.gesturesPaused)
+            UserDefaults.standard.set(off, forKey: DefaultsKey.gesturesPaused)
+            HUD.show(off ? "Gestures Off" : "Gestures On", systemImage: off ? "hand.raised.slash" : "hand.raised")
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

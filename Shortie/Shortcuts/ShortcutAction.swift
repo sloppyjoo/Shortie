@@ -91,6 +91,13 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Any mouse button, with any modifier keys, one to three times.
     case customClick(click: CustomClick)
 
+    /// Makes one key act as another, until reset or Shortie quits.
+    case remapKey(from: UInt16, to: UInt16)
+    /// Opens Shortie's settings at a particular page.
+    case openSettingsPane(pane: String)
+    /// Runs a macOS Service (Services menu) on the selected text.
+    case callService(name: String)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -100,6 +107,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case pressKeysInApp, modifierKeys, moveToDesktop, focusWindow, transformText, browserJavaScript, runWorkflow, pauseShortie, clickButton, clickMenuBarExtra, distributedNotification, otherRule
         case flow, clickText
         case soundInput, clipboardItem, pointerSetting, keyboardBrightness, customClick
+        case remapKey, openSettingsPane, callService
         var id: Self { self }
     }
 
@@ -126,6 +134,9 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .remapKey: .remapKey
+        case .openSettingsPane: .openSettingsPane
+        case .callService: .callService
         case .soundInput: .soundInput
         case .clipboardItem: .clipboardItem
         case .pointerSetting: .pointerSetting
@@ -184,6 +195,9 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .remapKey(let from, let to): from == to ? "" : "\(from)>\(to)"
+        case .openSettingsPane(let pane): pane
+        case .callService(let name): name
         case .soundInput(let uid, _): uid
         case .clipboardItem(let number, _): String(number)
         case .pointerSetting(let setting, _, _): setting.rawValue
@@ -236,6 +250,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .openSettingsPane: .openSettingsPane(pane: payload)
+        case .callService: .callService(name: payload)
         case .keyboardBrightness: .keyboardBrightness(percent: Int(payload) ?? 50)
         case .clickText: .clickText(text: payload)
         case .setBrightness: .setBrightness(percent: Int(payload) ?? 50)
@@ -257,6 +273,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
+             .remapKey,
              .soundInput,
              .clipboardItem,
              .pointerSetting,
@@ -320,6 +337,12 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .remapKey(let from, let to):
+            "Make \(KeyRemapper.name(for: from)) Act as \(KeyRemapper.name(for: to))"
+        case .openSettingsPane(let pane):
+            "Open Shortie Settings: \(SettingsPane(rawValue: pane)?.title ?? pane)"
+        case .callService(let name):
+            "Run “\(name)” Service"
         case .soundInput(let uid, let name):
             uid == SoundInput.nextDeviceUID ? "Next Sound Input" : name.isEmpty ? "Sound Input" : "Record from \(name)"
         case .clipboardItem(let number, let remove):
@@ -467,6 +490,20 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .remapKey(let from, let to):
+            KeyRemapper.remap(from: from, to: to)
+        case .openSettingsPane(let pane):
+            SettingsPane(rawValue: pane)?.show()
+        case .callService(let name):
+            Task {
+                guard let text = await SelectedText.selectedText() else { NSSound.beep(); return }
+                let pasteboard = NSPasteboard(name: NSPasteboard.Name("Shortie Service"))
+                pasteboard.clearContents()
+                pasteboard.setString(text, forType: .string)
+                guard NSPerformService(name, pasteboard) else { NSSound.beep(); return }
+                // Services that change the text hand it back on the same pasteboard.
+                if let result = pasteboard.string(forType: .string), result != text { ExtraActionRunner.paste(result) }
+            }
         case .soundInput(let uid, let name):
             SoundInput.select(uid: uid, name: name)
         case .clipboardItem(let number, let remove):
