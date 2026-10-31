@@ -1,0 +1,31 @@
+# Compiles Shortie on a Mac for every push, so a broken build shows up on
+# GitHub before anyone opens Xcode. Nothing is signed or published.
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | grep -v beta | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild -project Shortie.xcodeproj -scheme Shortie -configuration Debug \
+            -destination 'generic/platform=macOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build \
+            | grep -E "error:|warning:|\*\* BUILD" || true
+          test "${PIPESTATUS[0]}" -eq 0
