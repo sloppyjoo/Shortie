@@ -23,9 +23,14 @@ jobs:
 
       - name: Build
         run: |
-          set -o pipefail
-          xcodebuild -project Shortie.xcodeproj -scheme Shortie -configuration Debug \
-            -destination 'generic/platform=macOS' -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build \
-            | grep -E "error:|warning:|\*\* BUILD" || true
-          test "${PIPESTATUS[0]}" -eq 0
+          xcodebuild -project Shortie.xcodeproj -target Shortie -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > build.log 2>&1 && status=0 || status=$?
+          grep -E "error:|\*\* BUILD" build.log || tail -50 build.log
+          exit $status
+
+      - name: Keep the log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
