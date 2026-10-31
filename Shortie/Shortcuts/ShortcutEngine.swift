@@ -27,7 +27,8 @@ final class ShortcutEngine {
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
-            eventsOfInterest: CGEventMask(1 << CGEventType.keyDown.rawValue) | CGEventMask(1 << CGEventType.keyUp.rawValue),
+            eventsOfInterest: CGEventMask(1 << CGEventType.keyDown.rawValue) | CGEventMask(1 << CGEventType.keyUp.rawValue)
+                | CGEventMask(1 << CGEventType.flagsChanged.rawValue),
             callback: handleTapEvent,
             userInfo: nil
         ) else { return }
@@ -112,6 +113,16 @@ private nonisolated func handleTapEvent(
     }
     if hyper.isCapsLock { return nil }
     if hyper.isHeld { event.flags.formUnion(HyperKey.flags) }
+
+    // Modifier keys on their own: maybe a tap of ⌘ or ⌥. They always pass through.
+    if type == .flagsChanged {
+        let flags = event.flags
+        MainActor.assumeIsolated { ModifierTapDetector.shared.flagsChanged(keyCode: keyCode, flags: flags) }
+        return Unmanaged.passUnretained(event)
+    }
+    if type == .keyDown {
+        MainActor.assumeIsolated { ModifierTapDetector.shared.keyPressed() }
+    }
 
     var length = 0
     var characters = [UniChar](repeating: 0, count: 8)

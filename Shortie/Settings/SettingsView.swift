@@ -158,6 +158,7 @@ extension Shortcut {
         if let click = mouseButtonClick { text.append(click.title) }
         if let abbreviation { text.append(abbreviation) }
         if let event { text.append(event.kind.title) }
+        if let tap = modifierTap { text.append("\(tap.title) \(tap.key.name)") }
         let haystack = text.joined(separator: " ").lowercased()
         return words.allSatisfy { haystack.contains($0) }
     }

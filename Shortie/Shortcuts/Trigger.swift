@@ -11,6 +11,8 @@ nonisolated enum Trigger: Codable, Hashable {
     /// Typing this abbreviation, like ";email".
     case typedText(abbreviation: String)
     case event(event: AutomationEvent)
+    /// Tapping ⌘ ⌥ ⌃ ⇧ or fn on its own, once or twice.
+    case modifierTap(tap: ModifierTap)
 
     /// Whether two triggers would fire on the same thing.
     func clashes(with other: Trigger) -> Bool {
@@ -25,6 +27,8 @@ nonisolated enum Trigger: Codable, Hashable {
             a == b
         case let (.typedText(a), .typedText(b)):
             a == b
+        case let (.modifierTap(a), .modifierTap(b)):
+            a.clashes(with: b)
         case (.event, .event):
             // Doing several things when one event happens is fine.
             false
@@ -108,6 +112,75 @@ nonisolated struct MouseButtonClick: Codable, Hashable {
     /// E.g. "⌥ Back Button".
     var title: String {
         modifiers.isEmpty ? Self.name(of: button) : "\(modifiers.symbols) \(Self.name(of: button))"
+    }
+}
+
+/// Tapping a modifier key by itself, like double-tapping ⌘ or tapping right ⌥.
+/// It only counts if you let go quickly without pressing anything else.
+nonisolated struct ModifierTap: Codable, Hashable {
+    enum Key: String, Codable, CaseIterable, Identifiable {
+        case command, option, control, shift, function
+
+        var id: Self { self }
+
+        var symbol: String {
+            switch self {
+            case .command: "⌘"
+            case .option: "⌥"
+            case .control: "⌃"
+            case .shift: "⇧"
+            case .function: "fn"
+            }
+        }
+
+        var name: String {
+            switch self {
+            case .command: "Command"
+            case .option: "Option"
+            case .control: "Control"
+            case .shift: "Shift"
+            case .function: "fn"
+            }
+        }
+
+        /// fn only has one key, so it has no sides.
+        var hasSides: Bool { self != .function }
+    }
+
+    enum Side: String, Codable, CaseIterable, Identifiable {
+        case either, left, right
+
+        var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .either: "Either"
+            case .left: "Left"
+            case .right: "Right"
+            }
+        }
+    }
+
+    var key: Key
+    var side: Side
+    /// 1 for a tap, 2 for a double tap.
+    var taps: Int
+
+    /// E.g. "Double-tap Right ⌘".
+    var title: String {
+        let side = key.hasSides && self.side != .either ? "\(self.side.title) " : ""
+        return "\(taps == 2 ? "Double-tap" : "Tap") \(side)\(key.symbol)"
+    }
+
+    /// Whether one physical tap could set off both.
+    func clashes(with other: ModifierTap) -> Bool {
+        key == other.key && taps == other.taps
+            && (side == other.side || side == .either || other.side == .either || !key.hasSides)
+    }
+
+    /// Whether a tap of this key, on this side, this many times, sets it off.
+    func matches(key: Key, side: Side, taps: Int) -> Bool {
+        self.key == key && self.taps == taps && (self.side == .either || self.side == side || !key.hasSides)
     }
 }
 

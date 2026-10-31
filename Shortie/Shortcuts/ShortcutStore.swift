@@ -53,6 +53,11 @@ nonisolated struct Shortcut: Codable, Identifiable, Hashable {
         if case .typedText(let abbreviation) = trigger { abbreviation } else { nil }
     }
 
+    /// The key, for modifier key taps.
+    var modifierTap: ModifierTap? {
+        if case .modifierTap(let tap) = trigger { tap } else { nil }
+    }
+
     /// The event, for automations.
     var event: AutomationEvent? {
         if case .event(let event) = trigger { event } else { nil }

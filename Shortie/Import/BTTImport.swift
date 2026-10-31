@@ -366,6 +366,7 @@ enum BTTImport {
         case .trafficLight(let click): "\(click.clickDescription) \(click.button.title)"
         case .typedText(let abbreviation): abbreviation
         case .event(let event): event.kind.title
+        case .modifierTap(let tap): tap.title
         }
     }
 

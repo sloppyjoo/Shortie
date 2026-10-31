@@ -8,7 +8,11 @@ struct ShortcutsSettingsView: View {
             pane: .shortcuts,
             kinds: [.openApp, .runShortcut, .open, .typeText, .text, .pressKeys, .system, .setVolume, .soundOutput, .mouseClick, .showMessage, .speak, .menuItem, .appleScript, .shellScript, .steps, .showMenu],
             emptyText: "No shortcuts yet."
-        )
+        ) {
+            EmptyView()
+        } topSections: {
+            ModifierTapsSection()
+        }
     }
 }
 
