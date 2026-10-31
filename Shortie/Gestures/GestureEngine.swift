@@ -320,6 +320,7 @@ final class GestureEngine {
               !UserDefaults.standard.bool(forKey: DefaultsKey.gesturesPaused) || shortcut.action == .system(action: .toggleGestures)
         else { return false }
 
+        ShortcutStore.shared.noteFired(shortcut)
         let action = shortcut.action
         // Run it just after we return, so the trackpad is never held up.
         DispatchQueue.main.async {

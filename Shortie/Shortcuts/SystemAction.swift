@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case resetTypedText, notchBarToggle, notchBarOn, notchBarOff, hideCustomMenu, loginWindow, lockHorizontal, lockVertical
     case blockScroll
     case externalBrightnessUp, externalBrightnessDown, rotateDisplayClockwise, rotateDisplayCounterClockwise, airplayMirroring, sidecarConnect, sidecarDisconnect, blockKeyboard, autoScrollDown, autoScrollUp, moveWindowWithPointer, resizeWindowWithPointer, dockIconUnderPointer, addSpace, startDictation, measureScreen
     case resetKeyRemaps, showAppMenus, showShortcutsMenu, showShortieMenu, cheatSheet, toggleGestures
@@ -90,6 +91,14 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .resetTypedText: "Forget What's Been Typed (Text Shortcuts)"
+        case .notchBarToggle: "Black Menu Bar On or Off"
+        case .notchBarOn: "Black Menu Bar On"
+        case .notchBarOff: "Black Menu Bar Off"
+        case .hideCustomMenu: "Hide Custom Menu"
+        case .loginWindow: "Switch to Login Window"
+        case .lockHorizontal: "Lock Pointer to Left–Right On or Off"
+        case .lockVertical: "Lock Pointer to Up–Down On or Off"
         case .blockScroll: "Block Scrolling On or Off"
         case .externalBrightnessUp: "External Display Brightness Up"
         case .externalBrightnessDown: "External Display Brightness Down"
@@ -234,6 +243,14 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .resetTypedText: "eraser"
+        case .notchBarToggle: "menubar.rectangle"
+        case .notchBarOn: "menubar.rectangle"
+        case .notchBarOff: "menubar.rectangle"
+        case .hideCustomMenu: "list.bullet.rectangle"
+        case .loginWindow: "person.2"
+        case .lockHorizontal: "arrow.left.and.right"
+        case .lockVertical: "arrow.up.and.down"
         case .blockScroll: "scroll"
         case .externalBrightnessUp: "sun.max"
         case .externalBrightnessDown: "sun.min"
@@ -334,7 +351,8 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.zoomToggle, .zoomIn, .zoomOut],
         [.externalBrightnessUp, .externalBrightnessDown, .rotateDisplayClockwise, .rotateDisplayCounterClockwise, .airplayMirroring, .sidecarConnect, .sidecarDisconnect],
         [.moveWindowWithPointer, .resizeWindowWithPointer, .dockIconUnderPointer, .addSpace, .autoScrollDown, .autoScrollUp],
-        [.startDictation, .measureScreen, .blockKeyboard, .blockScroll],
+        [.startDictation, .measureScreen, .blockKeyboard, .blockScroll, .lockHorizontal, .lockVertical],
+        [.notchBarToggle, .notchBarOn, .notchBarOff, .hideCustomMenu, .resetTypedText, .loginWindow],
         [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow, .screenshotAndEdit],
         [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .screenshotScreenToClipboard, .copyTextFromScreen, .pickColour],
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
@@ -641,6 +659,22 @@ enum SystemActionRunner {
             ScreenRuler.shared.show()
         case .blockScroll:
             UIAutomation.toggleScrollBlocking()
+        case .resetTypedText:
+            TypedTextEngine.shared.reset()
+        case .notchBarToggle:
+            if let screen = NSScreen.main { NotchBar.shared.setEnabled(!NotchBar.shared.isEnabled(on: screen), on: screen) }
+        case .notchBarOn:
+            if let screen = NSScreen.main { NotchBar.shared.setEnabled(true, on: screen) }
+        case .notchBarOff:
+            if let screen = NSScreen.main { NotchBar.shared.setEnabled(false, on: screen) }
+        case .hideCustomMenu:
+            FloatingMenu.shared.close()
+        case .loginWindow:
+            LoginWindow.show()
+        case .lockHorizontal:
+            MouseAxisLock.toggle(.horizontal)
+        case .lockVertical:
+            MouseAxisLock.toggle(.vertical)
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

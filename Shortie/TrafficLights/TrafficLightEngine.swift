@@ -90,6 +90,7 @@ final class TrafficLightEngine {
         let trigger = Trigger.trafficLight(click: TrafficLightClick(button: hit.button, mouseButton: mouseButton, modifiers: modifiers))
         let app = NSRunningApplication(processIdentifier: hit.target.processID)?.bundleIdentifier
         guard let match = ShortcutStore.shared.match(trigger, in: app) else { return false }
+        ShortcutStore.shared.noteFired(match)
 
         swallowingRelease = mouseButton
         let action = match.action

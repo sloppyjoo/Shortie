@@ -170,6 +170,14 @@ final class ShortcutStore {
     /// A shortcut set to work only in certain apps wins over one that works
     /// everywhere, so you can make the same gesture or keys do something
     /// different in just one app.
+    /// How many times each rule has run, for "Wait Until Another Rule Runs".
+    @ObservationIgnored private(set) var fireCounts: [UUID: Int] = [:]
+
+    /// Called by each trigger's listener when it runs a rule.
+    func noteFired(_ shortcut: Shortcut) {
+        fireCounts[shortcut.id, default: 0] += 1
+    }
+
     func match(_ trigger: Trigger, in app: String?) -> Shortcut? {
         let candidates = shortcuts.filter {
             $0.isEnabled && $0.trigger?.clashes(with: trigger) == true && ($0.apps?.includes(app) ?? true)

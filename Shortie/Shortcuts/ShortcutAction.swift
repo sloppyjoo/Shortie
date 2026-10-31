@@ -110,6 +110,9 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Sets (or changes, if relative) a slider in the front window.
     case slider(name: String, value: Double, relative: Bool)
 
+    /// Runs a different one of its actions each time, in turn.
+    case cycle(actions: [ShortcutAction])
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -121,6 +124,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case soundInput, clipboardItem, pointerSetting, keyboardBrightness, customClick
         case remapKey, openSettingsPane, callService
         case bluetoothDevice, midi, osc, externalBrightness, contextMenuItem, slider
+        case cycle
         var id: Self { self }
     }
 
@@ -147,6 +151,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .cycle: .cycle
         case .bluetoothDevice: .bluetoothDevice
         case .midi: .midi
         case .osc: .osc
@@ -214,6 +219,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .cycle(let actions): actions.isEmpty ? "" : "cycle"
         case .bluetoothDevice(let address, _, _): address
         case .midi(let destination, let bytes): destination.isEmpty || bytes.isEmpty ? "" : bytes
         case .osc(let message): message.host.isEmpty || message.address.count < 2 ? "" : message.address
@@ -300,6 +306,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
+             .cycle,
              .bluetoothDevice,
              .midi,
              .osc,
@@ -317,6 +324,12 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     var isComplete: Bool {
         if case .steps(let actions) = self {
             return !actions.isEmpty && actions.allSatisfy(\.isComplete)
+        }
+        if case .cycle(let actions) = self {
+            return !actions.isEmpty && actions.allSatisfy(\.isComplete)
+        }
+        if case .flow(let step) = self {
+            return step.isComplete
         }
         return !payload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -368,6 +381,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .cycle(let actions):
+            "Each Time: " + actions.map(\.title).joined(separator: ", or ")
         case .bluetoothDevice(_, let name, let mode):
             "\(mode.title) \(name.isEmpty ? "Bluetooth Device" : name)"
         case .midi(let destination, let bytes):
@@ -533,6 +548,8 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .cycle(let actions):
+            ActionCycle.run(actions, target: target)
         case .bluetoothDevice(let address, let name, let mode):
             BluetoothDevices.run(mode, address: address, name: name)
         case .midi(let destination, let bytes):

@@ -19,6 +19,11 @@ enum KeyRemapper {
         HUD.show("\(name(for: from)) → \(name(for: to))", systemImage: "keyboard")
     }
 
+    /// Whether some key has been made to act as Hyper (by remapping it to F18).
+    static var usesHyper: Bool {
+        remaps.contains { $0.to == 0x7_0000_006D }
+    }
+
     static func reset() {
         remaps.removeAll()
         write()
@@ -73,7 +78,7 @@ enum KeyRemapper {
         0x56: "Keypad 4", 0x57: "Keypad 5", 0x58: "Keypad 6", 0x59: "Keypad 7", 0x5B: "Keypad 8", 0x5C: "Keypad 9",
         0x7A: "F1", 0x78: "F2", 0x63: "F3", 0x76: "F4", 0x60: "F5", 0x61: "F6", 0x62: "F7", 0x64: "F8", 0x65: "F9",
         0x6D: "F10", 0x67: "F11", 0x6F: "F12", 0x69: "F13", 0x6B: "F14", 0x71: "F15", 0x6A: "F16", 0x40: "F17",
-        0x4F: "F18", 0x50: "F19", 0x5A: "F20",
+        0x4F: "Hyper (⌃⌥⇧⌘)", 0x50: "F19", 0x5A: "F20",
         0x72: "Insert", 0x73: "Home", 0x74: "Page Up", 0x75: "Forward Delete", 0x77: "End", 0x79: "Page Down",
         0x7B: "←", 0x7C: "→", 0x7D: "↓", 0x7E: "↑",
     ]

@@ -74,6 +74,9 @@ struct FlowFields: View {
                 TextField("Question", text: Binding(get: { prompt }, set: { set(.askForInput(name: name, prompt: $0)) }), prompt: Text("What should I search for?"))
                     .textFieldStyle(.roundedBorder)
             }
+        case .comment(let text):
+            TextField("Note", text: Binding(get: { text }, set: { set(.comment(text: $0)) }), prompt: Text("A note to yourself"))
+                .textFieldStyle(.roundedBorder)
         case .breakRepeat:
             caption("Leaves the repeat it's in and carries on after End Repeat.")
         case .stopAll:
@@ -155,6 +158,14 @@ struct ConditionEditor: View {
                 Text("Reads the screen, so macOS asks for Screen Recording permission the first time.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            case .ruleRan:
+                Picker("Rule", selection: $condition.text) {
+                    Text("Choose a Rule").tag("")
+                    ForEach(ShortcutStore.shared.shortcuts) { rule in
+                        Text(ExtraActionFields.label(for: rule)).tag(rule.id.uuidString)
+                    }
+                }
+                .labelsHidden()
             case .clipboardChanged, .windowChanged, .keyPressed:
                 Text("Compared with when the steps started (or, for Wait Until, when the wait started).")
                     .font(.caption)

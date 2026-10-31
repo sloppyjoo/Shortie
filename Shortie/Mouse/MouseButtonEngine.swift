@@ -78,6 +78,7 @@ final class MouseButtonEngine {
               !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) || shortcut.action == .system(action: .togglePause)
         else { return false }
 
+        ShortcutStore.shared.noteFired(shortcut)
         swallowingRelease = button
         let action = shortcut.action
         // Run it just after we return, so the mouse is never held up.

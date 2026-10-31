@@ -104,6 +104,7 @@ final class AutomationEngine {
     private func fire(_ event: AutomationEvent) {
         guard !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused) else { return }
         for shortcut in ShortcutStore.shared.shortcuts where shortcut.isEnabled && shortcut.event == event {
+            ShortcutStore.shared.noteFired(shortcut)
             ActionRunner.run(shortcut.action)
         }
     }

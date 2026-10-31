@@ -22,10 +22,12 @@ nonisolated enum FlowStep: Codable, Hashable {
     case toggleVariable(name: String)
     case askForInput(name: String, prompt: String)
     case showVariables
+    /// A note to yourself. Does nothing.
+    case comment(text: String)
 
     enum Kind: String, CaseIterable, Identifiable {
         case repeatStart, repeatEnd, breakRepeat, ifCondition, elseBranch, endIf, waitUntil, debounce, stop, stopAll
-        case setVariable, increaseVariable, toggleVariable, askForInput, showVariables
+        case setVariable, increaseVariable, toggleVariable, askForInput, showVariables, comment
         var id: Self { self }
 
         var title: String {
@@ -45,6 +47,7 @@ nonisolated enum FlowStep: Codable, Hashable {
             case .toggleVariable: "Toggle Variable"
             case .askForInput: "Ask for Text"
             case .showVariables: "Show Variables"
+            case .comment: "Comment"
             }
         }
 
@@ -65,6 +68,7 @@ nonisolated enum FlowStep: Codable, Hashable {
             case .toggleVariable: .toggleVariable(name: "")
             case .askForInput: .askForInput(name: "", prompt: "")
             case .showVariables: .showVariables
+            case .comment: .comment(text: "")
             }
         }
 
@@ -73,6 +77,7 @@ nonisolated enum FlowStep: Codable, Hashable {
             [.repeatStart, .repeatEnd, .breakRepeat],
             [.waitUntil, .debounce, .stop, .stopAll],
             [.setVariable, .increaseVariable, .toggleVariable, .askForInput, .showVariables],
+            [.comment],
         ]
     }
 
@@ -93,6 +98,7 @@ nonisolated enum FlowStep: Codable, Hashable {
         case .toggleVariable: .toggleVariable
         case .askForInput: .askForInput
         case .showVariables: .showVariables
+        case .comment: .comment
         }
     }
 
@@ -106,6 +112,7 @@ nonisolated enum FlowStep: Codable, Hashable {
         case .increaseVariable(let name, let amount): "Increase \(name) by \(amount.formatted())"
         case .toggleVariable(let name): "Toggle \(name)"
         case .askForInput(let name, _): "Ask for \(name)"
+        case .comment(let text): text.isEmpty ? "Comment" : "// \(text)"
         default: kind.title
         }
     }
@@ -124,7 +131,7 @@ nonisolated enum FlowStep: Codable, Hashable {
 /// Something that's either true or false right now.
 nonisolated struct FlowCondition: Codable, Hashable {
     enum Kind: String, Codable, CaseIterable, Identifiable {
-        case appInFront, appRunning, variableIs, appleScript, javaScript, textOnScreen, clipboardChanged, windowChanged, keyPressed
+        case appInFront, appRunning, variableIs, appleScript, javaScript, textOnScreen, clipboardChanged, windowChanged, keyPressed, ruleRan
 
         var id: Self { self }
 
@@ -139,6 +146,7 @@ nonisolated struct FlowCondition: Codable, Hashable {
             case .clipboardChanged: "Clipboard Has Changed"
             case .windowChanged: "Front Window Has Changed"
             case .keyPressed: "A Key Was Pressed"
+            case .ruleRan: "Another Rule Has Run"
             }
         }
     }
@@ -238,6 +246,7 @@ enum StepRunner {
         var clipboard = NSPasteboard.general.changeCount
         var window = Baseline.frontWindow()
         var keyPresses = ShortcutEngine.shared.keyPressCount
+        var ruleRuns = ShortcutStore.shared.fireCounts
 
         static func frontWindow() -> String {
             guard let app = NSWorkspace.shared.frontmostApplication else { return "" }
@@ -332,6 +341,8 @@ enum StepRunner {
             case .showVariables:
                 showVariables()
                 index += 1
+            case .comment:
+                index += 1
             }
         }
     }
@@ -382,6 +393,11 @@ enum StepRunner {
             result = Baseline.frontWindow() != (baseline?.window ?? Baseline.frontWindow())
         case .keyPressed:
             result = ShortcutEngine.shared.keyPressCount != (baseline?.keyPresses ?? ShortcutEngine.shared.keyPressCount)
+        case .ruleRan:
+            let id = UUID(uuidString: condition.text)
+            let now = id.flatMap { ShortcutStore.shared.fireCounts[$0] } ?? 0
+            let before = id.flatMap { baseline?.ruleRuns[$0] } ?? 0
+            result = baseline == nil ? false : now > before
         }
         return condition.isNegated ? !result : result
     }

@@ -125,6 +125,14 @@ enum MoreActionKindsRunner {
                   return [kAXTitleAttribute, kAXDescriptionAttribute, kAXHelpAttribute].contains { attribute in
                       AX.string(element, attribute)?.trimmingCharacters(in: .whitespaces).localizedCaseInsensitiveCompare(name) == .orderedSame
                   }
+              }) ?? find(in: AX.focusedWindow(of: NSWorkspace.shared.frontmostApplication?.processIdentifier ?? 0) ?? AXUIElementCreateSystemWide(), depth: 0, where: { element in
+                  // Anything else with that name that can be pressed: rows, cells, images, static text…
+                  var actions: CFArray?
+                  AXUIElementCopyActionNames(element, &actions)
+                  guard (actions as? [String])?.contains(kAXPressAction) == true else { return false }
+                  return [kAXTitleAttribute, kAXDescriptionAttribute, kAXValueAttribute].contains { attribute in
+                      AX.string(element, attribute)?.trimmingCharacters(in: .whitespaces).localizedCaseInsensitiveCompare(name) == .orderedSame
+                  }
               })
         else {
             NSSound.beep()

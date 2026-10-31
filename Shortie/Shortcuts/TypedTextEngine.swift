@@ -33,6 +33,11 @@ final class TypedTextEngine {
         }
     }
 
+    /// Forgets what's been typed, so a half-typed abbreviation doesn't count.
+    func reset() {
+        recent = ""
+    }
+
     /// Called for every key press that isn't a shortcut. Returns `true` to
     /// swallow it (when it's the last character of an abbreviation).
     func typed(_ characters: String, keyCode: UInt16, modifiers: Modifiers, isRepeat: Bool) -> Bool {
@@ -61,6 +66,7 @@ final class TypedTextEngine {
         else { return false }
 
         recent = ""
+        ShortcutStore.shared.noteFired(shortcut)
         // The abbreviation's last character hasn't reached the app yet (we swallow
         // it), so erase only the ones already typed, then run the action.
         let alreadyTyped = abbreviation.count - 1

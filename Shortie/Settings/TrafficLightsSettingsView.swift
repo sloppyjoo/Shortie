@@ -262,6 +262,7 @@ struct ActionKindPicker: View {
         .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, 
         .remapKey, .openSettingsPane, .callService, 
         .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, 
+        .cycle, 
         .otherRule, .pauseShortie, .steps, .showMenu,
     ]
 

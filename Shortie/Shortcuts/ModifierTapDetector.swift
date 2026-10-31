@@ -101,6 +101,7 @@ final class ModifierTapDetector {
         guard let shortcut = ShortcutStore.shared.match(.modifierTap(tap: tap), in: FrontmostApp.bundleID) else { return }
         // While paused, the only shortcut that works is the one that resumes.
         if UserDefaults.standard.bool(forKey: DefaultsKey.isPaused), shortcut.action != .system(action: .togglePause) { return }
+        ShortcutStore.shared.noteFired(shortcut)
         ActionRunner.run(shortcut.action)
     }
 

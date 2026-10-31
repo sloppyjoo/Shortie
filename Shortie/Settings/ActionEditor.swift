@@ -192,6 +192,8 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .cycle:
+            StepsEditor(action: Binding(get: { if case .cycle(let a) = action { .steps(actions: a) } else { .steps(actions: []) } }, set: { if case .steps(let a) = $0 { action = .cycle(actions: a) } }))
         case .bluetoothDevice:
             ExtraActionFields(action: $action)
         case .midi:
@@ -383,6 +385,7 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .cycle: "Cycle Through Actions"
         case .bluetoothDevice: "Bluetooth Device"
         case .midi: "Send MIDI"
         case .osc: "Send OSC Message"

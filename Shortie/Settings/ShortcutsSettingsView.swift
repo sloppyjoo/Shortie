@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, .cycle, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -396,6 +396,7 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .cycle: "Cycle Through Actions…"
         case .bluetoothDevice: "Bluetooth Device…"
         case .midi: "Send MIDI…"
         case .osc: "Send OSC Message…"
@@ -471,6 +472,7 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .cycle: "arrow.triangle.2.circlepath"
         case .bluetoothDevice: "headphones"
         case .midi: "pianokeys"
         case .osc: "dot.radiowaves.left.and.right"
@@ -537,6 +539,7 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .cycle: .green
         case .bluetoothDevice: .blue
         case .midi: .purple
         case .osc: .purple
@@ -603,6 +606,7 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .cycle: .cycle(actions: [])
         case .bluetoothDevice: .bluetoothDevice(address: "", name: "", mode: .toggle)
         case .midi: .midi(destination: "", bytes: "90 3C 7F")
         case .osc: .osc(message: OSCMessage())

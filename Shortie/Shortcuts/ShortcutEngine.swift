@@ -84,6 +84,7 @@ final class ShortcutEngine {
 
         // Holding keys down repeats the key press; only act on the first one.
         if !keyPress.isRepeat {
+            ShortcutStore.shared.noteFired(shortcut)
             // Run it just after we return, so the key press is never held up.
             DispatchQueue.main.async { ActionRunner.run(shortcut.action) }
         }
@@ -116,7 +117,7 @@ private nonisolated func handleTapEvent(
     let isRepeat = event.getIntegerValueField(.keyboardEventAutorepeat) != 0
     let hyper = MainActor.assumeIsolated { () -> (isCapsLock: Bool, isHeld: Bool) in
         let hyperKey = HyperKey.shared
-        guard hyperKey.isEnabled, type == .keyDown || type == .keyUp else { return (false, false) }
+        guard hyperKey.isEnabled || KeyRemapper.usesHyper, type == .keyDown || type == .keyUp else { return (false, false) }
         if keyCode == HyperKey.keyCode {
             hyperKey.capsLock(isDown: type == .keyDown, isRepeat: isRepeat)
             return (true, true)
