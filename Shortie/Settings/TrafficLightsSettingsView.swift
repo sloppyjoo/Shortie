@@ -268,29 +268,8 @@ struct ActionKindPicker: View {
     static let stepKinds: [ShortcutAction.Kind] = order.filter { $0 != .steps } + [.wait, .flow]
 
     var body: some View {
-        HStack(spacing: 6) {
-            Picker("Action", selection: Binding(
-                get: { action.kind },
-                set: { if $0 != action.kind { action = $0.emptyAction } }
-            )) {
-                ForEach(Self.groups, id: \.title) { group in
-                    Section(group.title) {
-                        ForEach(group.kinds.filter { !forSteps || $0 != .steps }) { kind in
-                            Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
-                        }
-                    }
-                }
-                if forSteps {
-                    Section("Steps") {
-                        Label(ShortcutAction.Kind.wait.editorTitle, systemImage: ShortcutAction.Kind.wait.systemImage).tag(ShortcutAction.Kind.wait)
-                        Label(ShortcutAction.Kind.flow.editorTitle, systemImage: ShortcutAction.Kind.flow.systemImage).tag(ShortcutAction.Kind.flow)
-                    }
-                }
-            }
-            .labelsHidden()
-            .fixedSize()
-            ActionSearchButton(action: $action, forSteps: forSteps)
-        }
+        // A button that opens the action library, rather than one very long menu.
+        ActionLibraryButton(action: $action, forSteps: forSteps)
     }
 }
 

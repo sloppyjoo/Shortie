@@ -49,6 +49,22 @@ jobs:
           name: Shortie-app
           path: dist/Shortie.zip
 
+      - name: Draw the settings pages and editors
+        run: |
+          mkdir -p snapshots
+          ./build/Debug/Shortie.app/Contents/MacOS/Shortie --snapshots "$PWD/snapshots" &
+          pid=$!
+          # Give it up to three minutes, then carry on either way.
+          for _ in $(seq 180); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+          kill $pid 2>/dev/null || true
+          ls snapshots | head -100
+
+      - name: Keep the pictures
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshots
+          path: snapshots
+
       - name: Keep the log
         if: always()
         uses: actions/upload-artifact@v4
