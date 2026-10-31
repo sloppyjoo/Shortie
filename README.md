@@ -11,8 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><b>Download</b></a> ·
-  <a href="https://sloppyjoo.github.io/Shortie/"><b>Website</b></a> ·
-  <a href="ROADMAP.md"><b>Roadmap</b></a>
+  <a href="https://sloppyjoo.github.io/Shortie/"><b>Website</b></a>
 </p>
 
 <p align="center">
@@ -79,16 +78,10 @@ Then click the hand icon in the menu bar to open settings.
 ```bash
 git clone https://github.com/sloppyjoo/Shortie.git
 cd Shortie
-open Glide.xcodeproj
+open Shortie.xcodeproj
 ```
 
 In Xcode, choose your own team under **Signing & Capabilities**, then press **⌘R**. Building needs Xcode 27.
-
-## Project notes
-
-- The Xcode project and source folders still use the app's first name, **Glide**.
-- [HANDOFF.md](HANDOFF.md) explains how everything is built.
-- [ROADMAP.md](ROADMAP.md) lists what's done and what's next.
 
 ---
 

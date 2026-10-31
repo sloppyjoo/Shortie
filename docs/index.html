@@ -22,26 +22,32 @@
   --desk: #d8d3ff;
   --pixel: "Pixelify Sans", "Chicago", "Geneva", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* A soft, unhurried ease, close to Apple's spring with no bounce. */
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  interpolate-size: allow-keywords;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-top: 44px; }
+html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-top: 48px; }
 body {
   margin: 0;
   color: var(--ink);
-  font: 15px/1.6 var(--mono);
+  font: 15px/1.65 var(--mono);
   overflow-x: clip;
   /* The desktop: a dither of 2-pixel violet dots, like a colour Mac desktop pattern. */
   background-color: var(--desk);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%236c5cff' fill-opacity='.45'/%3E%3C/svg%3E");
   background-size: 4px 4px;
 }
-a { color: var(--ink); }
+a { color: var(--ink); text-underline-offset: 3px; }
+a, button, summary { cursor: var(--hand, pointer); }
 img { max-width: 100%; height: auto; display: block; }
-h1, h2, h3, h4 { font-family: var(--pixel); font-weight: 700; margin: 0; letter-spacing: .01em; }
+h1, h2, h3, h4, h5 { font-family: var(--pixel); font-weight: 700; margin: 0; letter-spacing: .01em; }
 p { margin: 0; }
-.px { display: inline-block; image-rendering: pixelated; flex: none; }
+kbd { font: inherit; }
+.px { display: inline-block; flex: none; }
 .px svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
 
 /* Menu bar */
 .menubar {
@@ -51,55 +57,45 @@ p { margin: 0; }
   background: var(--paper); border-bottom: 2px solid var(--ink);
   font: 600 15px var(--pixel);
 }
-.menubar a { text-decoration: none; padding: 3px 8px; margin: 0 -8px; }
+.menubar a { text-decoration: none; padding: 3px 8px; margin: 0 -8px; transition: background .15s, color .15s; }
 .menubar a:hover, .menubar a:focus-visible { background: var(--violet); color: #fff; outline: none; }
 .menubar .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
-.menubar .brand .px { width: 20px; height: 20px; }
-.menubar .brand:hover .px svg path, .menubar .brand:focus-visible .px svg path { fill: var(--paper); }
+.menubar .brand .px { width: 16px; height: 16px; }
+.menubar .brand:hover .px svg path, .menubar .brand:focus-visible .px svg path { fill: #fff; }
 .menubar .clock { margin-left: auto; font-weight: 400; }
 
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
-
 /* Windows */
-.win {
-  background: var(--paper);
-  border: 2px solid var(--ink);
-  box-shadow: 5px 5px 0 var(--ink);
-}
+.win { background: var(--paper); border: 2px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); }
 .titlebar {
-  position: relative; height: 28px;
+  position: relative; height: 30px;
   display: flex; align-items: center; justify-content: center;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink); user-select: none;
+  transition: border-color 0s .3s;
 }
 .titlebar::before {
-  content: ""; position: absolute; inset: 6px 6px;
+  content: ""; position: absolute; inset: 7px 6px;
   background: repeating-linear-gradient(var(--violet) 0 2px, transparent 2px 4px);
 }
-/* The corner box rolls the window up to its title bar, like the classic Mac "window shade". */
-.titlebar .box {
-  position: absolute; left: 14px; top: 4px; width: 16px; height: 16px; z-index: 1; padding: 0;
-  background: var(--paper); border: 2px solid var(--ink); box-shadow: 0 0 0 3px var(--paper);
-  cursor: pointer; appearance: none;
-}
-.titlebar .box:active { background: var(--ink); }
-.titlebar .box:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
-.win.collapsed > :not(.titlebar) { display: none; }
-.win.collapsed > .titlebar { border-bottom: 0; }
-/* A rolled-up window shows a line in its box. */
-.win.collapsed .box::after { content: ""; position: absolute; left: 2px; right: 2px; top: 5px; height: 2px; background: var(--ink); }
-.titlebar { user-select: none; }
 .titlebar span {
   position: relative; z-index: 1; padding: 0 10px;
   background: var(--paper); font: 700 15px var(--pixel); white-space: nowrap;
 }
-.infobar {
-  display: flex; justify-content: space-between; gap: 12px;
-  padding: 4px 14px; border-bottom: 2px solid var(--ink);
-  font: 400 14px var(--pixel);
+/* The corner box rolls the window up to its title bar, like the classic Mac "window shade". */
+.titlebar .box {
+  position: absolute; left: 14px; top: 5px; width: 16px; height: 16px; z-index: 1; padding: 0;
+  background: var(--paper); border: 2px solid var(--ink); box-shadow: 0 0 0 3px var(--paper);
+  appearance: none;
 }
-.body { padding: 28px; }
+.titlebar .box:active { background: var(--ink); }
+.titlebar .box:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.win.collapsed .box::after { content: ""; position: absolute; left: 2px; right: 2px; top: 5px; height: 2px; background: var(--ink); }
+.win.collapsed .titlebar { border-bottom-color: transparent; transition-delay: .3s; }
+.win:not(.collapsed) .titlebar { transition-delay: 0s; }
+.pane { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s var(--ease); }
+.pane > div { min-height: 0; overflow: hidden; }
+.win.collapsed .pane { grid-template-rows: 0fr; }
 
-section { padding: 72px 0 0; }
+section { padding: 84px 0 0; }
 
 /* Buttons, as on the classic Mac */
 .btn {
@@ -107,23 +103,56 @@ section { padding: 72px 0 0; }
   padding: 9px 22px; border: 2px solid var(--ink); border-radius: 10px;
   background: var(--paper); color: var(--ink); text-decoration: none;
   font: 700 17px var(--pixel);
+  transition: background .15s, color .15s, transform .15s var(--ease);
 }
-.btn.default { background: var(--violet); color: #fff; box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); margin: 6px; }
-.btn.default .px svg path { fill: #fff; }
-.btn.default:hover, .btn.default:focus-visible { background: var(--violet-dark); }
 .btn:hover, .btn:focus-visible { background: var(--ink); color: #fff; outline: none; }
-.btn:hover .px svg path, .btn:focus-visible .px svg path { fill: var(--paper); }
-.btn .px { width: 20px; height: 20px; }
+.btn:active { transform: translateY(1px); }
+.btn.default { background: var(--violet); color: #fff; box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); margin: 6px; }
+.btn.default:hover, .btn.default:focus-visible { background: var(--violet-dark); }
+.btn .px { width: 16px; height: 16px; }
+.btn.default .px svg path { fill: #fff; }
 
 /* Hero */
 .hero { position: relative; padding-top: 64px; }
-.hero .win { max-width: 760px; margin: 0 auto; }
-.hero .body { padding: 44px 36px 40px; text-align: center; }
-.hero .logo { width: 96px; height: 96px; margin: 0 auto 26px; }
-.hero h1 { font-size: clamp(36px, 6vw, 60px); line-height: 1.05; text-wrap: balance; }
-.hero .lede { margin: 18px auto 30px; max-width: 520px; font-size: 17px; text-wrap: balance; }
-.hero .actions { display: flex; gap: 18px; justify-content: center; align-items: center; flex-wrap: wrap; }
-.hero .note { margin-top: 26px; font-size: 13px; color: var(--muted); }
+.hero .win { max-width: 940px; margin: 0 auto; }
+.hero .body { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; padding: 44px 40px; }
+.hero .logo { width: 64px; height: 64px; margin-bottom: 22px; }
+.hero h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.05; text-wrap: balance; }
+.hero .lede { margin: 16px 0 28px; font-size: 17px; text-wrap: pretty; }
+.hero .actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-left: -6px; }
+.hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+
+/* The demo: a tiny screen where a window follows the keys. */
+.demo { display: flex; flex-direction: column; gap: 14px; }
+.screen {
+  position: relative; aspect-ratio: 16 / 10; border: 2px solid var(--ink); overflow: hidden;
+  background-color: var(--desk);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%236c5cff' fill-opacity='.35'/%3E%3C/svg%3E");
+  background-size: 4px 4px;
+}
+.screen .bar { position: absolute; inset: 0 0 auto; height: 8%; background: var(--paper); border-bottom: 2px solid var(--ink); }
+.screen .mini {
+  position: absolute; left: 22%; top: 24%; width: 56%; height: 58%;
+  background: var(--paper); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+  transition: left .6s var(--ease), top .6s var(--ease), width .6s var(--ease), height .6s var(--ease);
+}
+.screen .mini::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 14px; border-bottom: 2px solid var(--ink);
+  background: repeating-linear-gradient(var(--violet) 0 2px, transparent 2px 4px) 0 3px / 100% 8px no-repeat;
+}
+.screen .mini::after {
+  content: ""; position: absolute; left: 10px; right: 30%; top: 26px; height: 2px;
+  background: var(--muted); box-shadow: 0 10px 0 var(--muted), 0 20px 0 var(--muted); opacity: .35;
+}
+.keys { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.keys kbd {
+  display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 8px;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 6px;
+  box-shadow: 0 3px 0 var(--ink); font: 700 17px var(--pixel);
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.keys kbd.down { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); background: var(--violet); color: #fff; }
+.keys .what { margin-left: 8px; font: 400 16px var(--pixel); color: var(--muted); }
 
 /* Desktop icons, on wide screens only */
 .desk-icons { position: absolute; right: 24px; top: 92px; display: flex; flex-direction: column; gap: 28px; }
@@ -132,146 +161,123 @@ section { padding: 72px 0 0; }
 .desk-icon b { font: 400 14px var(--pixel); background: var(--paper); padding: 0 4px; }
 .desk-icon:hover b, .desk-icon:focus-visible b { background: var(--violet); color: #fff; }
 .desk-icon:focus-visible { outline: none; }
-@media (max-width: 1220px) { .desk-icons { display: none; } }
+@media (max-width: 1260px) { .desk-icons { display: none; } }
 
 /* How it works */
 .steps3 { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; }
-.steps3 .step { padding: 24px; }
+.steps3 .step { padding: 24px 26px; }
 .steps3 .arrow { display: grid; place-items: center; width: 40px; border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); }
-.steps3 .arrow .px { width: 24px; height: 24px; }
-.steps3 h3 { font-size: 22px; margin-bottom: 8px; }
-.intro { padding: 18px 24px; border-bottom: 2px solid var(--ink); }
+.steps3 .arrow .px { width: 16px; height: 16px; }
+.steps3 h3 { font-size: 22px; margin-bottom: 6px; }
+
+/* Screenshot rows */
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 72px; }
+.row:first-of-type { margin-top: 0; }
+.row.flip .copy { order: 2; }
+.row > * { min-width: 0; }
+.row .copy { background: var(--paper); border: 2px solid var(--ink); padding: 28px; }
+.row h3 { font-size: 30px; line-height: 1.1; margin-bottom: 12px; }
 
 /* Finder list view */
+.infobar { display: flex; justify-content: space-between; gap: 12px; padding: 4px 14px; border-bottom: 2px solid var(--ink); font: 400 14px var(--pixel); }
 .list { width: 100%; border-collapse: collapse; }
-.list th { text-align: left; font: 700 14px var(--pixel); padding: 6px 14px; border-bottom: 2px solid var(--ink); }
-.list td { padding: 14px; vertical-align: top; border-bottom: 1px dotted var(--ink); }
-.list tr:last-child td { border-bottom: 0; }
-.list td.name { width: 300px; }
+.list td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px dotted var(--ink); }
+.list td.name { width: 290px; }
 .list .name div { display: flex; align-items: center; gap: 14px; font: 600 18px var(--pixel); }
 .list .px { width: 32px; height: 32px; }
 
-/* Screenshot rows */
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 64px; }
-.row.flip .copy { order: 2; }
-.row > * { min-width: 0; }
-.row .copy { background: var(--paper); border: 2px solid var(--ink); padding: 26px; }
-.row h3 { font-size: 30px; line-height: 1.1; margin-bottom: 12px; }
-.row ul { margin: 16px 0 0; padding: 0; list-style: none; }
-.row li { padding: 4px 0 4px 22px; position: relative; }
-.row li::before { content: ""; position: absolute; left: 2px; top: 12px; width: 8px; height: 8px; background: var(--violet); }
-
-/* Full list */
-.cols { display: grid; grid-template-columns: repeat(3, 1fr); }
-.cols > div { border-right: 2px solid var(--ink); }
-.cols > div:last-child { border-right: 0; }
-.cols h4 { font-size: 16px; padding: 6px 14px; background: var(--violet); color: #fff; }
-.cols ul { list-style: none; margin: 0; padding: 12px 14px 16px; }
-.cols li { padding: 3px 0 3px 18px; position: relative; }
-.cols li::before { content: "◆"; position: absolute; left: 0; font-size: 10px; top: 6px; color: var(--violet); }
-
-/* The disclosure triangle under the full list. */
+/* The disclosure triangle */
 .everything { border-top: 2px solid var(--ink); }
 .everything summary {
-  list-style: none; cursor: pointer; padding: 12px 16px;
+  list-style: none; padding: 12px 16px;
   font: 700 16px var(--pixel); display: flex; align-items: center; gap: 10px;
 }
 .everything summary::-webkit-details-marker { display: none; }
 .everything summary::before {
   content: ""; width: 0; height: 0;
   border-left: 9px solid var(--ink); border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+  transition: transform .3s var(--ease);
 }
 .everything[open] summary::before { transform: rotate(90deg); }
 .everything summary:focus-visible { outline: 2px solid var(--violet); outline-offset: -4px; }
-.groups { columns: 2 320px; column-gap: 32px; padding: 4px 16px 20px 36px; }
+.everything::details-content { height: 0; overflow: clip; transition: height .45s var(--ease), content-visibility .45s allow-discrete; }
+.everything[open]::details-content { height: auto; }
+.groups { columns: 2 320px; column-gap: 32px; padding: 4px 16px 22px 36px; }
 .groups > div { break-inside: avoid; margin-bottom: 16px; }
 .groups h5 { margin: 0 0 4px; font: 700 15px var(--pixel); color: var(--violet-dark); }
 .groups p { font-size: 14px; }
 
 /* About box */
-.about { display: grid; grid-template-columns: 120px 1fr; gap: 28px; align-items: start; }
+.about { display: grid; grid-template-columns: 112px 1fr; gap: 28px; align-items: start; padding: 30px; }
 .about > .px { width: 96px; height: 96px; }
 .about h3 { font-size: 30px; }
 .about .version { font: 400 16px var(--pixel); margin: 2px 0 18px; }
-.about dl { margin: 0; display: grid; grid-template-columns: 150px 1fr; gap: 10px 18px; }
+.about dl { margin: 0; display: grid; grid-template-columns: 130px 1fr; gap: 10px 18px; }
 .about dt { font: 700 15px var(--pixel); }
 .about dd { margin: 0; }
 .meter { display: flex; align-items: center; gap: 12px; }
-.meter .bar { flex: 1; max-width: 260px; height: 18px; border: 2px solid var(--ink); background: var(--paper); }
+.meter .bar { flex: 1; max-width: 240px; height: 18px; border: 2px solid var(--ink); background: var(--paper); }
 
 /* Read Me */
 .readme { display: grid; grid-template-columns: 1fr 1fr; }
-.readme > div { padding: 26px; min-width: 0; }
+.readme > div { padding: 28px; min-width: 0; }
 .readme > div + div { border-left: 2px solid var(--ink); }
 .readme h3 { font-size: 22px; margin-bottom: 10px; }
 .readme ol { margin: 0; padding-left: 22px; }
 .readme li { margin: 8px 0; }
 .readme .fine { margin-top: 16px; font-size: 13px; color: var(--muted); }
-pre {
-  margin: 12px 0; padding: 12px 14px; overflow-x: auto;
-  background: var(--ink); color: #e9e6ff; font: 13px/1.6 var(--mono);
-}
+pre { margin: 12px 0; padding: 12px 14px; overflow-x: auto; background: var(--ink); color: #e9e6ff; font: 13px/1.6 var(--mono); }
 
-/* Footer */
-footer { margin-top: 80px; background: var(--paper); border-top: 2px solid var(--ink); }
+footer { margin-top: 90px; background: var(--paper); border-top: 2px solid var(--ink); }
 footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 16px; font-size: 13px; }
 
-/* Windows open like the classic Mac: a few quick steps, not a smooth fade. */
-.reveal { opacity: 0; }
-.reveal.in { animation: open .24s steps(4, end) forwards; }
-@keyframes open {
-  from { opacity: 0; transform: scale(.9); }
-  to { opacity: 1; transform: none; }
-}
+/* Windows ease into place as they scroll into view. */
+.reveal { opacity: 0; transform: translateY(18px) scale(.985); transition: opacity .7s ease, transform .9s var(--ease); }
+.reveal.in { opacity: 1; transform: none; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal, .reveal.in { opacity: 1; animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .pane, .screen .mini, .everything::details-content, .everything summary::before { transition: none; }
 }
 
 @media (max-width: 860px) {
+  .hero .body { grid-template-columns: 1fr; gap: 32px; }
   .steps3 { grid-template-columns: 1fr; }
   .steps3 .arrow { width: auto; height: 36px; border: 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
   .steps3 .arrow .px { transform: rotate(90deg); }
   .row, .row.flip { grid-template-columns: 1fr; gap: 20px; }
   .row.flip .copy { order: 0; }
-  .cols { grid-template-columns: 1fr; }
-  .cols > div { border-right: 0; border-bottom: 2px solid var(--ink); }
-  .cols > div:last-child { border-bottom: 0; }
   .readme { grid-template-columns: 1fr; }
   .readme > div + div { border-left: 0; border-top: 2px solid var(--ink); }
-  .list td.name { width: auto; }
+  .list td.name { width: 220px; }
 }
 @media (max-width: 600px) {
   body { font-size: 14px; }
   .wrap { padding: 0 14px; }
   .menubar { gap: 16px; padding: 0 10px; }
-  .menubar .hide-sm { display: none; }
   .hero { padding-top: 36px; }
-  .hero .body { padding: 32px 18px; }
-  .hero .logo { width: 72px; height: 72px; }
-  .body { padding: 20px; }
-  .list thead { display: none; }
+  .hero .body { padding: 28px 20px; }
+  .hero .logo { width: 48px; height: 48px; margin-bottom: 16px; }
   .list tr, .list td { display: block; }
   .list td { border-bottom: 0; padding: 4px 16px; }
-  .list td.name { padding-top: 16px; }
+  .list td.name { width: auto; padding-top: 14px; }
   .list tr { border-bottom: 1px dotted var(--ink); padding-bottom: 12px; }
-  .list tr:last-child { border-bottom: 0; }
-  .about { grid-template-columns: 1fr; gap: 14px; }
+  .about { grid-template-columns: 1fr; gap: 14px; padding: 22px; }
   .about > .px { width: 64px; height: 64px; }
   .about dl { grid-template-columns: 1fr; gap: 2px; }
   .about dd { margin-bottom: 10px; }
-  .row .copy { padding: 20px; }
-  .titlebar span { font-size: 14px; }
+  .row .copy { padding: 22px; }
+  .keys kbd { min-width: 32px; height: 32px; font-size: 15px; }
 }
 </style>
-<noscript><style>.reveal { opacity: 1; }</style></noscript>
+<noscript><style>.reveal { opacity: 1; transform: none; }</style></noscript>
 </head>
 <body>
 
 <nav class="menubar">
   <a class="brand" href="#top"><span class="px" data-icon="hand"></span>Shortie</a>
-  <a class="hide-sm" href="#features">Features</a>
-  <a class="hide-sm" href="#list">Full list</a>
+  <a href="#features">Features</a>
   <a href="#install">Install</a>
   <a href="https://github.com/sloppyjoo/Shortie">GitHub</a>
   <span class="clock" aria-hidden="true"></span>
@@ -284,17 +290,25 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
   </div>
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Shortie</span></div>
-      <div class="body">
-        <span class="px logo" data-icon="hand" data-color="#6c5cff"></span>
-        <h1>Make your Mac do what you want.</h1>
-        <p class="lede">Customise your keyboard shortcuts, trackpad gestures and mouse buttons.</p>
-        <div class="actions">
-          <a class="btn default" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><span class="px" data-icon="down"></span>Download for Mac</a>
-          <a class="btn" href="https://github.com/sloppyjoo/Shortie">View on GitHub</a>
+      <div class="titlebar"><button class="box" type="button"></button><span>Shortie</span></div>
+      <div class="pane"><div>
+        <div class="body">
+          <div>
+            <span class="px logo" data-icon="hand" data-color="#6c5cff"></span>
+            <h1>Make your Mac do what you want.</h1>
+            <p class="lede">Customise your keyboard shortcuts, trackpad gestures and mouse buttons.</p>
+            <div class="actions">
+              <a class="btn default" href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg"><span class="px" data-icon="down"></span>Download for Mac</a>
+              <a class="btn" href="https://github.com/sloppyjoo/Shortie">View on GitHub</a>
+            </div>
+            <p class="note">Free · macOS 15 or later</p>
+          </div>
+          <div class="demo" aria-hidden="true">
+            <div class="screen"><div class="bar"></div><div class="mini"></div></div>
+            <div class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd class="last">←</kbd><span class="what">Left half</span></div>
+          </div>
         </div>
-        <p class="note">Version 0.2 · Free and open source · macOS 15 or later</p>
-      </div>
+      </div></div>
     </div>
   </div>
 </header>
@@ -302,156 +316,117 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="how">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>How it works</span></div>
-      <p class="intro">Each rule has a trigger, an action, and the apps it applies to. Any trigger can run any action.</p>
-      <div class="steps3">
-        <div class="step">
-          <h3>Trigger</h3>
-          <p>A keyboard shortcut, trackpad gesture, mouse button, typed abbreviation, a click on a window's red, yellow or green button, or an event such as an app opening.</p>
+      <div class="titlebar"><button class="box" type="button"></button><span>How it works</span></div>
+      <div class="pane"><div>
+        <div class="steps3">
+          <div class="step">
+            <h3>Trigger</h3>
+            <p>A shortcut, a trackpad gesture, a mouse button or a typed abbreviation.</p>
+          </div>
+          <div class="arrow"><span class="px" data-icon="arrow"></span></div>
+          <div class="step">
+            <h3>Action</h3>
+            <p>Snap a window, open an app, type text, control music or run a script.</p>
+          </div>
+          <div class="arrow"><span class="px" data-icon="arrow"></span></div>
+          <div class="step">
+            <h3>Apps</h3>
+            <p>Everywhere, or only in the apps you choose.</p>
+          </div>
         </div>
-        <div class="arrow"><span class="px" data-icon="arrow"></span></div>
-        <div class="step">
-          <h3>Action</h3>
-          <p>Open an app or website, type text, press keys, move a window, control media, run a script, or several of these in a row.</p>
-        </div>
-        <div class="arrow"><span class="px" data-icon="arrow"></span></div>
-        <div class="step">
-          <h3>Apps</h3>
-          <p>All apps, only some, or all except some. A rule for a specific app wins, so one gesture can do different things in different apps.</p>
-        </div>
-      </div>
+      </div></div>
     </div>
   </div>
 </section>
 
 <section id="features">
   <div class="wrap">
-    <div class="win reveal">
-      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Features</span></div>
-      <div class="infobar"><span>9 items</span><span>macOS 15 or later</span></div>
-      <table class="list">
-        <thead><tr><th>Name</th><th>What it does</th></tr></thead>
-        <tbody>
-          <tr><td class="name"><div><span class="px" data-icon="key" data-color="#6c5cff"></span>Keyboard shortcuts</div></td><td>Any key combination can run any action. Caps Lock can also work as a Hyper key: hold it for ⌃⌥⇧⌘, tap it for Caps Lock.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="layout" data-color="#2f7bff"></span>Window layouts</div></td><td>Save the position of every open window under a name, then put them all back with one shortcut.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="mouse" data-color="#139c8f"></span>Mouse buttons</div></td><td>Assign actions to extra mouse buttons. Set the scroll direction for the mouse separately from the trackpad, and turn on smooth scrolling.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="abc" data-color="#f0602d"></span>Text shortcuts</div></td><td>Type an abbreviation like ;email and it is replaced with the full text. An abbreviation can also run an action.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="clipboard" data-color="#e2408f"></span>Clipboard history</div></td><td>Search and paste anything you copied earlier, and pin what you use often. Password manager items are skipped, and the history stays on your Mac.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="menu" data-color="#6c5cff"></span>Custom menus</div></td><td>Build your own menus of actions and show them in the menu bar or at the pointer.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="select" data-color="#2f7bff"></span>Selected text</div></td><td>Change the case of selected text, sort lines, search the web for it, have it read aloud, or paste as plain text.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="bolt" data-color="#e3a600"></span>Automations</div></td><td>Run actions when an app opens or quits, or when your Mac wakes, sleeps, locks or is plugged in.</td></tr>
-          <tr><td class="name"><div><span class="px" data-icon="notch" data-color="#1d1838"></span>Black menu bar</div></td><td>Turns the menu bar black so the notch blends in. Set it for each screen.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
     <div class="row">
       <div class="copy reveal">
         <h3>Trackpad gestures</h3>
-        <p>Pick a gesture from the list or record one by doing it on the trackpad. Then choose what it does, and which apps it works in.</p>
-        <ul>
-          <li>Taps, swipes, pinches, clicks and more, with 2 to 5 fingers</li>
-          <li>A warning when macOS already uses the same gesture</li>
-        </ul>
+        <p>Taps, swipes, pinches and clicks with two to five fingers. Record a gesture by doing it, and Shortie tells you if macOS already uses it.</p>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Trackpad Gesture</span></div>
-        <img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052" loading="lazy">
+        <div class="titlebar"><button class="box" type="button"></button><span>Trackpad Gesture</span></div>
+        <div class="pane"><div><img src="images/gesture-editor-light.png" alt="The gesture editor: a three-finger swipe down opens Control Centre, only in Safari and Finder" width="1040" height="1052" loading="lazy"></div></div>
       </div>
     </div>
 
     <div class="row flip">
       <div class="copy reveal">
         <h3>Window snapping</h3>
-        <p>Press a half or corner shortcut again to cycle its width through ½, ⅓ and ⅔. Drag a window to a screen edge to snap it, or hold ⌃⌘ and drag anywhere inside a window to move it.</p>
-        <ul>
-          <li>31 positions, from halves to “Almost Maximise”</li>
-          <li>Make a window larger or smaller, or move it to an edge</li>
-          <li>A button that adds a standard set of shortcuts</li>
-        </ul>
+        <p>Halves, thirds, quarters and more, from the keyboard or by dragging a window to the edge of the screen. Press the same shortcut again to switch between ½, ⅓ and ⅔.</p>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Window Snapping</span></div>
-        <img src="images/windows-light.png" alt="The Window Snapping page, with dragging settings and shortcuts for each half of the screen" width="1086" height="1100" loading="lazy">
+        <div class="titlebar"><button class="box" type="button"></button><span>Window Snapping</span></div>
+        <div class="pane"><div><img src="images/windows-light.png" alt="The Window Snapping page, with dragging settings and shortcuts for each half of the screen" width="1086" height="1100" loading="lazy"></div></div>
       </div>
     </div>
 
     <div class="row">
       <div class="copy reveal">
         <h3>Several actions at once</h3>
-        <p>One trigger can run a list of actions, with optional pauses between them. There are also actions for AppleScript, shell scripts and choosing an item from the current app's menus.</p>
-        <ul>
-          <li>Run a shortcut from Apple's Shortcuts app</li>
-          <li>Choose a menu item such as “File › Export as PDF…”</li>
-        </ul>
+        <p>Chain actions together, with pauses in between. You can also run AppleScript or shell scripts, or pick an item from the current app's menus.</p>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Keyboard Shortcut</span></div>
-        <img src="images/steps-editor-light.png" alt="A keyboard shortcut that presses ⌘C, waits 0.3 seconds, then opens google.com" width="1040" height="1284" loading="lazy">
+        <div class="titlebar"><button class="box" type="button"></button><span>Keyboard Shortcut</span></div>
+        <div class="pane"><div><img src="images/steps-editor-light.png" alt="A keyboard shortcut that presses ⌘C, waits 0.3 seconds, then opens google.com" width="1040" height="1284" loading="lazy"></div></div>
       </div>
     </div>
 
     <div class="row flip">
       <div class="copy reveal">
         <h3>Window buttons</h3>
-        <p>A click or right-click on a window's red, yellow or green button can run any action. It applies to the window you clicked, even if it's in the background.</p>
-        <ul>
-          <li>Green maximises instead of going full screen</li>
-          <li>Right-click red to quit the whole app</li>
-        </ul>
+        <p>Give the red, yellow and green buttons new jobs. Make green maximise instead of going full screen, or right-click red to quit the app.</p>
       </div>
       <div class="win reveal">
-        <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Window Buttons</span></div>
-        <img src="images/window-buttons-light.png" alt="The Window Buttons page: clicking green maximises, clicking red quits the app" width="1086" height="720" loading="lazy">
+        <div class="titlebar"><button class="box" type="button"></button><span>Window Buttons</span></div>
+        <div class="pane"><div><img src="images/window-buttons-light.png" alt="The Window Buttons page: clicking green maximises, clicking red quits the app" width="1086" height="720" loading="lazy"></div></div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="list">
+<section id="more">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Full list</span></div>
-      <div class="cols">
-        <div>
-          <h4>Trackpad</h4>
-          <ul>
-            <li>Taps with 2 to 5 fingers</li><li>3, 4 and 5 finger swipes</li><li>Swipe in from an edge</li><li>Pinch and rotate</li><li>Force click</li>
-          </ul>
-        </div>
-        <div>
-          <h4>Other triggers</h4>
-          <ul>
-            <li>Keyboard shortcuts</li><li>Typed abbreviations</li><li>Mouse buttons</li><li>Window buttons</li><li>An app opening</li>
-          </ul>
-        </div>
-        <div>
-          <h4>Actions</h4>
-          <ul>
-            <li>Open an app or website</li><li>Snap and resize windows</li><li>Media keys and volume</li><li>Change selected text</li><li>Run a script</li>
-          </ul>
-        </div>
-      </div>
-      <details class="everything">
-        <summary>Show every trigger and action</summary>
-        <div class="groups">
-          <div><h5>Trackpad gestures</h5><p>Tap, double tap and tap and hold with 2, 3, 4 or 5 fingers. TipTap left or right, with 1 or 2 fingers resting. Swipe up, down, left or right with 3, 4 or 5 fingers. Swipe in from the top, bottom, left or right edge with 1 or 2 fingers. Pinch in or out with 3, 4 or 5 fingers. Rotate left or right. Click with 2, 3, 4 or 5 fingers. Click in any corner. Force click.</p></div>
-          <div><h5>Keyboard and typing</h5><p>Any key combination, including with the Hyper key (Caps Lock held as ⌃⌥⇧⌘). Typed abbreviations, such as ;email.</p></div>
-          <div><h5>Mouse</h5><p>Middle, back, forward and higher buttons, alone or with ⌃, ⌥, ⇧ or ⌘.</p></div>
-          <div><h5>Window buttons</h5><p>Click or right-click a window's red, yellow or green button, alone or with ⌃, ⌥, ⇧ or ⌘.</p></div>
-          <div><h5>Events</h5><p>An app opens, quits or comes to the front. The Mac wakes, sleeps, locks or unlocks. The charger is connected or disconnected.</p></div>
-          <div><h5>Basic actions</h5><p>Open App, Open Website or File, Run a Shortcut, Type Text, Press Keys, Choose Menu Item, Run AppleScript, Run Shell Script, Several Actions (with Wait between them), Show Custom Menu, Show Message, Speak Text.</p></div>
-          <div><h5>Mouse clicks</h5><p>Left Click, Right Click, Middle Click, Double Click.</p></div>
-          <div><h5>Window positions</h5><p>Left, Right, Top and Bottom Half. Top Left, Top Right, Bottom Left and Bottom Right. Left, Centre and Right Third. Left and Right Two Thirds. First, Second, Third and Last Fourth. Maximise, Almost Maximise, Maximise Height, Maximise Width. Centre, Restore. Make Larger, Make Smaller. Move to the Left, Right, Top or Bottom Edge. Next Display, Previous Display. Restore Window Layout.</p></div>
-          <div><h5>Window and app commands</h5><p>Close Window, Minimise Window, Enter or Exit Full Screen, Close All of the App's Windows, Minimise All of the App's Windows, Hide App, Hide Other Apps, Quit App, Quit Other Apps.</p></div>
-          <div><h5>Media and sound</h5><p>Play or Pause, Next Track, Previous Track, Volume Up, Volume Down, Mute, Set Volume, Sound Output, Microphone On or Off.</p></div>
-          <div><h5>Display and keyboard</h5><p>Brightness Up, Brightness Down, Keyboard Backlight Up, Keyboard Backlight Down, Dark Mode On or Off, Turn Display Off.</p></div>
-          <div><h5>macOS</h5><p>Control Centre, Notification Centre, Mission Control, App Exposé, Show Desktop, Show Apps, Spotlight, Emoji &amp; Symbols, Screenshot Tool, Screenshot of Selection, Screenshot of Screen, Hide or Show the Dock, Hide or Show the Menu Bar, Show or Hide Hidden Files, Show or Hide Desktop Icons, Start Screen Saver, Force Quit, Eject All Disks.</p></div>
-          <div><h5>Power</h5><p>Lock Screen, Sleep, Log Out, Restart, Shut Down.</p></div>
-          <div><h5>Selected text</h5><p>Make UPPERCASE, Make lowercase, Make Title Case, Make Sentence case, Trim Spaces, Join Lines, Sort Lines, Remove Duplicate Lines, URL-Encode, URL-Decode, Search the Web, Speak Selection, Count Words, Paste as Plain Text.</p></div>
-          <div><h5>Shortie</h5><p>Window Switcher, Clipboard History, Open Shortie Settings, Pause or Resume Shortie.</p></div>
-        </div>
-      </details>
+      <div class="titlebar"><button class="box" type="button"></button><span>Everything else</span></div>
+      <div class="pane"><div>
+        <div class="infobar"><span>9 items</span><span>macOS 15 or later</span></div>
+        <table class="list">
+          <tbody>
+            <tr><td class="name"><div><span class="px" data-icon="layout" data-color="#2f7bff"></span>Window layouts</div></td><td>Save where your windows are, and put them all back with one shortcut.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="key" data-color="#6c5cff"></span>Hyper key</div></td><td>Hold Caps Lock for ⌃⌥⇧⌘. Tap it and it's still Caps Lock.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="mouse" data-color="#139c8f"></span>Mouse buttons</div></td><td>Use your extra buttons, and scroll the other way from the trackpad.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="abc" data-color="#f0602d"></span>Text shortcuts</div></td><td>Type ;email and get your email address.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="clipboard" data-color="#e2408f"></span>Clipboard history</div></td><td>Search and paste what you copied earlier. It stays on your Mac.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="menu" data-color="#6c5cff"></span>Custom menus</div></td><td>Your own menus of actions, in the menu bar or at the pointer.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="select" data-color="#2f7bff"></span>Selected text</div></td><td>Change its case, sort lines, search the web, or hear it read aloud.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="bolt" data-color="#e3a600"></span>Automations</div></td><td>Run actions when an app opens or your Mac wakes up.</td></tr>
+            <tr><td class="name"><div><span class="px" data-icon="notch" data-color="#1d1838"></span>Black menu bar</div></td><td>Hide the notch.</td></tr>
+          </tbody>
+        </table>
+        <details class="everything">
+          <summary>Show every trigger and action</summary>
+          <div class="groups">
+            <div><h5>Trackpad gestures</h5><p>Tap, double tap and tap and hold with 2, 3, 4 or 5 fingers. TipTap left or right, with 1 or 2 fingers resting. Swipe up, down, left or right with 3, 4 or 5 fingers. Swipe in from the top, bottom, left or right edge with 1 or 2 fingers. Pinch in or out with 3, 4 or 5 fingers. Rotate left or right. Click with 2, 3, 4 or 5 fingers. Click in any corner. Force click.</p></div>
+            <div><h5>Keyboard and typing</h5><p>Any key combination, including with the Hyper key. Typed abbreviations, such as ;email.</p></div>
+            <div><h5>Mouse</h5><p>Middle, back, forward and higher buttons, alone or with ⌃, ⌥, ⇧ or ⌘.</p></div>
+            <div><h5>Window buttons</h5><p>Click or right-click a window's red, yellow or green button, alone or with ⌃, ⌥, ⇧ or ⌘.</p></div>
+            <div><h5>Events</h5><p>An app opens, quits or comes to the front. The Mac wakes, sleeps, locks or unlocks. The charger is connected or disconnected.</p></div>
+            <div><h5>Basic actions</h5><p>Open App, Open Website or File, Run a Shortcut, Type Text, Press Keys, Choose Menu Item, Run AppleScript, Run Shell Script, Several Actions (with Wait between them), Show Custom Menu, Show Message, Speak Text.</p></div>
+            <div><h5>Mouse clicks</h5><p>Left Click, Right Click, Middle Click, Double Click.</p></div>
+            <div><h5>Window positions</h5><p>Left, Right, Top and Bottom Half. Top Left, Top Right, Bottom Left and Bottom Right. Left, Centre and Right Third. Left and Right Two Thirds. First, Second, Third and Last Fourth. Maximise, Almost Maximise, Maximise Height, Maximise Width. Centre, Restore. Make Larger, Make Smaller. Move to the Left, Right, Top or Bottom Edge. Next Display, Previous Display. Restore Window Layout.</p></div>
+            <div><h5>Window and app commands</h5><p>Close Window, Minimise Window, Enter or Exit Full Screen, Close All of the App's Windows, Minimise All of the App's Windows, Hide App, Hide Other Apps, Quit App, Quit Other Apps.</p></div>
+            <div><h5>Media and sound</h5><p>Play or Pause, Next Track, Previous Track, Volume Up, Volume Down, Mute, Set Volume, Sound Output, Microphone On or Off.</p></div>
+            <div><h5>Display and keyboard</h5><p>Brightness Up, Brightness Down, Keyboard Backlight Up, Keyboard Backlight Down, Dark Mode On or Off, Turn Display Off.</p></div>
+            <div><h5>macOS</h5><p>Control Centre, Notification Centre, Mission Control, App Exposé, Show Desktop, Show Apps, Spotlight, Emoji &amp; Symbols, Screenshot Tool, Screenshot of Selection, Screenshot of Screen, Hide or Show the Dock, Hide or Show the Menu Bar, Show or Hide Hidden Files, Show or Hide Desktop Icons, Start Screen Saver, Force Quit, Eject All Disks.</p></div>
+            <div><h5>Power</h5><p>Lock Screen, Sleep, Log Out, Restart, Shut Down.</p></div>
+            <div><h5>Selected text</h5><p>Make UPPERCASE, Make lowercase, Make Title Case, Make Sentence case, Trim Spaces, Join Lines, Sort Lines, Remove Duplicate Lines, URL-Encode, URL-Decode, Search the Web, Speak Selection, Count Words, Paste as Plain Text.</p></div>
+            <div><h5>Shortie</h5><p>Window Switcher, Clipboard History, Open Shortie Settings, Pause or Resume Shortie.</p></div>
+          </div>
+        </details>
+      </div></div>
     </div>
   </div>
 </section>
@@ -459,21 +434,23 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="about">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>About Shortie</span></div>
-      <div class="body about">
-        <span class="px" data-icon="hand"></span>
-        <div>
-          <h3>Shortie</h3>
-          <p class="version">Version 0.2</p>
-          <dl>
-            <dt>Built with</dt><dd>Swift, SwiftUI and AppKit. Uses Liquid Glass on macOS 26 and later.</dd>
-            <dt>Idle CPU</dt><dd class="meter"><span class="bar"></span>0%</dd>
-            <dt>Privacy</dt><dd>No account, no analytics, and the app doesn't connect to the internet.</dd>
-            <dt>Permission</dt><dd>Accessibility only, to read input and move windows.</dd>
-            <dt>Licence</dt><dd>MIT. Free and open source.</dd>
-          </dl>
+      <div class="titlebar"><button class="box" type="button"></button><span>About Shortie</span></div>
+      <div class="pane"><div>
+        <div class="about">
+          <span class="px" data-icon="hand" data-color="#6c5cff"></span>
+          <div>
+            <h3>Shortie</h3>
+            <p class="version">Version 0.2</p>
+            <dl>
+              <dt>Made by</dt><dd><a href="https://github.com/sloppyjoo">sloppyjoo</a></dd>
+              <dt>Built with</dt><dd>Swift, SwiftUI and AppKit</dd>
+              <dt>Idle CPU</dt><dd class="meter"><span class="bar"></span>0%</dd>
+              <dt>Privacy</dt><dd>No account, no analytics, no internet connection.</dd>
+              <dt>Licence</dt><dd>MIT. Free, and the code is open.</dd>
+            </dl>
+          </div>
         </div>
-      </div>
+      </div></div>
     </div>
   </div>
 </section>
@@ -481,80 +458,128 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="install">
   <div class="wrap">
     <div class="win reveal">
-      <div class="titlebar"><button class="box" type="button" aria-expanded="true"></button><span>Read Me</span></div>
-      <div class="readme">
-        <div>
-          <h3>Download</h3>
-          <ol>
-            <li><a href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg">Download Shortie.dmg</a>, open it, and drag Shortie into Applications.</li>
-            <li>Open Shortie. Because it isn't notarised by Apple yet, macOS says it couldn't check it. Click <b>Done</b>.</li>
-            <li>Open <b>System Settings › Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to Shortie. You only need to do this once.</li>
-            <li>Grant <b>Accessibility</b> permission when the welcome window asks.</li>
-            <li>Click the hand icon in the menu bar to open settings. To start, try <b>Window Snapping › Standard Set</b>.</li>
-          </ol>
-          <p class="fine">Requires macOS 15 or later, on Apple silicon or Intel. Trackpad gestures rely on a private macOS framework and may break in a future macOS update.</p>
-        </div>
-        <div>
-          <h3>Build from source</h3>
-          <ol>
-            <li>Install Xcode from the App Store.</li>
-            <li>Clone the repository and open the project:</li>
-          </ol>
+      <div class="titlebar"><button class="box" type="button"></button><span>Read Me</span></div>
+      <div class="pane"><div>
+        <div class="readme">
+          <div>
+            <h3>Install</h3>
+            <ol>
+              <li><a href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg">Download Shortie.dmg</a> and drag Shortie into Applications.</li>
+              <li>Open it. Shortie isn't notarised by Apple yet, so macOS says it can't check it. Click <b>Done</b>.</li>
+              <li>In <b>System Settings › Privacy &amp; Security</b>, click <b>Open Anyway</b>. You only do this once.</li>
+              <li>Allow <b>Accessibility</b> when Shortie asks, then click the hand in the menu bar.</li>
+            </ol>
+            <p class="fine">Needs macOS 15 or later. Trackpad gestures use a private part of macOS, so a future update could break them.</p>
+          </div>
+          <div>
+            <h3>Build it yourself</h3>
+            <p>With Xcode installed:</p>
 <pre>git clone https://github.com/sloppyjoo/Shortie.git
 cd Shortie
-open Glide.xcodeproj</pre>
-          <ol start="3">
-            <li>In Xcode, choose your own team under Signing &amp; Capabilities, then press ⌘R.</li>
-          </ol>
-          <p class="fine">Older versions and release notes are on the <a href="https://github.com/sloppyjoo/Shortie/releases">Releases page</a>.</p>
+open Shortie.xcodeproj</pre>
+            <p>Choose your own team under Signing &amp; Capabilities, then press ⌘R.</p>
+            <p class="fine">Older versions are on the <a href="https://github.com/sloppyjoo/Shortie/releases">Releases page</a>.</p>
+          </div>
         </div>
-      </div>
+      </div></div>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p>Shortie is an independent project, not made by or affiliated with Apple. Mac and macOS are trademarks of Apple Inc.</p>
+    <p>Shortie isn't made by or affiliated with Apple. Mac and macOS are trademarks of Apple Inc.</p>
     <p><a href="https://github.com/sloppyjoo/Shortie">GitHub</a></p>
   </div>
 </footer>
 
 <script src="icons.js"></script>
 <script>
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 // Draw each 1-bit icon from its rows of pixels.
+function pixelPath(rows) {
+  let d = '';
+  rows.forEach((row, y) => [...row].forEach((c, x) => { if (c === '#') d += `M${x} ${y}h1v1h-1z`; }));
+  return d;
+}
 for (const el of document.querySelectorAll('.px[data-icon]')) {
   const rows = ICONS[el.dataset.icon];
   if (!rows) continue;
-  let d = '';
-  rows.forEach((row, y) => [...row].forEach((c, x) => { if (c === '#') d += `M${x} ${y}h1v1h-1z`; }));
-  el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d}" fill="${el.dataset.color || '#1d1838'}"/></svg>`;
+  el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${pixelPath(rows)}" fill="${el.dataset.color || '#1d1838'}"/></svg>`;
 }
+
+// The pointing hand as the pointer over anything clickable: black outline, white inside.
+(function handCursor() {
+  const rows = ICONS.hand;
+  const outside = rows.map(r => [...r].map(() => false));
+  const queue = [];
+  for (let i = 0; i < 16; i++) queue.push([i, 0], [i, 15], [0, i], [15, i]);
+  while (queue.length) {
+    const [x, y] = queue.pop();
+    if (x < 0 || y < 0 || x > 15 || y > 15 || outside[y][x] || rows[y][x] === '#') continue;
+    outside[y][x] = true;
+    queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  const inside = rows.map((r, y) => [...r].map((c, x) => (c === '#' || outside[y][x]) ? '.' : '#').join(''));
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="${pixelPath(inside)}" fill="#fff"/><path d="${pixelPath(rows)}" fill="#000"/></svg>`;
+  document.documentElement.style.setProperty('--hand', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 13 1, pointer`);
+})();
 
 // The corner box (or a double-click on the title bar) rolls a window up to its title bar.
 for (const win of document.querySelectorAll('.win')) {
   const titlebar = win.querySelector('.titlebar');
   const box = titlebar.querySelector('.box');
   const name = titlebar.querySelector('span').textContent;
-  const toggle = () => {
-    const collapsed = win.classList.toggle('collapsed');
+  const update = () => {
+    const collapsed = win.classList.contains('collapsed');
     box.setAttribute('aria-expanded', String(!collapsed));
     box.setAttribute('aria-label', (collapsed ? 'Expand ' : 'Collapse ') + name);
   };
-  box.setAttribute('aria-label', 'Collapse ' + name);
+  const toggle = () => { win.classList.toggle('collapsed'); update(); };
+  update();
   box.addEventListener('click', toggle);
   titlebar.addEventListener('dblclick', (event) => { if (event.target !== box) toggle(); });
 }
 
+// The demo: keys press, and the little window follows.
+(function demo() {
+  const mini = document.querySelector('.screen .mini');
+  const keys = document.querySelectorAll('.keys kbd');
+  const last = document.querySelector('.keys .last');
+  const what = document.querySelector('.keys .what');
+  // Positions as left, top, width, height in %, below the 8% menu bar.
+  const moves = [
+    ['←', 'Left half', [0, 8, 50, 92]],
+    ['→', 'Right half', [50, 8, 50, 92]],
+    ['↩', 'Maximise', [0, 8, 100, 92]],
+    ['C', 'Centre', [22, 24, 56, 58]],
+  ];
+  let step = 0;
+  function show([key, label, [left, top, width, height]]) {
+    last.textContent = key;
+    what.textContent = label;
+    Object.assign(mini.style, { left: left + '%', top: top + '%', width: width + '%', height: height + '%' });
+  }
+  if (reduceMotion) { show(moves[0]); return; }
+  function next() {
+    const move = moves[step % moves.length];
+    last.textContent = move[0];
+    keys.forEach((k) => k.classList.add('down'));
+    setTimeout(() => show(move), 120);
+    setTimeout(() => keys.forEach((k) => k.classList.remove('down')), 320);
+    step++;
+  }
+  setTimeout(() => { next(); setInterval(next, 2400); }, 900);
+})();
+
 // The menu bar clock.
 const clock = document.querySelector('.clock');
-function tick() {
-  clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-}
+function tick() { clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
 tick();
 setInterval(tick, 10000);
 
-// Windows open as they scroll into view.
+// Windows ease into place as they scroll into view.
 const observer = new IntersectionObserver((entries) => {
   for (const entry of entries) {
     if (entry.isIntersecting) {
@@ -562,7 +587,7 @@ const observer = new IntersectionObserver((entries) => {
       observer.unobserve(entry.target);
     }
   }
-}, { rootMargin: '0px 0px -6% 0px' });
+}, { rootMargin: '0px 0px -8% 0px' });
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 </script>
 </body>

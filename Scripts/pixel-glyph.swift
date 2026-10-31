@@ -4,8 +4,8 @@
 //   outline   only the outline, like the website's icons
 //   framed    the outline, with a faint fill inside
 //   preview   draws it on the icon's gradient, to look at
-// To update the app icon: swift Scripts/pixel-glyph.swift Glide/AppIcon.icon/Assets/glyph.png
-// The pixels match PixelArt.hand in Glide/App/PixelArt.swift.
+// To update the app icon: swift Scripts/pixel-glyph.swift Shortie/AppIcon.icon/Assets/glyph.png
+// The pixels match PixelArt.hand in Shortie/App/PixelArt.swift.
 import AppKit
 
 let hand = [

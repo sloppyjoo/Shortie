@@ -12,7 +12,7 @@ WORK=$(mktemp -d)
 trap 'hdiutil detach -quiet "/Volumes/Shortie" 2>/dev/null || true; rm -rf "$WORK"' EXIT
 
 echo "› Building"
-xcodebuild -project Glide.xcodeproj -scheme Glide -configuration Release -derivedDataPath build \
+xcodebuild -project Shortie.xcodeproj -scheme Shortie -configuration Release -derivedDataPath build \
     -allowProvisioningUpdates ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build -quiet
 APP=build/Build/Products/Release/Shortie.app
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist")

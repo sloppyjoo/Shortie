@@ -3,5 +3,4 @@ build/
 DerivedData/
 xcuserdata/
 *.xcuserstate
-.claude/
 dist/
