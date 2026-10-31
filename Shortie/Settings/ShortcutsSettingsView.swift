@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, .cycle, .clickImage, .webView, .searchList, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, .cycle, .clickImage, .webView, .searchList, .ai, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -396,6 +396,7 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .ai: "Ask Claude (AI)…"
         case .webView: "Show Floating Web Page…"
         case .searchList: "Show Searchable List…"
         case .clickImage: "Find Picture on Screen and Click…"
@@ -475,6 +476,7 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .ai: "sparkles"
         case .webView: "safari"
         case .searchList: "list.bullet.indent"
         case .clickImage: "photo.badge.checkmark"
@@ -545,6 +547,7 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .ai: .orange
         case .webView: .teal
         case .searchList: .mint
         case .clickImage: .orange
@@ -615,6 +618,7 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .ai: .ai(instructions: "Fix the spelling and grammar", input: .selection, output: .replaceSelection)
         case .webView: .webView(content: "")
         case .searchList: .searchList(source: "", fromScript: false, output: .paste)
         case .clickImage: .clickImage(path: "")

@@ -265,6 +265,7 @@ struct ActionKindPicker: View {
         .cycle, 
         .clickImage, 
         .webView, .searchList, 
+        .ai, 
         .otherRule, .pauseShortie, .steps, .showMenu,
     ]
 

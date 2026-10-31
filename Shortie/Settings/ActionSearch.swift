@@ -137,6 +137,7 @@ extension ShortcutAction.Kind {
         case .speak: "say voice read aloud"
         case .setVolume: "sound audio volume"
         case .soundOutput: "sound audio speakers headphones output device"
+        case .ai: "ai claude chatgpt llm rewrite translate summarise transform"
         case .webView: "web view floating html page browser window"
         case .searchList: "list searchable choose pick snippets menu script"
         case .clickImage: "image picture find screen click template"

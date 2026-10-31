@@ -192,6 +192,8 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .ai:
+            AIFields(action: $action)
         case .webView:
             VStack(alignment: .leading, spacing: 6) { TextEditor(text: Binding(get: { action.payload }, set: { action = .webView(content: $0) })).font(.body.monospaced()).frame(height: 80).scrollContentBackground(.hidden).padding(6).background(.background, in: .rect(cornerRadius: 6)).overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator)); Text("A web address, or HTML starting with <.").font(.caption).foregroundStyle(.secondary) }
         case .searchList:
@@ -391,6 +393,7 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .ai: "Ask Claude (AI)"
         case .webView: "Show Floating Web Page"
         case .searchList: "Show Searchable List"
         case .clickImage: "Find Picture on Screen and Click"

@@ -121,6 +121,9 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// A searchable list of choices, from lines of text or a script's output.
     case searchList(source: String, fromScript: Bool, output: ListOutput)
 
+    /// Asks Claude to do something with text, using your own Anthropic API key.
+    case ai(instructions: String, input: AIInput, output: AIOutput)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -135,6 +138,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case cycle
         case clickImage
         case webView, searchList
+        case ai
         var id: Self { self }
     }
 
@@ -161,6 +165,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .ai: .ai
         case .webView: .webView
         case .searchList: .searchList
         case .clickImage: .clickImage
@@ -232,6 +237,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .ai(let instructions, _, _): instructions
         case .webView(let content): content
         case .searchList(let source, _, _): source
         case .clickImage(let path): path
@@ -297,6 +303,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .ai(_, let input, let output): .ai(instructions: payload, input: input, output: output)
         case .webView: .webView(content: payload)
         case .searchList(_, let fromScript, let output): .searchList(source: payload, fromScript: fromScript, output: output)
         case .clickImage: .clickImage(path: payload)
@@ -400,6 +407,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .ai(let instructions, _, _):
+            "Ask Claude: “\(instructions.count > 30 ? instructions.prefix(30) + "…" : instructions)”"
         case .webView(let content):
             content.hasPrefix("<") ? "Show Web Page" : "Show \(Self.shortName(for: content)) in a Floating Window"
         case .searchList(_, let fromScript, let output):
@@ -573,6 +582,8 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .ai(let instructions, let input, let output):
+            AI.run(instructions: instructions, input: input, output: output)
         case .webView(let content):
             WebPanel.shared.show(content)
         case .searchList(let source, let fromScript, let output):

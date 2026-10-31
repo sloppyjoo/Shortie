@@ -599,3 +599,45 @@ struct SearchListFields: View {
         }
     }
 }
+
+/// The controls for an AI action: what to ask, what it reads, where the answer goes, and the API key.
+struct AIFields: View {
+    @Binding var action: ShortcutAction
+
+    @State private var key = ""
+    @State private var hasKey = APIKey.value != nil
+
+    var body: some View {
+        if case .ai(let instructions, let input, let output) = action {
+            VStack(alignment: .leading, spacing: 8) {
+                TextEditor(text: Binding(get: { instructions }, set: { action = .ai(instructions: $0, input: input, output: output) }))
+                    .frame(height: 70)
+                    .scrollContentBackground(.hidden)
+                    .padding(6)
+                    .background(.background, in: .rect(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
+                Picker("Reads", selection: Binding(get: { input }, set: { action = .ai(instructions: instructions, input: $0, output: output) })) {
+                    ForEach(AIInput.allCases) { Text($0.title).tag($0) }
+                }
+                .fixedSize()
+                Picker("Then", selection: Binding(get: { output }, set: { action = .ai(instructions: instructions, input: input, output: $0) })) {
+                    ForEach(AIOutput.allCases) { Text($0.title).tag($0) }
+                }
+                .fixedSize()
+                HStack {
+                    SecureField(hasKey ? "API key saved in Keychain" : "Anthropic API key (sk-ant-…)", text: $key)
+                        .textFieldStyle(.roundedBorder)
+                    Button(hasKey && key.isEmpty ? "Remove Key" : "Save Key") {
+                        APIKey.save(key)
+                        key = ""
+                        hasKey = APIKey.value != nil
+                    }
+                    .disabled(!hasKey && key.isEmpty)
+                }
+                Text("Uses Claude (\(AI.model)) with your own key from console.anthropic.com. The text is sent to Anthropic only when the action runs.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}

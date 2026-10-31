@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case aiChat, aiReset, aiCancel
     case launcherToggle, launcherShow, launcherHide, closeWebView
     case superBrightnessToggle, superBrightnessOn, superBrightnessOff, pinchOut, pinchIn, smartZoom, rotateGestureLeft, rotateGestureRight, smoothZoomIn, smoothZoomOut, smoothRotate
     case resetTypedText, notchBarToggle, notchBarOn, notchBarOff, hideCustomMenu, loginWindow, lockHorizontal, lockVertical
@@ -93,6 +94,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .aiChat: "Chat with Claude"
+        case .aiReset: "Clear Claude Conversation"
+        case .aiCancel: "Cancel Claude Request"
         case .launcherToggle: "Show or Hide Launcher"
         case .launcherShow: "Show Launcher"
         case .launcherHide: "Hide Launcher"
@@ -260,6 +264,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .aiChat: "bubble.left.and.text.bubble.right"
+        case .aiReset: "bubble.left.and.exclamationmark.bubble.right"
+        case .aiCancel: "xmark.bubble"
         case .launcherToggle: "sparkle.magnifyingglass"
         case .launcherShow: "sparkle.magnifyingglass"
         case .launcherHide: "sparkle.magnifyingglass"
@@ -393,6 +400,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
         [.showAppMenus, .showShortcutsMenu, .cheatSheet, .resetKeyRemaps],
         [.launcherToggle, .launcherShow, .launcherHide, .closeWebView],
+        [.aiChat, .aiReset, .aiCancel],
         [.openDashboard, .showShortieMenu, .togglePause, .toggleGestures, .restartShortie, .quitShortie],
     ]
 }
@@ -740,6 +748,12 @@ enum SystemActionRunner {
             Launcher.hide()
         case .closeWebView:
             WebPanel.shared.close()
+        case .aiChat:
+            AIChatPanel.shared.show()
+        case .aiReset:
+            AI.resetConversation()
+        case .aiCancel:
+            AI.cancel()
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)
