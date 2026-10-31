@@ -1,5 +1,7 @@
 # Compiles Shortie on a Mac for every push, so a broken build shows up on
-# GitHub before anyone opens Xcode. Nothing is signed or published.
+# GitHub before anyone opens Xcode, and keeps the app as a download
+# ("Shortie-app" under the run's Artifacts). The app is signed ad hoc, like
+# the release DMG, so macOS asks you to allow it the first time.
 name: Build
 
 on:
@@ -27,6 +29,25 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > build.log 2>&1 && status=0 || status=$?
           grep -E "error:|\*\* BUILD" build.log || tail -50 build.log
           exit $status
+
+      - name: Build the app to download
+        run: |
+          xcodebuild -project Shortie.xcodeproj -target Shortie -configuration Release \
+            ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="" PROVISIONING_PROFILE_SPECIFIER="" \
+            build > release.log 2>&1 && status=0 || status=$?
+          grep -E "error:|\*\* BUILD" release.log || tail -50 release.log
+          test $status -eq 0
+          APP=build/Release/Shortie.app
+          codesign --force --deep --sign - --options runtime --entitlements Shortie/Shortie.entitlements "$APP"
+          mkdir -p dist
+          ditto -c -k --keepParent "$APP" dist/Shortie.zip
+
+      - name: Keep the app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shortie-app
+          path: dist/Shortie.zip
 
       - name: Keep the log
         if: always()
