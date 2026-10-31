@@ -83,25 +83,9 @@ struct ActionFields: View {
                 .background(.background, in: .rect(cornerRadius: 6))
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
         case .moveWindow:
-            Picker("Move the window to", selection: payload) {
-                ForEach(WindowPosition.groups, id: \.self) { group in
-                    Section {
-                        ForEach(group) { Text($0.title).tag($0.rawValue) }
-                    }
-                }
-            }
-            .labelsHidden()
-            .fixedSize()
+            ActionChoiceButton(action: $action)
         case .system:
-            Picker("Action", selection: payload) {
-                ForEach(SystemAction.groups, id: \.self) { group in
-                    Section {
-                        ForEach(group) { Text($0.title).tag($0.rawValue) }
-                    }
-                }
-            }
-            .labelsHidden()
-            .fixedSize()
+            ActionChoiceButton(action: $action)
         case .pressKeys:
             HStack {
                 Menu("Common Shortcuts") {
@@ -161,15 +145,7 @@ struct ActionFields: View {
                 .fixedSize()
             }
         case .text:
-            Picker("Text action", selection: payload) {
-                ForEach(TextAction.groups, id: \.self) { group in
-                    Section {
-                        ForEach(group) { Text($0.title).tag($0.rawValue) }
-                    }
-                }
-            }
-            .labelsHidden()
-            .fixedSize()
+            ActionChoiceButton(action: $action)
         case .showMessage:
             TextField("Message", text: payload, prompt: Text("Time for a break"))
                 .textFieldStyle(.roundedBorder)
@@ -257,25 +233,9 @@ struct ActionFields: View {
                 .fixedSize()
             }
         case .mouseClick:
-            Picker("Click", selection: payload) {
-                ForEach(MouseAction.groups, id: \.self) { group in
-                    Section {
-                        ForEach(group) { Text($0.title).tag($0.rawValue) }
-                    }
-                }
-            }
-            .labelsHidden()
-            .fixedSize()
+            ActionChoiceButton(action: $action)
         case .appCommand:
-            Picker("Command", selection: payload) {
-                ForEach(AppCommand.groups, id: \.self) { group in
-                    Section {
-                        ForEach(group) { Text($0.title).tag($0.rawValue) }
-                    }
-                }
-            }
-            .labelsHidden()
-            .fixedSize()
+            ActionChoiceButton(action: $action)
         }
     }
 
