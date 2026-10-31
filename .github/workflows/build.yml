@@ -59,6 +59,14 @@ jobs:
           kill $pid 2>/dev/null || true
           ls snapshots | head -100
 
+      - name: Print a few pictures into the log (for checking without downloads)
+        run: |
+          for name in action-library-dark action-library-search-light editor-gesture-click-dark; do
+            [ -f "snapshots/$name.png" ] || continue
+            sips -s format jpeg -s formatOptions 45 -Z 720 "snapshots/$name.png" --out "/tmp/$name.jpg" > /dev/null
+            echo "SNAPSHOT $name $(base64 -i /tmp/$name.jpg | tr -d '\n')"
+          done
+
       - name: Keep the pictures
         uses: actions/upload-artifact@v4
         with:
