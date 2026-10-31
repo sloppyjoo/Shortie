@@ -55,7 +55,18 @@ let caption = NSAttributedString(string: "Drag Shortie into Applications", attri
     .foregroundColor: NSColor(srgbRed: 0.43, green: 0.43, blue: 0.47, alpha: 1),
     .paragraphStyle: paragraph,
 ])
-caption.draw(in: CGRect(x: 0, y: 46, width: size.width, height: 20))
+caption.draw(in: CGRect(x: 0, y: 58, width: size.width, height: 20))
+
+// A heads-up about the warning macOS shows the first time, so it doesn't come as a surprise.
+let note = NSAttributedString(
+    string: "The first time you open Shortie, macOS warns that it can't check it.\nThat's expected. Click Done, then Open Anyway in System Settings › Privacy & Security.",
+    attributes: [
+        .font: NSFont.systemFont(ofSize: 11),
+        .foregroundColor: NSColor(srgbRed: 0.43, green: 0.43, blue: 0.47, alpha: 1),
+        .paragraphStyle: paragraph,
+    ]
+)
+note.draw(in: CGRect(x: 20, y: 16, width: size.width - 40, height: 34))
 
 _ = context
 NSGraphicsContext.restoreGraphicsState()

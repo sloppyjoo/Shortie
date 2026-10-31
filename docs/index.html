@@ -253,6 +253,27 @@ section { padding: 84px 0 0; }
 .lights .tl.g { left: 34px; background: #28c840; }
 .lights .tl.down { filter: brightness(.6); }
 
+/* The window that opens with a download, explaining the warning macOS shows. */
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
+  background: rgba(29, 24, 56, .28); opacity: 0; transition: opacity .15s; }
+.modal[hidden] { display: none; }
+.modal.open { opacity: 1; }
+.modal .win { width: min(420px, 100%); opacity: 0; }
+.modal.open .win.in { opacity: 1; }
+.modal-body { padding: 22px 24px 20px; }
+.modal-body .lead { font: 600 16px var(--pixel); margin-bottom: 4px; }
+.modal-body p { font-size: 14px; }
+.modal-body .actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+.alert-mock { position: relative; width: 236px; margin: 16px auto; padding: 16px 16px 14px; text-align: center;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); }
+.alert-mock .px { width: 32px; height: 32px; margin: 0 auto 8px; }
+.alert-mock b { display: block; font: 700 14px var(--pixel); margin-bottom: 4px; }
+.alert-mock p { font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+.alert-mock .buttons { display: flex; gap: 8px; margin-top: 12px; }
+.alert-mock .buttons span { flex: 1; padding: 5px 0; border: 2px solid var(--ink); border-radius: 8px; font: 600 13px var(--pixel); }
+.alert-mock .buttons .done { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--violet); }
+.alert-mock .cursor { left: 28%; top: 86%; transition: none; }
+
 /* Desktop icons, on wide screens only */
 .desk-icons { position: absolute; right: 24px; top: 92px; display: flex; flex-direction: column; gap: 28px; }
 .desk-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px; text-decoration: none; }
@@ -604,11 +625,11 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
             <h3>Install</h3>
             <ol>
               <li><a href="https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg">Download Shortie.dmg</a> and drag Shortie into Applications.</li>
-              <li>Open it. Shortie isn't notarised by Apple yet, so macOS says it can't check it. Click <b>Done</b>.</li>
+              <li>Open it. macOS will say it can't check Shortie for malware. That's expected, because Shortie isn't notarised by Apple yet. Click <b>Done</b>.</li>
               <li>In <b>System Settings › Privacy &amp; Security</b>, click <b>Open Anyway</b>. You only do this once.</li>
               <li>Allow <b>Accessibility</b> when Shortie asks, then click the hand in the menu bar.</li>
             </ol>
-            <p class="fine">Needs macOS 15 or later. Trackpad gestures use a private part of macOS, so a future update could break them.</p>
+            <p class="fine">Shortie is open source, so anyone can read its code <a href="https://github.com/sloppyjoo/Shortie">on GitHub</a>. Needs macOS 15 or later. Trackpad gestures use a private part of macOS, so a future update could break them.</p>
           </div>
           <div>
             <h3>Build it yourself</h3>
@@ -631,6 +652,25 @@ open Shortie.xcodeproj</pre>
     <p><a href="https://github.com/sloppyjoo/Shortie">GitHub</a></p>
   </div>
 </footer>
+
+<div class="modal" hidden>
+  <div class="win" role="dialog" aria-modal="true" aria-labelledby="download-title">
+    <div class="titlebar"><button class="box" type="button" aria-label="Close"></button><span id="download-title">Downloading Shortie</span></div>
+    <div class="modal-body">
+      <p class="lead">Your download has started.</p>
+      <p>The first time you open Shortie, macOS will show this:</p>
+      <div class="alert-mock" aria-hidden="true">
+        <span class="px" data-icon="lock"></span>
+        <b>“Shortie.app” Not Opened</b>
+        <p>Apple could not verify “Shortie.app” is free of malware…</p>
+        <div class="buttons"><span class="done">Done</span><span>Move to Bin</span></div>
+        <span class="cursor"></span>
+      </div>
+      <p>That's expected, because Shortie isn't notarised by Apple yet. Click <b>Done</b>, then <b>Open Anyway</b> in System Settings › Privacy &amp; Security. You only have to do this once.</p>
+      <div class="actions"><button class="btn default ok" type="button">Got it</button></div>
+    </div>
+  </div>
+</div>
 
 <script src="icons.js"></script>
 <script>
@@ -668,7 +708,7 @@ document.documentElement.style.setProperty('--hand', `url("data:image/svg+xml,${
 document.querySelectorAll('.cursor').forEach((el) => { el.innerHTML = spriteSVG(ICONS.pointer, 16); });
 
 // The corner box (or a double-click on the title bar) rolls a window up to its title bar.
-for (const win of document.querySelectorAll('.win')) {
+for (const win of document.querySelectorAll('.win:not(.modal .win)')) {
   const titlebar = win.querySelector('.titlebar');
   const box = titlebar.querySelector('.box');
   const name = titlebar.querySelector('span').textContent;
@@ -953,6 +993,34 @@ const clock = document.querySelector('.clock');
 function tick() { clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
 tick();
 setInterval(tick, 10000);
+
+// Clicking a download also opens a small window explaining the warning macOS shows the first time.
+(function downloadWindow() {
+  const modal = document.querySelector('.modal');
+  const win = modal.querySelector('.win');
+  const ok = modal.querySelector('.ok');
+  let returnFocus = null;
+  function open(event) {
+    returnFocus = event.currentTarget;
+    modal.hidden = false;
+    requestAnimationFrame(() => {
+      modal.classList.add('open');
+      zoomOpen(win, () => { win.classList.add('in'); ok.focus(); });
+    });
+  }
+  function close() {
+    modal.classList.remove('open');
+    win.classList.remove('in');
+    setTimeout(() => { modal.hidden = true; }, 150);
+    returnFocus?.focus();
+  }
+  // The download carries on as normal; this only adds the window.
+  document.querySelectorAll('a[href$="Shortie.dmg"]').forEach((link) => link.addEventListener('click', open));
+  ok.addEventListener('click', close);
+  win.querySelector('.box').addEventListener('click', close);
+  modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) close(); });
+})();
 
 // Windows open with zoom rectangles as they scroll into view.
 const observer = new IntersectionObserver((entries) => {

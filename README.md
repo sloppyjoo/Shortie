@@ -50,9 +50,9 @@ Each rule has a trigger, an action, and the apps it applies to. Any trigger can 
 
 [**Download Shortie.dmg**](https://github.com/sloppyjoo/Shortie/releases/latest/download/Shortie.dmg), open it, and drag Shortie into Applications. Works on Apple silicon and Intel Macs running macOS 15 or later.
 
-Shortie isn't notarised by Apple yet, so the first time you open it:
+The first time you open Shortie, macOS warns that it can't check it for malware. That's expected: Shortie isn't notarised by Apple yet, and its code is all here to read. To open it:
 
-1. macOS says it couldn't check Shortie for malware. Click **Done**.
+1. Click **Done** on the warning.
 2. Open **System Settings › Privacy & Security**, scroll down, and click **Open Anyway** next to Shortie.
 3. Grant **Accessibility** permission when Shortie's welcome window asks.
 
