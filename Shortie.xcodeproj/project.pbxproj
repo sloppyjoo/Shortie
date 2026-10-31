@@ -183,6 +183,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Your \"Run AppleScript\" actions use this to control other apps.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Your \"Bluetooth On or Off\" action uses this to switch Bluetooth.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -215,6 +216,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Your \"Run AppleScript\" actions use this to control other apps.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Your \"Bluetooth On or Off\" action uses this to switch Bluetooth.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

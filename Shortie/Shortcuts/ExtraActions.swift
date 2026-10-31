@@ -128,7 +128,7 @@ enum InputSources {
     }
 
     /// Stands for "whichever comes next".
-    static let nextID = "next"
+    nonisolated static let nextID = "next"
 
     /// The ones turned on in System Settings › Keyboard › Text Input.
     static func all() -> [Source] {

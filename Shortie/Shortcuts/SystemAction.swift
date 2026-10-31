@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case nightShiftToggle, nightShiftOn, nightShiftOff, toggleBluetooth, toggleMirroring, screenshotScreenToClipboard, desktop5, desktop6, desktop7, desktop8, desktop9
     case fastForward, rewind, keyboardBacklightToggle, muteOn, muteOff, toggleWiFi, lightMode, darkMode, desktop1, desktop2, desktop3, desktop4, openSystemSettings, newFinderWindow, openTerminalHere, copyFinderPath, quickLook, copyBrowserURL, restartFinder, restartDock, clearClipboard, typeDate, typeTime, showDateTime, showBattery, zoomToggle, zoomIn, zoomOut
 
     var id: Self { self }
@@ -84,6 +85,17 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .nightShiftToggle: "Night Shift On or Off"
+        case .nightShiftOn: "Night Shift On"
+        case .nightShiftOff: "Night Shift Off"
+        case .toggleBluetooth: "Bluetooth On or Off"
+        case .toggleMirroring: "Mirror Displays On or Off"
+        case .screenshotScreenToClipboard: "Copy Screenshot of Screen"
+        case .desktop5: "Switch to Desktop 5"
+        case .desktop6: "Switch to Desktop 6"
+        case .desktop7: "Switch to Desktop 7"
+        case .desktop8: "Switch to Desktop 8"
+        case .desktop9: "Switch to Desktop 9"
         case .fastForward: "Fast Forward"
         case .rewind: "Rewind"
         case .keyboardBacklightToggle: "Keyboard Backlight On or Off"
@@ -174,6 +186,17 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .nightShiftToggle: "moon.circle"
+        case .nightShiftOn: "moon.circle.fill"
+        case .nightShiftOff: "moon.circle"
+        case .toggleBluetooth: "antenna.radiowaves.left.and.right"
+        case .toggleMirroring: "rectangle.on.rectangle"
+        case .screenshotScreenToClipboard: "camera.on.rectangle"
+        case .desktop5: "5.square"
+        case .desktop6: "6.square"
+        case .desktop7: "7.square"
+        case .desktop8: "8.square"
+        case .desktop9: "9.square"
         case .fastForward: "forward.end.fill"
         case .rewind: "backward.end.fill"
         case .keyboardBacklightToggle: "light.max"
@@ -211,13 +234,13 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.volumeUp, .volumeDown, .volumeUpSmall, .volumeDownSmall, .mute, .muteOn, .muteOff, .toggleMicrophone],
         [.brightnessUp, .brightnessDown, .brightnessUpSmall, .brightnessDownSmall, .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBacklightToggle],
         [.windowSwitcher, .previousApp, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .siri, .emojiAndSymbols],
-        [.spaceLeft, .spaceRight, .desktop1, .desktop2, .desktop3, .desktop4, .hideAllApps, .showAllApps],
-        [.toggleDarkMode, .lightMode, .darkMode, .toggleWiFi, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
+        [.spaceLeft, .spaceRight, .desktop1, .desktop2, .desktop3, .desktop4, .desktop5, .desktop6, .desktop7, .desktop8, .desktop9, .hideAllApps, .showAllApps],
+        [.toggleDarkMode, .lightMode, .darkMode, .nightShiftToggle, .nightShiftOn, .nightShiftOff, .toggleWiFi, .toggleBluetooth, .toggleMirroring, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
         [.newFinderWindow, .openTerminalHere, .copyFinderPath, .quickLook, .copyBrowserURL, .openSystemSettings],
         [.typeDate, .typeTime, .showDateTime, .showBattery, .clearClipboard],
         [.zoomToggle, .zoomIn, .zoomOut],
         [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow],
-        [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .copyTextFromScreen, .pickColour],
+        [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .screenshotScreenToClipboard, .copyTextFromScreen, .pickColour],
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
         [.openDashboard, .togglePause],
@@ -411,6 +434,28 @@ enum SystemActionRunner {
             KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_Equal), modifiers: [.option, .command], keyName: "="))
         case .zoomOut:
             KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_Minus), modifiers: [.option, .command], keyName: "-"))
+        case .nightShiftToggle:
+            NightShift.toggle()
+        case .nightShiftOn:
+            NightShift.set(true)
+        case .nightShiftOff:
+            NightShift.set(false)
+        case .toggleBluetooth:
+            Bluetooth.toggle()
+        case .toggleMirroring:
+            DisplayMirroring.toggle()
+        case .screenshotScreenToClipboard:
+            run("/usr/sbin/screencapture", ["-c"])
+        case .desktop5:
+            MoreActions.switchToDesktop(5)
+        case .desktop6:
+            MoreActions.switchToDesktop(6)
+        case .desktop7:
+            MoreActions.switchToDesktop(7)
+        case .desktop8:
+            MoreActions.switchToDesktop(8)
+        case .desktop9:
+            MoreActions.switchToDesktop(9)
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

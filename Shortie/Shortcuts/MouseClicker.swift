@@ -9,6 +9,7 @@ nonisolated enum SyntheticEvent {
 /// Mouse clicks a shortcut or gesture can make, wherever the pointer is.
 nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
     case leftClick, rightClick, middleClick, doubleClick, tripleClick
+    case leftButtonDown, leftButtonUp
     case commandClick, optionClick, shiftClick, controlClick
     case backButton, forwardButton
     case scrollUp, scrollDown, scrollLeft, scrollRight
@@ -23,6 +24,8 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
         case .middleClick: "Middle Click"
         case .doubleClick: "Double Click"
         case .tripleClick: "Triple Click"
+        case .leftButtonDown: "Hold Left Button Down"
+        case .leftButtonUp: "Let Go of Left Button"
         case .commandClick: "⌘-Click"
         case .optionClick: "⌥-Click"
         case .shiftClick: "⇧-Click"
@@ -46,6 +49,8 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
         case .middleClick: "computermouse"
         case .doubleClick: "cursorarrow.click.2"
         case .tripleClick: "cursorarrow.click.2"
+        case .leftButtonDown: "arrow.down.to.line"
+        case .leftButtonUp: "arrow.up.to.line"
         case .commandClick: "command"
         case .optionClick: "option"
         case .shiftClick: "shift"
@@ -66,6 +71,7 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
     static let groups: [[MouseAction]] = [
         [.leftClick, .rightClick, .middleClick, .doubleClick, .tripleClick],
         [.commandClick, .optionClick, .shiftClick, .controlClick],
+        [.leftButtonDown, .leftButtonUp],
         [.backButton, .forwardButton],
         [.scrollUp, .scrollDown, .scrollLeft, .scrollRight],
         [.moveToScreenCentre, .moveToWindowCentre, .moveToNextDisplay],
@@ -90,6 +96,11 @@ enum MouseClicker {
             for count in Int64(1)...3 {
                 click(.leftMouseDown, .leftMouseUp, .left, at: location, count: count)
             }
+        // For dragging: hold the button down with one action, move, then let go with another.
+        case .leftButtonDown:
+            post(.leftMouseDown, at: location)
+        case .leftButtonUp:
+            post(.leftMouseUp, at: location)
         case .commandClick:
             click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: .maskCommand)
         case .optionClick:
@@ -122,6 +133,12 @@ enum MouseClicker {
             let next = screens[(index + 1) % screens.count]
             move(to: CGPoint(x: next.midX, y: next.midY))
         }
+    }
+
+    private static func post(_ type: CGEventType, at location: CGPoint) {
+        let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: location, mouseButton: .left)
+        event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
+        event?.post(tap: .cghidEventTap)
     }
 
     /// Lines to scroll; positive is up or left.

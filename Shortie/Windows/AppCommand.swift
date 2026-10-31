@@ -7,6 +7,7 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     case closeAllWindows, minimizeAllWindows
     case closeOtherWindows, unminimizeAllWindows, bringAllWindowsForward, nextWindowOfApp
     case forceQuitApp, restartApp
+    case moveToNextSpace, moveToPreviousSpace
     case hideApp, hideOtherApps, quitApp, quitOtherApps
     case closeWindowOrQuit
     case closePointerWindow, minimizePointerWindow, zoomPointerWindow, raisePointerWindow
@@ -27,6 +28,8 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .nextWindowOfApp: "Next Window of the App"
         case .forceQuitApp: "Force Quit App"
         case .restartApp: "Restart App"
+        case .moveToNextSpace: "Move Window to Next Space"
+        case .moveToPreviousSpace: "Move Window to Previous Space"
         case .hideApp: "Hide App"
         case .hideOtherApps: "Hide Other Apps"
         case .quitApp: "Quit App"
@@ -54,6 +57,8 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .nextWindowOfApp: "rectangle.2.swap"
         case .forceQuitApp: "xmark.octagon"
         case .restartApp: "arrow.clockwise.circle"
+        case .moveToNextSpace: "arrow.right.square"
+        case .moveToPreviousSpace: "arrow.left.square"
         case .hideApp: "eye.slash"
         case .hideOtherApps: "eye.slash.fill"
         case .quitApp: "power"
@@ -72,7 +77,7 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     static let groups: [[AppCommand]] = [
         [.closeWindow, .minimizeWindow, .toggleFullScreen],
         [.closeAllWindows, .minimizeAllWindows, .closeOtherWindows, .unminimizeAllWindows],
-        [.bringAllWindowsForward, .nextWindowOfApp],
+        [.bringAllWindowsForward, .nextWindowOfApp, .moveToNextSpace, .moveToPreviousSpace],
         [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps, .closeWindowOrQuit, .forceQuitApp, .restartApp],
         [.closePointerWindow, .minimizePointerWindow, .zoomPointerWindow, .raisePointerWindow, .hidePointerApp, .quitPointerApp],
     ]
@@ -174,6 +179,8 @@ enum AppCommandRunner {
                 AXUIElementSetAttributeValue(back, kAXMainAttribute as CFString, kCFBooleanTrue)
                 app?.activate()
             }
+        case .moveToNextSpace, .moveToPreviousSpace:
+            target.window.map { SpaceMover.move($0, right: command == .moveToNextSpace) }
         case .forceQuitApp:
             if app?.bundleIdentifier != "com.apple.finder" { app?.forceTerminate() }
         case .restartApp:
