@@ -3,7 +3,7 @@ import Carbon
 
 /// Things to do to one particular app, whether or not it's in front.
 nonisolated enum AppTask: String, Codable, CaseIterable, Identifiable {
-    case toggle, showOnly, hide, quit, forceQuit, restart
+    case toggle, showOnly, hide, quit, forceQuit, restart, openFinderSelection, makeDefaultBrowser
 
     var id: Self { self }
 
@@ -15,6 +15,17 @@ nonisolated enum AppTask: String, Codable, CaseIterable, Identifiable {
         case .quit: "Quit"
         case .forceQuit: "Force Quit"
         case .restart: "Restart"
+        case .openFinderSelection: "Open Selected Files In"
+        case .makeDefaultBrowser: "Make Default Browser"
+        }
+    }
+
+    /// E.g. "Quit Safari" or "Make Safari the Default Browser".
+    func describe(_ app: String) -> String {
+        switch self {
+        case .openFinderSelection: "Open Selected Files in \(app)"
+        case .makeDefaultBrowser: "Make \(app) the Default Browser"
+        default: "\(title) \(app)"
         }
     }
 }
@@ -84,6 +95,16 @@ enum AppTaskRunner {
                 }
                 if app.isTerminated { open(url) }
             }
+        case .openFinderSelection:
+            let files = ParityActions.finderSelection().map { URL(fileURLWithPath: $0) }
+            guard !files.isEmpty else {
+                NSSound.beep()
+                return
+            }
+            NSWorkspace.shared.open(files, withApplicationAt: url, configuration: NSWorkspace.OpenConfiguration(), completionHandler: nil)
+        case .makeDefaultBrowser:
+            // macOS asks you to confirm.
+            NSWorkspace.shared.setDefaultApplication(at: url, toOpenURLsWithScheme: "http") { _ in }
         }
     }
 

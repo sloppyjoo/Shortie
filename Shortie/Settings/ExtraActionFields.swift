@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The controls for the newer actions: an app to show or quit, a brightness,
 /// an exact window position, a web address…
@@ -153,9 +154,182 @@ struct ExtraActionFields: View {
             .fixedSize()
             .onAppear { sounds = SystemSounds.names() }
 
+        case .pressKeysInApp(let combo, let path):
+            VStack(alignment: .leading, spacing: 8) {
+                appRow(path) { action = .pressKeysInApp(combo: combo, path: $0) }
+                HStack {
+                    Text("Keys")
+                        .foregroundStyle(.secondary)
+                    ShortcutRecorder(
+                        keyCombo: Binding(get: { combo }, set: { action = .pressKeysInApp(combo: $0, path: path) }),
+                        isRecording: $isRecordingKeys,
+                        allowsPlainKeys: true
+                    )
+                }
+                Text("Works even when the app is in the background. Some apps only listen when they're in front.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+        case .modifierKeys(let modifiers, let down):
+            HStack {
+                Picker("Hold or let go", selection: Binding(get: { down }, set: { action = .modifierKeys(modifiers: modifiers, down: $0) })) {
+                    Text("Hold Down").tag(true)
+                    Text("Let Go of").tag(false)
+                }
+                .labelsHidden()
+                .fixedSize()
+                ModifierToggles(modifiers: Binding(get: { modifiers }, set: { action = .modifierKeys(modifiers: $0, down: down) }))
+                InfoButton("Held keys stay down until a step lets go of them, so pair this with a \"Let Go of\" step.")
+            }
+
+        case .moveToDesktop(let number):
+            HStack {
+                Picker("Desktop", selection: Binding(get: { number }, set: { action = .moveToDesktop(number: $0) })) {
+                    ForEach(1...9, id: \.self) { Text("Desktop \($0)").tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
+                InfoButton("Uses macOS's ⌃1–⌃9 shortcuts. Switch them on in System Settings › Keyboard › Keyboard Shortcuts › Mission Control.")
+            }
+
+        case .focusWindow:
+            TextField("Window title", text: payload, prompt: Text("Part of the window's title, like Inbox"))
+                .textFieldStyle(.roundedBorder)
+
+        case .transformText(_, let onClipboard):
+            VStack(alignment: .leading, spacing: 8) {
+                Picker("Change", selection: Binding(
+                    get: { onClipboard },
+                    set: { action = .transformText(script: action.payload, onClipboard: $0) }
+                )) {
+                    Text("Selected Text").tag(false)
+                    Text("Clipboard").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+                codeEditor(payload)
+                Text("JavaScript. The text is `text`; return the new text. A single expression works too, like `text.trim()`.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+        case .browserJavaScript:
+            VStack(alignment: .leading, spacing: 8) {
+                codeEditor(payload)
+                Text("Runs in the page in front, in Safari or a Chrome-based browser. Turn on \"Allow JavaScript from Apple Events\" in the browser's Develop menu first.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+        case .runWorkflow:
+            HStack {
+                TextField("Workflow", text: payload, prompt: Text("~/Library/Services/My Workflow.workflow"))
+                    .textFieldStyle(.roundedBorder)
+                Button("Choose…") {
+                    let panel = NSOpenPanel()
+                    panel.allowedContentTypes = [UTType(filenameExtension: "workflow") ?? .package]
+                    panel.treatsFilePackagesAsDirectories = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        payload.wrappedValue = (url.path as NSString).abbreviatingWithTildeInPath
+                    }
+                }
+            }
+
+        case .pauseShortie(let seconds):
+            Stepper(value: Binding(get: { seconds }, set: { action = .pauseShortie(seconds: $0) }), in: 1...3600, step: 5) {
+                Text("\(Int(seconds)) seconds")
+                    .monospacedDigit()
+            }
+            .fixedSize()
+
+        case .clickButton:
+            HStack {
+                TextField("Button", text: payload, prompt: Text("The button's name, like Save"))
+                    .textFieldStyle(.roundedBorder)
+                InfoButton("Presses the button, checkbox or tab with this name in the window you're using.")
+            }
+
+        case .clickMenuBarExtra:
+            HStack {
+                TextField("Menu bar icon", text: payload, prompt: Text("Its name or its app's name, like Wi-Fi or Dropbox"))
+                    .textFieldStyle(.roundedBorder)
+                InfoButton("Clicks an icon on the right of the menu bar, found by its name.")
+            }
+
+        case .distributedNotification:
+            TextField("Notification name", text: payload, prompt: Text("com.example.refresh"))
+                .textFieldStyle(.roundedBorder)
+
+        case .otherRule(let id, _, let mode):
+            HStack {
+                Picker("Mode", selection: Binding(get: { mode }, set: { action = .otherRule(id: id, name: ruleName(id), mode: $0) })) {
+                    ForEach(RuleMode.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
+                Picker("Rule", selection: Binding(get: { id }, set: { action = .otherRule(id: $0, name: ruleName($0), mode: mode) })) {
+                    Text("Choose a Rule").tag(UUID?.none)
+                    ForEach(ShortcutStore.shared.shortcuts) { shortcut in
+                        Text(Self.label(for: shortcut)).tag(UUID?.some(shortcut.id))
+                    }
+                }
+                .labelsHidden()
+            }
+
         default:
             EmptyView()
         }
+    }
+
+    @State private var isRecordingKeys = false
+
+    private func appRow(_ path: String, choose: @escaping (String) -> Void) -> some View {
+        HStack {
+            if path.isEmpty {
+                Text("No app chosen")
+                    .foregroundStyle(.secondary)
+            } else {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: path))
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                Text(FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))
+                    .lineLimit(1)
+            }
+            Spacer()
+            Button("Choose App…") {
+                if let chosen = AppChooser.choose() { choose(chosen) }
+            }
+        }
+    }
+
+    private func codeEditor(_ text: Binding<String>) -> some View {
+        TextEditor(text: text)
+            .font(.body.monospaced())
+            .frame(height: 90)
+            .scrollContentBackground(.hidden)
+            .padding(6)
+            .background(.background, in: .rect(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.separator))
+    }
+
+    private func ruleName(_ id: UUID?) -> String {
+        ShortcutStore.shared.shortcuts.first { $0.id == id }.map(Self.label) ?? ""
+    }
+
+    /// How a rule is named in lists: what sets it off, then what it does.
+    static func label(for shortcut: Shortcut) -> String {
+        let trigger: String = switch shortcut.trigger {
+        case .keys(let combo): combo.displayString
+        case .gesture(let gesture): gesture.title
+        case .mouseButton(let click): click.title
+        case .trafficLight(let click): "\(click.clickDescription) \(click.button.title)"
+        case .typedText(let abbreviation): abbreviation
+        case .event(let event): event.kind.title
+        case .modifierTap(let tap): tap.title
+        case nil: "No Trigger"
+        }
+        return "\(trigger) → \(shortcut.action.title)"
     }
 
     private func percentField(_ label: String, _ value: Double, set: @escaping (Double) -> Void) -> some View {

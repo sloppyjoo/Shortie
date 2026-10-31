@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .pressKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .appleScript, .javaScript, .shellScript, .webRequest, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -408,13 +408,25 @@ extension ShortcutAction.Kind {
         case .inputSource: "Input Source…"
         case .playSound: "Play Sound…"
         case .javaScript: "Run JavaScript…"
+        case .pressKeysInApp: "Press Keys in a Specific App…"
+        case .modifierKeys: "Hold or Let Go of Modifier Keys…"
+        case .moveToDesktop: "Move Window to Desktop…"
+        case .focusWindow: "Bring a Window Forward by Title…"
+        case .transformText: "Change Text with JavaScript…"
+        case .browserJavaScript: "Run JavaScript in Browser…"
+        case .runWorkflow: "Run Automator Workflow…"
+        case .pauseShortie: "Pause Shortie for a While…"
+        case .clickButton: "Click a Button by Name…"
+        case .clickMenuBarExtra: "Click a Menu Bar Icon…"
+        case .distributedNotification: "Post a System Notification…"
+        case .otherRule: "Run or Switch Another Rule…"
         }
     }
 
     /// The dashboard section keyboard shortcuts of this kind live in.
     var sectionName: String {
         switch self {
-        case .moveWindow, .appCommand, .windowFrame, .moveToDisplay: "Windows"
+        case .moveWindow, .appCommand, .windowFrame, .moveToDisplay, .moveToDesktop, .focusWindow: "Windows"
         case .restoreLayout: "Window Layouts"
         default: "Shortcuts"
         }
@@ -455,6 +467,18 @@ extension ShortcutAction.Kind {
         case .inputSource: "globe"
         case .playSound: "music.note"
         case .javaScript: "curlybraces"
+        case .pressKeysInApp: "keyboard.badge.eye"
+        case .modifierKeys: "command"
+        case .moveToDesktop: "rectangle.2.swap"
+        case .focusWindow: "macwindow.and.cursorarrow"
+        case .transformText: "function"
+        case .browserJavaScript: "safari"
+        case .runWorkflow: "gearshape.2"
+        case .pauseShortie: "pause.circle"
+        case .clickButton: "button.programmable"
+        case .clickMenuBarExtra: "menubar.arrow.up.rectangle"
+        case .distributedNotification: "antenna.radiowaves.left.and.right"
+        case .otherRule: "arrow.triangle.branch"
         }
     }
 
@@ -493,6 +517,18 @@ extension ShortcutAction.Kind {
         case .inputSource: .gray
         case .playSound: .pink
         case .javaScript: .yellow
+        case .pressKeysInApp: .gray
+        case .modifierKeys: .gray
+        case .moveToDesktop: .blue
+        case .focusWindow: .blue
+        case .transformText: .indigo
+        case .browserJavaScript: .teal
+        case .runWorkflow: .gray
+        case .pauseShortie: .gray
+        case .clickButton: .orange
+        case .clickMenuBarExtra: .orange
+        case .distributedNotification: .gray
+        case .otherRule: .green
         }
     }
 
@@ -531,6 +567,18 @@ extension ShortcutAction.Kind {
         case .inputSource: .inputSource(id: InputSources.nextID, name: "")
         case .playSound: .playSound(name: "Glass")
         case .javaScript: .javaScript(source: "")
+        case .pressKeysInApp: .pressKeysInApp(combo: nil, path: "")
+        case .modifierKeys: .modifierKeys(modifiers: .command, down: true)
+        case .moveToDesktop: .moveToDesktop(number: 1)
+        case .focusWindow: .focusWindow(title: "")
+        case .transformText: .transformText(script: "text.toUpperCase()", onClipboard: false)
+        case .browserJavaScript: .browserJavaScript(source: "")
+        case .runWorkflow: .runWorkflow(path: "")
+        case .pauseShortie: .pauseShortie(seconds: 10)
+        case .clickButton: .clickButton(name: "")
+        case .clickMenuBarExtra: .clickMenuBarExtra(name: "")
+        case .distributedNotification: .distributedNotification(name: "")
+        case .otherRule: .otherRule(id: nil, name: "", mode: .run)
         }
     }
 }

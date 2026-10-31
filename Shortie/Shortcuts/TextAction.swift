@@ -190,6 +190,22 @@ enum SelectedText {
         }
     }
 
+    /// Replaces the selection with whatever `transform` makes of it.
+    static func replace(using transform: @escaping @MainActor (String) -> String?) {
+        Task {
+            await TextTyper.waitForModifiersReleased()
+            ClipboardHistory.shared.ignoreChanges(true)
+            let saved = savedClipboard()
+            if let text = await read(), !text.isEmpty, let result = transform(text) {
+                await paste(result)
+            } else {
+                NSSound.beep()
+            }
+            restoreClipboard(saved)
+            ClipboardHistory.shared.ignoreChanges(false)
+        }
+    }
+
     private static func perform(_ action: TextAction, on text: String) async {
         if let result = action.transformed(text) {
             await paste(result)

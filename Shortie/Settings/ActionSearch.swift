@@ -145,6 +145,18 @@ extension ShortcutAction.Kind {
         case .inputSource: "keyboard layout language input source"
         case .playSound: "sound alert beep play"
         case .javaScript: "jxa javascript script automation"
+        case .pressKeysInApp: "keyboard shortcut send background app"
+        case .modifierKeys: "modifier command option shift control hold press release"
+        case .moveToDesktop: "space desktop mission control move window"
+        case .focusWindow: "window title activate focus switch"
+        case .transformText: "javascript transform selection clipboard text script"
+        case .browserJavaScript: "browser safari chrome page tab javascript"
+        case .runWorkflow: "automator workflow"
+        case .pauseShortie: "disable pause triggers seconds"
+        case .clickButton: "button click window ui automation press"
+        case .clickMenuBarExtra: "status bar item menu bar icon extra click"
+        case .distributedNotification: "distributed notification developer"
+        case .otherRule: "trigger rule enable disable named run"
         }
     }
 }

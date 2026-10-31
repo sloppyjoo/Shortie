@@ -193,7 +193,8 @@ struct ActionFields: View {
         case .soundOutput:
             SoundOutputPicker(action: $action)
         case .appTask, .setBrightness, .windowFrame, .moveToDisplay, .movePointer,
-             .copyText, .pasteText, .notify, .webRequest, .inputSource, .playSound:
+             .copyText, .pasteText, .notify, .webRequest, .inputSource, .playSound,
+             .pressKeysInApp, .modifierKeys, .moveToDesktop, .focusWindow, .transformText, .browserJavaScript, .runWorkflow, .pauseShortie, .clickButton, .clickMenuBarExtra, .distributedNotification, .otherRule:
             ExtraActionFields(action: $action)
         case .restoreLayout:
             let layouts = WindowLayoutStore.shared.layouts
@@ -322,7 +323,7 @@ extension ShortcutAction.Kind {
     var isSingleChoice: Bool {
         switch self {
         case .moveWindow, .appCommand, .mouseClick, .system, .showMenu, .restoreLayout, .text, .soundOutput,
-             .moveToDisplay, .inputSource, .playSound: true
+             .moveToDisplay, .inputSource, .playSound, .moveToDesktop: true
         default: false
         }
     }
@@ -362,6 +363,18 @@ extension ShortcutAction.Kind {
         case .inputSource: "Input Source"
         case .playSound: "Play Sound"
         case .javaScript: "Run JavaScript"
+        case .pressKeysInApp: "Press Keys in a Specific App"
+        case .modifierKeys: "Hold or Let Go of Modifier Keys"
+        case .moveToDesktop: "Move Window to Desktop"
+        case .focusWindow: "Bring a Window Forward by Title"
+        case .transformText: "Change Text with JavaScript"
+        case .browserJavaScript: "Run JavaScript in Browser"
+        case .runWorkflow: "Run Automator Workflow"
+        case .pauseShortie: "Pause Shortie for a While"
+        case .clickButton: "Click a Button by Name"
+        case .clickMenuBarExtra: "Click a Menu Bar Icon"
+        case .distributedNotification: "Post a System Notification"
+        case .otherRule: "Run or Switch Another Rule"
         }
     }
 }

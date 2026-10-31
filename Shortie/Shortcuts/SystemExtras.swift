@@ -93,6 +93,19 @@ enum DisplayMirroring {
 /// its title bar and press ⌃← or ⌃→ (macOS's "Move left/right a space").
 enum SpaceMover {
     static func move(_ window: AXUIElement, right: Bool) {
+        move(window, pressing: KeyCombo(keyCode: UInt16(right ? kVK_RightArrow : kVK_LeftArrow), modifiers: .control, keyName: right ? "→" : "←"),
+             extraFlags: [.maskSecondaryFn, .maskNumericPad])
+    }
+
+    /// Moves it to Desktop `number`, using macOS's ⌃1, ⌃2… shortcuts (switch
+    /// them on in System Settings › Keyboard › Keyboard Shortcuts › Mission Control).
+    static func move(_ window: AXUIElement, toDesktop number: Int) {
+        let keys = [kVK_ANSI_1, kVK_ANSI_2, kVK_ANSI_3, kVK_ANSI_4, kVK_ANSI_5, kVK_ANSI_6, kVK_ANSI_7, kVK_ANSI_8, kVK_ANSI_9]
+        guard (1...keys.count).contains(number) else { return }
+        move(window, pressing: KeyCombo(keyCode: UInt16(keys[number - 1]), modifiers: .control, keyName: String(number)), extraFlags: [])
+    }
+
+    private static func move(_ window: AXUIElement, pressing combo: KeyCombo, extraFlags: CGEventFlags) {
         guard let frame = WindowMover.shared.frame(of: window) else {
             NSSound.beep()
             return
@@ -106,10 +119,7 @@ enum SpaceMover {
         Task {
             post(.leftMouseDown, at: grab)
             try? await Task.sleep(for: .milliseconds(120))
-            KeyPresser.press(
-                KeyCombo(keyCode: UInt16(right ? kVK_RightArrow : kVK_LeftArrow), modifiers: .control, keyName: right ? "→" : "←"),
-                extraFlags: [.maskSecondaryFn, .maskNumericPad]
-            )
+            KeyPresser.press(combo, extraFlags: extraFlags)
             try? await Task.sleep(for: .milliseconds(450))
             post(.leftMouseUp, at: grab)
             if let pointer { post(.mouseMoved, at: pointer) }

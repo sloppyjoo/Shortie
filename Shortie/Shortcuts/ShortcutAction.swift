@@ -63,6 +63,18 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     case playSound(name: String)
     /// JavaScript for Automation (JXA), run like AppleScript.
     case javaScript(source: String)
+    case pressKeysInApp(combo: KeyCombo?, path: String)
+    case modifierKeys(modifiers: Modifiers, down: Bool)
+    case moveToDesktop(number: Int)
+    case focusWindow(title: String)
+    case transformText(script: String, onClipboard: Bool)
+    case browserJavaScript(source: String)
+    case runWorkflow(path: String)
+    case pauseShortie(seconds: Double)
+    case clickButton(name: String)
+    case clickMenuBarExtra(name: String)
+    case distributedNotification(name: String)
+    case otherRule(id: UUID?, name: String, mode: RuleMode)
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
@@ -70,6 +82,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case text, showMessage, speak, setVolume, soundOutput
         case appTask, setBrightness, windowFrame, moveToDisplay, movePointer
         case copyText, pasteText, notify, webRequest, inputSource, playSound, javaScript
+        case pressKeysInApp, modifierKeys, moveToDesktop, focusWindow, transformText, browserJavaScript, runWorkflow, pauseShortie, clickButton, clickMenuBarExtra, distributedNotification, otherRule
         var id: Self { self }
     }
 
@@ -108,6 +121,18 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .inputSource: .inputSource
         case .playSound: .playSound
         case .javaScript: .javaScript
+        case .pressKeysInApp: .pressKeysInApp
+        case .modifierKeys: .modifierKeys
+        case .moveToDesktop: .moveToDesktop
+        case .focusWindow: .focusWindow
+        case .transformText: .transformText
+        case .browserJavaScript: .browserJavaScript
+        case .runWorkflow: .runWorkflow
+        case .pauseShortie: .pauseShortie
+        case .clickButton: .clickButton
+        case .clickMenuBarExtra: .clickMenuBarExtra
+        case .distributedNotification: .distributedNotification
+        case .otherRule: .otherRule
         }
     }
 
@@ -147,6 +172,18 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .inputSource(let id, _): id
         case .playSound(let name): name
         case .javaScript(let source): source
+        case .pressKeysInApp(let combo, let path): combo == nil ? "" : path
+        case .modifierKeys(let modifiers, _): modifiers.isEmpty ? "" : modifiers.symbols
+        case .moveToDesktop(let number): String(number)
+        case .focusWindow(let title): title
+        case .transformText(let script, _): script
+        case .browserJavaScript(let source): source
+        case .runWorkflow(let path): path
+        case .pauseShortie(let seconds): String(seconds)
+        case .clickButton(let name): name
+        case .clickMenuBarExtra(let name): name
+        case .distributedNotification(let name): name
+        case .otherRule(let id, _, _): id?.uuidString ?? ""
         }
     }
 
@@ -175,10 +212,19 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .notify: .notify(text: payload)
         case .playSound: .playSound(name: payload)
         case .javaScript: .javaScript(source: payload)
+        case .moveToDesktop: .moveToDesktop(number: Int(payload) ?? 1)
+        case .focusWindow: .focusWindow(title: payload)
+        case .transformText(_, let onClipboard): .transformText(script: payload, onClipboard: onClipboard)
+        case .browserJavaScript: .browserJavaScript(source: payload)
+        case .runWorkflow: .runWorkflow(path: payload)
+        case .pauseShortie: .pauseShortie(seconds: Double(payload) ?? 10)
+        case .clickButton: .clickButton(name: payload)
+        case .clickMenuBarExtra: .clickMenuBarExtra(name: payload)
+        case .distributedNotification: .distributedNotification(name: payload)
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
-             .windowFrame, .movePointer, .webRequest, .inputSource: self
+             .windowFrame, .movePointer, .webRequest, .inputSource, .pressKeysInApp, .modifierKeys, .otherRule: self
         }
     }
 
@@ -237,8 +283,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
         case .appTask(let task, let path):
-            path.isEmpty ? "\(task.title) App"
-                : "\(task.title) \(FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))"
+            task.describe(path.isEmpty ? "App" : FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))
         case .setBrightness(let percent):
             "Set Brightness to \(percent)%"
         case .windowFrame(let frame):
@@ -261,6 +306,30 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Play “\(name)” Sound"
         case .javaScript:
             "Run JavaScript"
+        case .pressKeysInApp(let combo, let path):
+            "Press \(combo?.displayString ?? "Keys") in \(path.isEmpty ? "an App" : FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))"
+        case .modifierKeys(let modifiers, let down):
+            down ? "Hold \(modifiers.symbols) Down" : "Let Go of \(modifiers.symbols)"
+        case .moveToDesktop(let number):
+            "Move Window to Desktop \(number)"
+        case .focusWindow(let title):
+            "Bring “\(title)” Window Forward"
+        case .transformText(_, let onClipboard):
+            onClipboard ? "Change Clipboard with JavaScript" : "Change Selected Text with JavaScript"
+        case .browserJavaScript:
+            "Run JavaScript in Browser"
+        case .runWorkflow(let path):
+            "Run “\(((path as NSString).lastPathComponent as NSString).deletingPathExtension)” Workflow"
+        case .pauseShortie(let seconds):
+            "Pause Shortie for \(seconds.formatted()) s"
+        case .clickButton(let name):
+            "Click “\(name)” Button"
+        case .clickMenuBarExtra(let name):
+            "Click “\(name)” in Menu Bar"
+        case .distributedNotification(let name):
+            "Post “\(name)”"
+        case .otherRule(_, let name, let mode):
+            name.isEmpty ? "\(mode.title) Another Rule" : "\(mode.title) “\(name)”"
         }
     }
 
@@ -368,6 +437,30 @@ enum ActionRunner {
             SystemSounds.play(name)
         case .javaScript(let source):
             ScriptRunner.runJavaScript(source)
+        case .pressKeysInApp(let combo, let path):
+            if let combo { MoreActionKindsRunner.press(combo, inAppAt: path) }
+        case .modifierKeys(let modifiers, let down):
+            MoreActionKindsRunner.modifierKeys(modifiers, down: down)
+        case .moveToDesktop(let number):
+            if let window = target?.window ?? ActionTarget.frontmost?.window { SpaceMover.move(window, toDesktop: number) }
+        case .focusWindow(let title):
+            MoreActionKindsRunner.focusWindow(titled: title)
+        case .transformText(let script, let onClipboard):
+            MoreActionKindsRunner.transformText(script: script, onClipboard: onClipboard)
+        case .browserJavaScript(let source):
+            MoreActionKindsRunner.runInBrowser(source)
+        case .runWorkflow(let path):
+            MoreActionKindsRunner.runWorkflow(at: path)
+        case .pauseShortie(let seconds):
+            MoreActionKindsRunner.pause(for: seconds)
+        case .clickButton(let name):
+            MoreActionKindsRunner.clickButton(named: name)
+        case .clickMenuBarExtra(let name):
+            MoreActionKindsRunner.clickMenuBarExtra(named: name)
+        case .distributedNotification(let name):
+            DistributedNotificationCenter.default().postNotificationName(Notification.Name(name), object: nil, userInfo: nil, deliverImmediately: true)
+        case .otherRule(let id, _, let mode):
+            MoreActionKindsRunner.otherRule(id, mode: mode)
         case .steps(let actions):
             Task {
                 for step in actions {
