@@ -315,7 +315,7 @@ struct TrafficLightButtonPicker: View {
                         .frame(width: 26, height: 26)
                         .padding(3)
                         .overlay {
-                            Circle().strokeBorder(Color.accentColor, lineWidth: 2.5)
+                            Circle().strokeBorder(.tint, lineWidth: 2.5)
                                 .opacity(selection == button ? 1 : 0)
                         }
 

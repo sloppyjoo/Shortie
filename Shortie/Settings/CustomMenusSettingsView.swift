@@ -119,7 +119,7 @@ struct CustomMenuEditor: View {
                                 .frame(width: 30, height: 30)
                                 .background(
                                     RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .fill(menu.symbol == symbol ? Color.accentColor.opacity(0.25) : Color.clear)
+                                        .fill(menu.symbol == symbol ? AnyShapeStyle(.tint.opacity(0.25)) : AnyShapeStyle(.clear))
                                 )
                                 .contentShape(.rect)
                         }

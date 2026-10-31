@@ -19,6 +19,7 @@ enum Snapshots {
                        to: folder.appending(path: "\(pane.rawValue)-\(suffix).png"))
             }
             let editors: [(String, AnyView)] = [
+                ("onboarding", AnyView(OnboardingView())),
                 ("editor-keyboard", AnyView(ActionEditor(keyCombo: nil, action: .openApp(path: "/System/Applications/Safari.app"), apps: nil) { _, _, _ in })),
                 ("editor-gesture", AnyView(GestureEditor(gesture: .swipe(fingers: 3, direction: .down), action: .system(action: .controlCentre), apps: AppScope(mode: .only, bundleIDs: ["com.apple.Safari", "com.apple.finder"])) { _, _, _ in })),
                 ("editor-window-button", AnyView(TrafficLightEditor(click: TrafficLightClick(button: .zoom, mouseButton: .left, modifiers: []), action: .moveWindow(position: .maximize), apps: nil) { _, _, _ in })),
@@ -33,7 +34,7 @@ enum Snapshots {
     }
 
     private static func render(_ view: some View, size: NSSize?, appearance: NSAppearance.Name, to url: URL) {
-        let controller = NSHostingController(rootView: view)
+        let controller = NSHostingController(rootView: view.lookTint())
         controller.sceneBridgingOptions = .all
         let window = NSWindow(contentViewController: controller)
         window.styleMask = [.titled, .closable, .fullSizeContentView]

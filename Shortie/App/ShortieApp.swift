@@ -98,6 +98,7 @@ enum AppFolder {
 enum DefaultsKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let isPaused = "isPaused"
+    static let look = "look"
     static let microphoneLevel = "microphoneLevel"
     static let didPromptForAccessibility = "didPromptForAccessibility"
     static let wheelDirection = "wheelDirection"

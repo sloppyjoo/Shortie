@@ -15,6 +15,12 @@ struct OnboardingView: View {
                     .padding(10)
             }
 
+            HStack(spacing: 10) {
+                Text("Look")
+                    .foregroundStyle(.secondary)
+                LookPicker()
+            }
+
             Text("Shortie never records or sends anything you type.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -26,7 +32,7 @@ struct OnboardingView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .keyboardShortcut(.defaultAction)
-            .tint(permissions.allGranted ? .accentColor : .secondary)
+            .tint(permissions.allGranted ? look.tint : .secondary)
         }
         .padding(.horizontal, 40)
         .padding(.top, 36)
@@ -39,11 +45,22 @@ struct OnboardingView: View {
         }
     }
 
+    @AppStorage(DefaultsKey.look) private var look = Look.retro
+
     private var header: some View {
         VStack(spacing: 10) {
-            PixelIcon(pixels: PixelArt.hand, size: 64)
-                .foregroundStyle(.tint)
-                .padding(.bottom, 6)
+            Group {
+                if look == .retro {
+                    PixelIcon(pixels: PixelArt.hand, size: 64)
+                } else {
+                    Image(systemName: "hand.draw.fill")
+                        .font(.system(size: 56))
+                        .symbolRenderingMode(.hierarchical)
+                }
+            }
+            .foregroundStyle(.tint)
+            .frame(height: 64)
+            .padding(.bottom, 6)
 
             Text("Welcome to Shortie")
                 .font(.largeTitle.bold())
@@ -52,6 +69,7 @@ struct OnboardingView: View {
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

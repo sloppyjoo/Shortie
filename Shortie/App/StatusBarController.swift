@@ -20,7 +20,7 @@ final class StatusBarController: NSObject {
         }
         updateIcon()
 
-        // Swap the icon when Shortie is paused or resumed from the dashboard.
+        // Swap the icon when Shortie is paused or resumed, or the look changes.
         NotificationCenter.default.addObserver(
             self, selector: #selector(updateIcon),
             name: UserDefaults.didChangeNotification, object: nil
@@ -65,7 +65,7 @@ final class StatusBarController: NSObject {
 
     @objc private func updateIcon() {
         let isPaused = UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
-        let image = PixelArt.menuBarImage(slashed: isPaused)
+        let image = PixelArt.menuBarIcon(slashed: isPaused)
         image.accessibilityDescription = isPaused ? "Shortie (paused)" : "Shortie"
         statusItem.button?.image = image
     }

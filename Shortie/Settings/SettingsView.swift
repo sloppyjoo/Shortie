@@ -169,7 +169,26 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     }
 
 
-    /// The pixel picture for the sidebar and the top of the page.
+    /// The Modern look's icon.
+    var systemImage: String {
+        switch self {
+        case .general: "gearshape.fill"
+        case .shortcuts: "command"
+        case .windows: "macwindow"
+        case .layouts: "rectangle.split.2x1.fill"
+        case .trafficLights: "circle.fill"
+        case .mouse: "computermouse.fill"
+        case .textShortcuts: "character.cursor.ibeam"
+        case .automations: "gearshape.2.fill"
+        case .clipboard: "doc.on.clipboard.fill"
+        case .menus: "list.bullet.rectangle.fill"
+        case .menuBar: "menubar.rectangle"
+        case .gestures: "hand.draw.fill"
+        case .permissions: "lock.fill"
+        }
+    }
+
+    /// The Retro look's pixel picture.
     var pixels: [String] {
         switch self {
         case .general: PixelArt.mac
@@ -207,15 +226,45 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     }
 }
 
-/// A section's icon: its pixel picture in its colour, in the sidebar or
-/// (larger) at the top of its page. Sizes are multiples of 16 so every pixel is square.
+/// A section's icon, in the sidebar or (larger) at the top of its page. Retro
+/// shows its pixel picture in its colour; Modern shows a glossy coloured tile.
 struct PaneIcon: View {
     let pane: SettingsPane
-    var size: CGFloat = 16
+    /// `nil` is the sidebar size for the current look.
+    var size: CGFloat?
+
+    @AppStorage(DefaultsKey.look) private var look = Look.retro
 
     var body: some View {
-        PixelIcon(pixels: pane.pixels, size: size)
-            .foregroundStyle(pane == .menuBar ? Color.primary : pane.color)
+        switch look {
+        case .retro:
+            // Multiples of 16, so every pixel stays square.
+            PixelIcon(pixels: pane.pixels, size: size ?? 16)
+                .foregroundStyle(pane == .menuBar ? Color.primary : pane.color)
+        case .modern:
+            if pane == .trafficLights {
+                TrafficLightsSidebarIcon(size: size ?? 20)
+            } else {
+                SettingsIcon(systemImage: pane.systemImage, color: pane.color, size: size ?? 20)
+            }
+        }
+    }
+}
+
+/// The Modern icon for Window Buttons: the three window buttons on a dark tile.
+struct TrafficLightsSidebarIcon: View {
+    var size: CGFloat = 20
+
+    var body: some View {
+        HStack(spacing: size * 0.075) {
+            ForEach(TrafficLightButton.allCases) { button in
+                Circle()
+                    .fill(button.color)
+                    .frame(width: size * 0.225, height: size * 0.225)
+            }
+        }
+        .frame(width: size, height: size)
+        .background(Color(white: 0.3).gradient, in: .rect(cornerRadius: size * 0.25, style: .continuous))
     }
 }
 

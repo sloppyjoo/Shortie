@@ -203,7 +203,7 @@ struct GestureRecorder: View {
         HStack(spacing: 14) {
             Image(systemName: isRecording ? "hand.raised.fingers.spread" : gesture.systemImage)
                 .font(.system(size: 22))
-                .foregroundStyle(isRecording ? Color.accentColor : .secondary)
+                .foregroundStyle(isRecording ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                 .symbolEffect(.pulse, isActive: isRecording)
                 .frame(width: 32)
 
@@ -225,7 +225,7 @@ struct GestureRecorder: View {
         .background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 10))
         .overlay {
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(isRecording ? Color.accentColor : .clear, lineWidth: 2)
+                .strokeBorder(isRecording ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), lineWidth: 2)
         }
         .animation(.smooth(duration: 0.2), value: isRecording)
         .onDisappear(perform: stop)
@@ -259,7 +259,7 @@ struct TrackpadView: View {
 
                 ForEach(touches) { touch in
                     Circle()
-                        .fill(touch.isTouching ? Color.accentColor : Color.secondary.opacity(0.4))
+                        .fill(touch.isTouching ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.secondary.opacity(0.4)))
                         .frame(width: 26, height: 26)
                         // The trackpad measures from the bottom-left; the screen from the top-left.
                         .position(

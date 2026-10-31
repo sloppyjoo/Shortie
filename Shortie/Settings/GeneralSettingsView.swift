@@ -11,6 +11,7 @@ struct GeneralSettingsView: View {
             PaneHeader(pane: .general)
 
             Section {
+                LabeledContent("Look") { LookPicker() }
                 LaunchAtLoginToggle()
                 Toggle("Pause All Shortcuts and Gestures", isOn: $isPaused)
             }

@@ -46,7 +46,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         let window: NSWindow
         switch id {
         case .onboarding:
-            window = NSWindow(contentViewController: NSHostingController(rootView: OnboardingView()))
+            window = NSWindow(contentViewController: NSHostingController(rootView: OnboardingView().lookTint()))
             window.styleMask = [.titled, .closable, .fullSizeContentView]
             window.title = "Welcome to Shortie"
             window.titleVisibility = .hidden
@@ -54,7 +54,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
             window.isMovableByWindowBackground = true
 
         case .settings:
-            let controller = NSHostingController(rootView: SettingsView())
+            let controller = NSHostingController(rootView: SettingsView().lookTint())
             // Let SwiftUI put the sidebar and title into the window's toolbar.
             controller.sceneBridgingOptions = .all
             // Keep one fixed minimum size. Otherwise every section works out its own,

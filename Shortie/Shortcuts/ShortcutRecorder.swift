@@ -25,7 +25,7 @@ struct ShortcutRecorder: View {
                 .background(.quaternary.opacity(0.6), in: .rect(cornerRadius: 6))
                 .overlay {
                     RoundedRectangle(cornerRadius: 6)
-                        .strokeBorder(isRecording ? Color.accentColor : .clear, lineWidth: 2)
+                        .strokeBorder(isRecording ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), lineWidth: 2)
                 }
                 .contentShape(.rect)
         }

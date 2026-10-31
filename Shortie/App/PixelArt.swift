@@ -260,6 +260,16 @@ enum PixelArt {
         "................",
     ]
 
+    /// The menu bar icon for the current look: the pixel hand (Retro) or the
+    /// system's hand symbol (Modern). With `slashed`, it shows Shortie is paused.
+    static func menuBarIcon(slashed: Bool) -> NSImage {
+        if Look.current == .modern,
+           let symbol = NSImage(systemSymbolName: slashed ? "hand.raised.slash" : "hand.draw", accessibilityDescription: nil) {
+            return symbol
+        }
+        return menuBarImage(slashed: slashed)
+    }
+
     /// The hand for the menu bar, one point per pixel so it stays sharp. With
     /// `slashed`, a line runs through it, for when Shortie is paused.
     static func menuBarImage(slashed: Bool) -> NSImage {
@@ -309,10 +319,13 @@ struct PixelIcon: View {
     }
 }
 
-/// What an empty list shows: a small pixel icon above a short message.
+/// What an empty list shows: a short message, with a small pixel icon above it
+/// in the Retro look.
 struct EmptyState: View {
     let pixels: [String]
     let text: String
+
+    @AppStorage(DefaultsKey.look) private var look = Look.retro
 
     init(_ text: String, pixels: [String]) {
         self.text = text
@@ -320,14 +333,19 @@ struct EmptyState: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
-            PixelIcon(pixels: pixels, size: 32)
-                .foregroundStyle(.tertiary)
+        if look == .retro {
+            VStack(spacing: 10) {
+                PixelIcon(pixels: pixels, size: 32)
+                    .foregroundStyle(.tertiary)
+                Text(text)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+        } else {
             Text(text)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
     }
 }

@@ -11,13 +11,21 @@ struct PermissionRow: View {
     var hint: String? = nil
     let grant: () -> Void
 
+    @AppStorage(DefaultsKey.look) private var look = Look.retro
+
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 36, height: 36)
-                .background(.blue.gradient, in: .rect(cornerRadius: 8))
+            if look == .retro {
+                PixelIcon(pixels: PixelArt.lock, size: 32)
+                    .foregroundStyle(.tint)
+                    .frame(width: 36, height: 36)
+            } else {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(.blue.gradient, in: .rect(cornerRadius: 8))
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

@@ -190,7 +190,7 @@ struct MouseButtonEditor: View {
         HStack(spacing: 14) {
             Image(systemName: "computermouse")
                 .font(.system(size: 22))
-                .foregroundStyle(isRecording ? Color.accentColor : .secondary)
+                .foregroundStyle(isRecording ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                 .symbolEffect(.pulse, isActive: isRecording)
                 .frame(width: 32)
 
@@ -221,7 +221,7 @@ struct MouseButtonEditor: View {
         .background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 10))
         .overlay {
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(isRecording ? Color.accentColor : .clear, lineWidth: 2)
+                .strokeBorder(isRecording ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), lineWidth: 2)
         }
         .animation(.smooth(duration: 0.2), value: isRecording)
     }
