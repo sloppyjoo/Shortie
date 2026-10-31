@@ -192,6 +192,9 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .appTask, .setBrightness, .windowFrame, .moveToDisplay, .movePointer,
+             .copyText, .pasteText, .notify, .webRequest, .inputSource, .playSound:
+            ExtraActionFields(action: $action)
         case .restoreLayout:
             let layouts = WindowLayoutStore.shared.layouts
             if layouts.isEmpty {
@@ -212,7 +215,11 @@ struct ActionFields: View {
             }
         case .mouseClick:
             Picker("Click", selection: payload) {
-                ForEach(MouseAction.allCases) { Text($0.title).tag($0.rawValue) }
+                ForEach(MouseAction.groups, id: \.self) { group in
+                    Section {
+                        ForEach(group) { Text($0.title).tag($0.rawValue) }
+                    }
+                }
             }
             .labelsHidden()
             .fixedSize()
@@ -314,7 +321,8 @@ extension ShortcutAction.Kind {
     /// command…), so it can sit right beside the action type.
     var isSingleChoice: Bool {
         switch self {
-        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu, .restoreLayout, .text, .soundOutput: true
+        case .moveWindow, .appCommand, .mouseClick, .system, .showMenu, .restoreLayout, .text, .soundOutput,
+             .moveToDisplay, .inputSource, .playSound: true
         default: false
         }
     }
@@ -342,6 +350,17 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .appTask: "Show, Hide or Quit an App"
+        case .setBrightness: "Set Brightness"
+        case .windowFrame: "Custom Window Position"
+        case .moveToDisplay: "Move Window to Display"
+        case .movePointer: "Move Pointer"
+        case .copyText: "Copy Text"
+        case .pasteText: "Paste Text"
+        case .notify: "Show Notification"
+        case .webRequest: "Web Request"
+        case .inputSource: "Input Source"
+        case .playSound: "Play Sound"
         }
     }
 }

@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .runShortcut, .open, .typeText, .text, .pressKeys, .system, .setVolume, .soundOutput, .mouseClick, .showMessage, .speak, .menuItem, .appleScript, .shellScript, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .pressKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .appleScript, .shellScript, .webRequest, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -134,9 +134,13 @@ struct ShortcutListView<Extra: View, Top: View>: View {
                         }
                     }
                 } else if kind == .mouseClick {
-                    Section {
-                        ForEach(MouseAction.allCases) { click in
-                            Button(click.title, systemImage: click.systemImage) { save(.mouseClick(click: click), to: nil) }
+                    Menu("Mouse", systemImage: kind.systemImage) {
+                        ForEach(MouseAction.groups, id: \.self) { group in
+                            Section {
+                                ForEach(group) { click in
+                                    Button(click.title, systemImage: click.systemImage) { save(.mouseClick(click: click), to: nil) }
+                                }
+                            }
                         }
                     }
                 } else if kind == .restoreLayout, !WindowLayoutStore.shared.layouts.isEmpty {
@@ -388,13 +392,24 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .appTask: "Show, Hide or Quit an App…"
+        case .setBrightness: "Set Brightness…"
+        case .windowFrame: "Custom Window Position…"
+        case .moveToDisplay: "Move Window to Display…"
+        case .movePointer: "Move Pointer…"
+        case .copyText: "Copy Text…"
+        case .pasteText: "Paste Text…"
+        case .notify: "Show Notification…"
+        case .webRequest: "Web Request…"
+        case .inputSource: "Input Source…"
+        case .playSound: "Play Sound…"
         }
     }
 
     /// The dashboard section keyboard shortcuts of this kind live in.
     var sectionName: String {
         switch self {
-        case .moveWindow, .appCommand: "Windows"
+        case .moveWindow, .appCommand, .windowFrame, .moveToDisplay: "Windows"
         case .restoreLayout: "Window Layouts"
         default: "Shortcuts"
         }
@@ -423,6 +438,17 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .appTask: "app.badge.checkmark"
+        case .setBrightness: "sun.max.fill"
+        case .windowFrame: "rectangle.dashed"
+        case .moveToDisplay: "display.2"
+        case .movePointer: "cursorarrow.motionlines"
+        case .copyText: "doc.on.clipboard"
+        case .pasteText: "doc.on.clipboard.fill"
+        case .notify: "bell.badge.fill"
+        case .webRequest: "network"
+        case .inputSource: "globe"
+        case .playSound: "music.note"
         }
     }
 
@@ -449,6 +475,17 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .appTask: .blue
+        case .setBrightness: .yellow
+        case .windowFrame: .blue
+        case .moveToDisplay: .blue
+        case .movePointer: .orange
+        case .copyText: .indigo
+        case .pasteText: .indigo
+        case .notify: .red
+        case .webRequest: .teal
+        case .inputSource: .gray
+        case .playSound: .pink
         }
     }
 
@@ -475,6 +512,17 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .appTask: .appTask(task: .toggle, path: "")
+        case .setBrightness: .setBrightness(percent: 50)
+        case .windowFrame: .windowFrame(frame: WindowFrame(x: 10, y: 10, width: 80, height: 80))
+        case .moveToDisplay: .moveToDisplay(number: 1)
+        case .movePointer: .movePointer(x: 100, y: 100)
+        case .copyText: .copyText(text: "")
+        case .pasteText: .pasteText(text: "")
+        case .notify: .notify(text: "")
+        case .webRequest: .webRequest(request: WebRequest())
+        case .inputSource: .inputSource(id: InputSources.nextID, name: "")
+        case .playSound: .playSound(name: "Glass")
         }
     }
 }

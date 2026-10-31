@@ -80,7 +80,7 @@ struct ActionChoice: Identifiable {
                     choices.append(ActionChoice(command.title, group: group, action: .appCommand(command: command), keywords: keywords))
                 }
             case .mouseClick:
-                for click in MouseAction.allCases {
+                for click in MouseAction.groups.joined() {
                     choices.append(ActionChoice(click.title, group: group, action: .mouseClick(click: click), keywords: keywords))
                 }
             case .text:
@@ -133,6 +133,17 @@ extension ShortcutAction.Kind {
         case .speak: "say voice read aloud"
         case .setVolume: "sound audio volume"
         case .soundOutput: "sound audio speakers headphones output device"
+        case .appTask: "app application toggle show hide quit restart force"
+        case .setBrightness: "display screen brightness dim"
+        case .windowFrame: "window custom position size resize move"
+        case .moveToDisplay: "window display monitor screen move"
+        case .movePointer: "mouse cursor pointer move position"
+        case .copyText: "clipboard copy text"
+        case .pasteText: "paste insert text snippet clipboard"
+        case .notify: "notification alert banner"
+        case .webRequest: "http url webhook api request get post home automation"
+        case .inputSource: "keyboard layout language input source"
+        case .playSound: "sound alert beep play"
         }
     }
 }

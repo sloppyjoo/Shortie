@@ -42,11 +42,32 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Switches speakers or headphones. The UID picks the device; the name is
     /// for showing in lists, and as a fallback if the UID isn't found.
     case soundOutput(uid: String, name: String)
+    /// Shows, hides, quits or restarts one particular app.
+    case appTask(task: AppTask, path: String)
+    case setBrightness(percent: Int)
+    /// Puts the window at an exact place and size, in percent of the screen.
+    case windowFrame(frame: WindowFrame)
+    /// Moves the window to a particular display, 1 being the leftmost.
+    case moveToDisplay(number: Int)
+    /// Moves the pointer to a point, measured from the top-left of the main display.
+    case movePointer(x: Int, y: Int)
+    case copyText(text: String)
+    /// Puts text in through the clipboard, which is quicker than typing it.
+    case pasteText(text: String)
+    /// A notification in Notification Centre.
+    case notify(text: String)
+    /// Calls a web address, for webhooks and home automation.
+    case webRequest(request: WebRequest)
+    /// Switches keyboard layout or input method. The ID picks it; the name is for lists.
+    case inputSource(id: String, name: String)
+    case playSound(name: String)
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
         case text, showMessage, speak, setVolume, soundOutput
+        case appTask, setBrightness, windowFrame, moveToDisplay, movePointer
+        case copyText, pasteText, notify, webRequest, inputSource, playSound
         var id: Self { self }
     }
 
@@ -73,6 +94,17 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .appTask: .appTask
+        case .setBrightness: .setBrightness
+        case .windowFrame: .windowFrame
+        case .moveToDisplay: .moveToDisplay
+        case .movePointer: .movePointer
+        case .copyText: .copyText
+        case .pasteText: .pasteText
+        case .notify: .notify
+        case .webRequest: .webRequest
+        case .inputSource: .inputSource
+        case .playSound: .playSound
         }
     }
 
@@ -100,6 +132,17 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .appTask(_, let path): path
+        case .setBrightness(let percent): String(percent)
+        case .windowFrame(let frame): frame.width > 0 && frame.height > 0 ? frame.summary : ""
+        case .moveToDisplay(let number): String(number)
+        case .movePointer(let x, let y): "\(x),\(y)"
+        case .copyText(let text): text
+        case .pasteText(let text): text
+        case .notify(let text): text
+        case .webRequest(let request): request.url
+        case .inputSource(let id, _): id
+        case .playSound(let name): name
         }
     }
 
@@ -121,8 +164,16 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .setBrightness: .setBrightness(percent: Int(payload) ?? 50)
+        case .moveToDisplay: .moveToDisplay(number: Int(payload) ?? 1)
+        case .copyText: .copyText(text: payload)
+        case .pasteText: .pasteText(text: payload)
+        case .notify: .notify(text: payload)
+        case .playSound: .playSound(name: payload)
+        case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
-        case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput: self
+        case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
+             .windowFrame, .movePointer, .webRequest, .inputSource: self
         }
     }
 
@@ -180,6 +231,29 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .appTask(let task, let path):
+            path.isEmpty ? "\(task.title) App"
+                : "\(task.title) \(FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))"
+        case .setBrightness(let percent):
+            "Set Brightness to \(percent)%"
+        case .windowFrame(let frame):
+            "Move Window to \(frame.summary)"
+        case .moveToDisplay(let number):
+            "Move Window to Display \(number)"
+        case .movePointer(let x, let y):
+            "Move Pointer to \(x), \(y)"
+        case .copyText(let text):
+            "Copy “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
+        case .pasteText(let text):
+            "Paste “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
+        case .notify(let text):
+            "Notify “\(text.count > 30 ? text.prefix(30) + "…" : text)”"
+        case .webRequest(let request):
+            "\(request.method) \(Self.shortName(for: request.url))"
+        case .inputSource(let id, let name):
+            id == InputSources.nextID ? "Next Input Source" : name.isEmpty ? "Input Source" : "Switch to \(name)"
+        case .playSound(let name):
+            "Play “\(name)” Sound"
         }
     }
 
@@ -263,6 +337,28 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .appTask(let task, let path):
+            AppTaskRunner.run(task, path: path)
+        case .setBrightness(let percent):
+            Brightness.set(percent)
+        case .windowFrame(let frame):
+            WindowMover.shared.move(toUnit: frame.unitRect, window: target?.window)
+        case .moveToDisplay(let number):
+            WindowMover.shared.move(toDisplay: number, window: target?.window)
+        case .movePointer(let x, let y):
+            ExtraActionRunner.movePointer(x: x, y: y)
+        case .copyText(let text):
+            ExtraActionRunner.copy(text)
+        case .pasteText(let text):
+            ExtraActionRunner.paste(text)
+        case .notify(let text):
+            ExtraActionRunner.notify(text)
+        case .webRequest(let request):
+            ExtraActionRunner.send(request)
+        case .inputSource(let id, _):
+            InputSources.select(id)
+        case .playSound(let name):
+            SystemSounds.play(name)
         case .steps(let actions):
             Task {
                 for step in actions {

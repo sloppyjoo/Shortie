@@ -7,7 +7,7 @@ struct WindowsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .windows,
-            kinds: [.moveWindow, .appCommand],
+            kinds: [.moveWindow, .windowFrame, .moveToDisplay, .appCommand],
             emptyText: "No window shortcuts yet.",
             emptyIcon: PixelArt.layout,
             info: "Press a half or corner shortcut again to cycle its width: ½ → ⅓ → ⅔."

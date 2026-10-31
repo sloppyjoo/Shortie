@@ -136,6 +136,59 @@ final class WindowMover: NSObject {
         animate(moves)
     }
 
+    /// Moves the window to an area of its screen given as fractions from the
+    /// top-left (0–1), or of display `display` (1 is the leftmost) if given.
+    func move(toUnit unit: CGRect, display: Int? = nil, window: AXUIElement? = nil) {
+        finishSlide()
+        guard let window = window ?? ActionTarget.frontmost?.window, let current = frame(of: window) else {
+            NSSound.beep()
+            return
+        }
+        let screens = Self.screensLeftToRight
+        let screen: NSScreen
+        if let display {
+            guard screens.indices.contains(display - 1) else {
+                NSSound.beep()
+                return
+            }
+            screen = screens[display - 1]
+        } else {
+            screen = Self.screen(containing: current)
+        }
+        let area = Self.usableArea(of: screen)
+        let target = CGRect(
+            x: area.minX + unit.minX * area.width,
+            y: area.minY + unit.minY * area.height,
+            width: max(unit.width * area.width, Self.smallestSize.width),
+            height: max(unit.height * area.height, Self.smallestSize.height)
+        ).kept(inside: area)
+        rememberOriginalFrame(of: window, current)
+        lastMove = nil
+        animate([(window, current, target.integral)])
+    }
+
+    /// Moves the window to display `number` (1 is the leftmost), keeping its
+    /// place and size relative to the screen.
+    func move(toDisplay number: Int, window: AXUIElement? = nil) {
+        guard let window = window ?? ActionTarget.frontmost?.window, let current = frame(of: window) else {
+            NSSound.beep()
+            return
+        }
+        let area = Self.usableArea(of: Self.screen(containing: current))
+        let unit = CGRect(
+            x: (current.minX - area.minX) / area.width,
+            y: (current.minY - area.minY) / area.height,
+            width: min(current.width / area.width, 1),
+            height: min(current.height / area.height, 1)
+        )
+        move(toUnit: unit, display: number, window: window)
+    }
+
+    /// The names of the displays, left to right, for choosing one.
+    static var displayNames: [String] {
+        screensLeftToRight.map(\.localizedName)
+    }
+
     /// Make Smaller stops here.
     private static let smallestSize = CGSize(width: 200, height: 150)
 

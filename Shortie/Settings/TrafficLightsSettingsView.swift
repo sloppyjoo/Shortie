@@ -251,9 +251,11 @@ struct ActionKindPicker: View {
     /// Clicks and window commands first, since they're what you'll usually want
     /// from a gesture or window button.
     static let order: [ShortcutAction.Kind] = [
-        .mouseClick, .system, .setVolume, .soundOutput, .pressKeys, .appCommand, .moveWindow, .restoreLayout,
-        .openApp, .runShortcut, .open, .typeText, .text, .showMessage, .speak,
-        .menuItem, .appleScript, .shellScript, .steps, .showMenu,
+        .mouseClick, .movePointer, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .pressKeys,
+        .appCommand, .moveWindow, .windowFrame, .moveToDisplay, .restoreLayout,
+        .openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text,
+        .showMessage, .notify, .speak, .playSound,
+        .menuItem, .appleScript, .shellScript, .webRequest, .steps, .showMenu,
     ]
 
     /// What a single step can be.
