@@ -40,6 +40,7 @@ body {
   background-size: 4px 4px;
 }
 a { color: var(--ink); text-underline-offset: 3px; }
+body { cursor: var(--arrow, auto); }
 a, button, summary { cursor: var(--hand, pointer); }
 img { max-width: 100%; height: auto; display: block; }
 h1, h2, h3, h4, h5 { font-family: var(--pixel); font-weight: 700; margin: 0; letter-spacing: .01em; }
@@ -205,7 +206,7 @@ section { padding: 84px 0 0; }
 .scene-win .keys { padding: 12px 16px 14px; border-top: 2px solid var(--ink); }
 .keys .tag { padding: 4px 10px; border: 2px solid var(--ink); border-radius: 6px; box-shadow: 0 3px 0 var(--ink); background: var(--paper); font: 700 15px var(--pixel); }
 .keys .tag.down { transform: translateY(3px); box-shadow: none; background: var(--violet); color: #fff; }
-.cursor { position: absolute; z-index: 6; width: 16px; height: 16px; pointer-events: none; transition: left .55s ease-in-out, top .55s ease-in-out; }
+.cursor { position: absolute; z-index: 6; width: 18px; height: 18px; margin: -1px 0 0 -1px; pointer-events: none; transition: left .55s ease-in-out, top .55s ease-in-out; }
 .cursor svg { display: block; width: 100%; height: 100%; }
 .mon {
   position: absolute; left: 50%; top: 10%; width: 46%; height: 80%; overflow: hidden; border: 2px solid var(--ink);
@@ -688,24 +689,40 @@ for (const el of document.querySelectorAll('.px[data-icon]')) {
   el.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${pixelPath(rows)}" fill="${el.dataset.color || '#1d1838'}"/></svg>`;
 }
 
-// A pixel sprite with a black outline and a white inside, like the classic Mac pointers.
-function spriteSVG(rows, size) {
-  const outside = rows.map((r) => [...r].map(() => false));
-  const queue = [];
-  for (let i = 0; i < 16; i++) queue.push([i, 0], [i, 15], [0, i], [15, i]);
+// Pixel pointers, drawn on an 18-pixel grid so there's room for a 1-pixel edge all round.
+// `fill` colours the inside of the shape, `line` its outline, and `edge` the pixels just outside it.
+function cursorSVG(rows, { fill, line, edge }, scale) {
+  const grid = Array.from({ length: 18 }, (_, y) => Array.from({ length: 18 }, (_, x) => rows[y - 1]?.[x - 1] ?? '.'));
+  const outside = grid.map((r) => r.map(() => false));
+  const queue = [[0, 0]];
   while (queue.length) {
     const [x, y] = queue.pop();
-    if (x < 0 || y < 0 || x > 15 || y > 15 || outside[y][x] || rows[y][x] === '#') continue;
+    if (x < 0 || y < 0 || x > 17 || y > 17 || outside[y][x] || grid[y][x] === '#') continue;
     outside[y][x] = true;
     queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
   }
-  const inside = rows.map((r, y) => [...r].map((c, x) => (c === '#' || outside[y][x]) ? '.' : '#').join(''));
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="${pixelPath(inside)}" fill="#fff"/><path d="${pixelPath(rows)}" fill="#000"/></svg>`;
+  const shape = (x, y) => grid[y]?.[x] !== undefined && !outside[y][x];
+  const path = (test) => {
+    let d = '';
+    for (let y = 0; y < 18; y++) for (let x = 0; x < 18; x++) if (test(x, y)) d += `M${x} ${y}h1v1h-1z`;
+    return d;
+  };
+  const isEdge = (x, y) => !shape(x, y) && [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]].some(([dx, dy]) => shape(x + dx, y + dy));
+  const size = 18 * scale;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 18 18" shape-rendering="crispEdges">`
+    + (edge ? `<path d="${path(isEdge)}" fill="${edge}"/>` : '')
+    + `<path d="${path((x, y) => shape(x, y) && grid[y][x] !== '#')}" fill="${fill}"/>`
+    + `<path d="${path((x, y) => grid[y][x] === '#')}" fill="${line}"/></svg>`;
 }
+const cursorURL = (svg) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 
-// The pointing hand as the pointer over anything clickable.
-document.documentElement.style.setProperty('--hand', `url("data:image/svg+xml,${encodeURIComponent(spriteSVG(ICONS.hand, 32))}") 13 1, pointer`);
-document.querySelectorAll('.cursor').forEach((el) => { el.innerHTML = spriteSVG(ICONS.pointer, 16); });
+// The classic Mac arrow: black, with a thin white edge.
+const arrowStyle = { fill: '#000', line: '#000', edge: '#fff' };
+// Over anything clickable, Shortie's pointing hand: white, with a violet outline.
+const handStyle = { fill: '#fff', line: '#4b3fd1', edge: '#fff' };
+document.documentElement.style.setProperty('--arrow', `${cursorURL(cursorSVG(ICONS.pointer, arrowStyle, 2))} 2 2, auto`);
+document.documentElement.style.setProperty('--hand', `${cursorURL(cursorSVG(ICONS.hand, handStyle, 2))} 15 2, pointer`);
+document.querySelectorAll('.cursor').forEach((el) => { el.innerHTML = cursorSVG(ICONS.pointer, arrowStyle, 1); });
 
 // The corner box (or a double-click on the title bar) rolls a window up to its title bar.
 for (const win of document.querySelectorAll('.win:not(.modal .win)')) {
