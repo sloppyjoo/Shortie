@@ -122,34 +122,81 @@ section { padding: 84px 0 0; }
 .hero .actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-left: -6px; }
 .hero .note { margin-top: 18px; font-size: 13px; color: var(--muted); }
 
-/* The demo: a tiny screen where a window follows the keys. */
+/* The demo: a tiny Mac where shortcuts do things. */
 .demo { display: flex; flex-direction: column; gap: 14px; }
 .screen {
   position: relative; aspect-ratio: 16 / 10; border: 2px solid var(--ink); overflow: hidden;
-  background-color: var(--desk);
+  --s-desk: var(--desk); --s-paper: var(--paper); --s-line: var(--muted);
+  background-color: var(--s-desk);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%236c5cff' fill-opacity='.35'/%3E%3C/svg%3E");
   background-size: 4px 4px;
+  transition: background-color .5s;
 }
-.screen .bar { position: absolute; inset: 0 0 auto; height: 8%; background: var(--paper); border-bottom: 2px solid var(--ink); }
-.screen .mini {
-  position: absolute; left: 22%; top: 24%; width: 56%; height: 58%;
-  background: var(--paper); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
-  transition: left .6s var(--ease), top .6s var(--ease), width .6s var(--ease), height .6s var(--ease);
+.screen.dark { --s-desk: #3b3470; --s-paper: #2a2550; --s-line: #b9b3ff; }
+.screen .bar { position: absolute; inset: 0 0 auto; height: 8%; background: var(--s-paper); border-bottom: 2px solid var(--ink); transition: background .5s; }
+.screen .win-s {
+  position: absolute; background: var(--s-paper); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+  transition: left .6s var(--ease), top .6s var(--ease), width .6s var(--ease), height .6s var(--ease),
+              opacity .35s, transform .45s var(--ease), background .5s;
 }
-.screen .mini::before {
+.screen .win-s::before {
   content: ""; position: absolute; inset: 0 0 auto; height: 14px; border-bottom: 2px solid var(--ink);
   background: repeating-linear-gradient(var(--violet) 0 2px, transparent 2px 4px) 0 3px / 100% 8px no-repeat;
 }
+.screen .mini { left: 22%; top: 24%; width: 56%; height: 58%; }
 .screen .mini::after {
-  content: ""; position: absolute; left: 10px; right: 30%; top: 26px; height: 2px;
-  background: var(--muted); box-shadow: 0 10px 0 var(--muted), 0 20px 0 var(--muted); opacity: .35;
+  content: ""; position: absolute; left: 10px; right: 30%; top: 44px; height: 2px;
+  background: var(--s-line); box-shadow: 0 10px 0 var(--s-line), 0 20px 0 var(--s-line); opacity: .35;
 }
-.keys { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.screen .typed { position: absolute; left: 10px; right: 8px; top: 22px; font: 12px/1.2 var(--mono); color: var(--ink); white-space: nowrap; overflow: hidden; }
+.screen.dark .typed { color: #fff; }
+.screen .typed:not(:empty)::after { content: "▍"; color: var(--violet); }
+.screen .app { left: 34%; top: 18%; width: 52%; height: 62%; opacity: 0; transform: scale(.85); }
+.screen .app::after {
+  content: ""; position: absolute; left: 10px; right: 10px; top: 24px; height: 10px;
+  border: 2px solid var(--ink); border-radius: 6px; background: var(--s-paper);
+}
+.screen .hide { opacity: 0; transform: scale(.85); pointer-events: none; }
+.screen .show { opacity: 1; transform: none; }
+.screen .hud {
+  position: absolute; left: 50%; bottom: 12%; transform: translate(-50%, 10px); opacity: 0;
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--ink);
+  font: 600 13px var(--pixel); white-space: nowrap;
+  transition: opacity .25s, transform .4s var(--ease);
+}
+.screen .hud.show { opacity: 1; transform: translate(-50%, 0); }
+.screen .hud .segments { display: flex; gap: 2px; }
+.screen .hud .segments i { width: 6px; height: 10px; border: 1px solid var(--ink); }
+.screen .hud .segments i.on { background: var(--violet); }
+.screen .panel {
+  position: absolute; left: 27%; top: 22%; width: 46%; padding: 6px; opacity: 0; transform: translateY(8px);
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--ink);
+  transition: opacity .25s, transform .4s var(--ease);
+}
+.screen .panel.show { opacity: 1; transform: none; }
+.screen .panel i { display: block; height: 14px; margin: 2px 0; border-radius: 3px; background: linear-gradient(var(--s-line), var(--s-line)) 6px 6px / 60% 2px no-repeat; opacity: .8; }
+.screen .panel i:first-child { background-color: rgba(108, 92, 255, .22); }
+.screen .panel i:nth-child(2) { background-size: 45% 2px; }
+.screen .panel i:nth-child(3) { background-size: 70% 2px; }
+.screen .select {
+  position: absolute; left: 30%; top: 30%; width: 0; height: 0; opacity: 0;
+  border: 2px dashed var(--violet); background: rgba(108, 92, 255, .12);
+  transition: width .6s var(--ease), height .6s var(--ease), opacity .2s;
+}
+.screen .select.show { opacity: 1; width: 38%; height: 40%; }
+.screen .shade {
+  position: absolute; inset: 0; display: grid; place-items: center; opacity: 0;
+  background: rgba(29, 24, 56, .9); transition: opacity .4s;
+}
+.screen .shade.show { opacity: 1; }
+.screen .shade .px { width: 32px; height: 32px; }
+.keys { display: flex; align-items: center; gap: 8px; min-height: 40px; flex-wrap: wrap; }
 .keys kbd {
   display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 8px;
   background: var(--paper); border: 2px solid var(--ink); border-radius: 6px;
   box-shadow: 0 3px 0 var(--ink); font: 700 17px var(--pixel);
-  transition: transform .12s, box-shadow .12s, background .12s;
+  transition: transform .12s, box-shadow .12s, background .12s, color .12s;
 }
 .keys kbd.down { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); background: var(--violet); color: #fff; }
 .keys .what { margin-left: 8px; font: 400 16px var(--pixel); color: var(--muted); }
@@ -238,7 +285,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .pane, .screen .mini, .everything::details-content, .everything summary::before { transition: none; }
+  .pane, .screen *, .screen, .everything::details-content, .everything summary::before { transition: none !important; }
 }
 
 @media (max-width: 860px) {
@@ -304,8 +351,16 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
             <p class="note">Free · macOS 15 or later</p>
           </div>
           <div class="demo" aria-hidden="true">
-            <div class="screen"><div class="bar"></div><div class="mini"></div></div>
-            <div class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd class="last">←</kbd><span class="what">Left half</span></div>
+            <div class="screen">
+              <div class="bar"></div>
+              <div class="win-s mini"><div class="typed"></div></div>
+              <div class="win-s app"></div>
+              <div class="select"></div>
+              <div class="panel"><i></i><i></i><i></i></div>
+              <div class="hud"></div>
+              <div class="shade"><span class="px" data-icon="lock" data-color="#ffffff"></span></div>
+            </div>
+            <div class="keys"></div>
           </div>
         </div>
       </div></div>
@@ -542,35 +597,86 @@ for (const win of document.querySelectorAll('.win')) {
   titlebar.addEventListener('dblclick', (event) => { if (event.target !== box) toggle(); });
 }
 
-// The demo: keys press, and the little window follows.
+// The demo: a shuffled deck of everyday shortcuts, each doing its thing on the little screen.
 (function demo() {
-  const mini = document.querySelector('.screen .mini');
-  const keys = document.querySelectorAll('.keys kbd');
-  const last = document.querySelector('.keys .last');
-  const what = document.querySelector('.keys .what');
-  // Positions as left, top, width, height in %, below the 8% menu bar.
-  const moves = [
-    ['←', 'Left half', [0, 8, 50, 92]],
-    ['→', 'Right half', [50, 8, 50, 92]],
-    ['↩', 'Maximise', [0, 8, 100, 92]],
-    ['C', 'Centre', [22, 24, 56, 58]],
+  const screen = document.querySelector('.screen');
+  const mini = screen.querySelector('.mini');
+  const typed = screen.querySelector('.typed');
+  const app = screen.querySelector('.app');
+  const hud = screen.querySelector('.hud');
+  const panel = screen.querySelector('.panel');
+  const select = screen.querySelector('.select');
+  const shade = screen.querySelector('.shade');
+  const keyRow = document.querySelector('.keys');
+  const timers = [];
+  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+  // Where the window sits, as left, top, width, height in %, below the 8% menu bar.
+  const place = (l, t, w, h) => Object.assign(mini.style, { left: l + '%', top: t + '%', width: w + '%', height: h + '%' });
+  const centre = () => place(22, 24, 56, 58);
+  const bubble = (label, level) => {
+    hud.innerHTML = label + (level === undefined ? '' :
+      '<span class="segments">' + Array.from({ length: 8 }, (_, i) => `<i class="${i < level ? 'on' : ''}"></i>`).join('') + '</span>');
+    hud.classList.add('show');
+  };
+
+  const deck = [
+    { keys: ['⌃', '⌥', '←'], what: 'Left half', run: () => place(0, 8, 50, 92) },
+    { keys: ['⌃', '⌥', '→'], what: 'Right half', run: () => place(50, 8, 50, 92) },
+    { keys: ['⌃', '⌥', '↩'], what: 'Maximise', run: () => place(0, 8, 100, 92) },
+    { keys: ['⌃', '⌥', 'U'], what: 'Top left', run: () => place(0, 8, 50, 46) },
+    { keys: ['⌃', '⌥', 'C'], what: 'Centre', run: centre },
+    { keys: ['Hyper', 'V'], what: 'Clipboard history', run: () => panel.classList.add('show') },
+    { keys: ['Hyper', 'S'], what: 'Open Safari', run: () => app.classList.add('show') },
+    { keys: ['Hyper', 'Q'], what: 'Quit app', run: () => mini.classList.add('hide'), hidesWindow: true },
+    { keys: ['Hyper', 'H'], what: 'Show desktop', run: () => place(-60, 8, 56, 58), hidesWindow: true },
+    { keys: ['Hyper', 'P'], what: 'Play or pause', run: () => { bubble('▶ Playing'); later(900, () => bubble('❚❚ Paused')); } },
+    { keys: ['Hyper', '↑'], what: 'Volume up', run: () => { bubble('Volume', 4); later(350, () => bubble('Volume', 5)); later(700, () => bubble('Volume', 6)); } },
+    { keys: ['Hyper', 'M'], what: 'Mute', run: () => bubble('Muted', 0) },
+    { keys: ['Hyper', 'D'], what: 'Dark mode', run: () => screen.classList.toggle('dark') },
+    { keys: ['Hyper', '4'], what: 'Screenshot', run: () => select.classList.add('show') },
+    { keys: ['Hyper', 'L'], what: 'Lock screen', run: () => shade.classList.add('show') },
+    { keys: [';email'], what: 'Type your email', run: () => {
+      const text = 'hello@example.com';
+      [...text].forEach((_, i) => later(i * 55, () => { typed.textContent = text.slice(0, i + 1); }));
+    } },
   ];
-  let step = 0;
-  function show([key, label, [left, top, width, height]]) {
-    last.textContent = key;
-    what.textContent = label;
-    Object.assign(mini.style, { left: left + '%', top: top + '%', width: width + '%', height: height + '%' });
+
+  // Clear whatever the last shortcut left on screen.
+  let windowHidden = false;
+  function reset() {
+    timers.splice(0).forEach(clearTimeout);
+    [hud, panel, select, shade, app].forEach((el) => el.classList.remove('show'));
+    typed.textContent = '';
+    if (windowHidden) { mini.classList.remove('hide'); centre(); windowHidden = false; }
   }
-  if (reduceMotion) { show(moves[0]); return; }
+
+  function showKeys(item) {
+    keyRow.innerHTML = item.keys.map((k) => `<kbd>${k}</kbd>`).join('') + `<span class="what">${item.what}</span>`;
+  }
+
+  if (reduceMotion) { showKeys(deck[0]); deck[0].run(); return; }
+
+  // Deal from a shuffled deck, so everything comes round before anything repeats.
+  let pile = [], previous = null;
+  function draw() {
+    if (!pile.length) {
+      pile = deck.slice().sort(() => Math.random() - 0.5);
+      if (pile[pile.length - 1] === previous) pile.unshift(pile.pop());
+    }
+    return previous = pile.pop();
+  }
+
   function next() {
-    const move = moves[step % moves.length];
-    last.textContent = move[0];
-    keys.forEach((k) => k.classList.add('down'));
-    setTimeout(() => show(move), 120);
-    setTimeout(() => keys.forEach((k) => k.classList.remove('down')), 320);
-    step++;
+    reset();
+    const item = draw();
+    showKeys(item);
+    const caps = keyRow.querySelectorAll('kbd');
+    requestAnimationFrame(() => caps.forEach((k) => k.classList.add('down')));
+    later(140, () => { item.run(); if (item.hidesWindow) windowHidden = true; });
+    later(360, () => caps.forEach((k) => k.classList.remove('down')));
   }
-  setTimeout(() => { next(); setInterval(next, 2400); }, 900);
+  later(700, () => { next(); setInterval(next, 2600); });
 })();
 
 // The menu bar clock.
