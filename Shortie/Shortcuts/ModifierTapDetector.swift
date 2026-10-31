@@ -146,7 +146,7 @@ final class ModifierTapDetector {
     /// ⌘-click while the key was down can be noticed without watching the mouse.
     private static func clickCount() -> UInt32 {
         [CGEventType.leftMouseDown, .rightMouseDown, .otherMouseDown].reduce(0) {
-            $0 &+ CGEventSource.counter(forEventType: .combinedSessionState, eventType: $1)
+            $0 &+ CGEventSource.counterForEventType(.combinedSessionState, eventType: $1)
         }
     }
 }
