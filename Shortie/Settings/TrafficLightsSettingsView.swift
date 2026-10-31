@@ -250,24 +250,19 @@ struct ActionKindPicker: View {
 
     /// Clicks and window commands first, since they're what you'll usually want
     /// from a gesture or window button.
-    static let order: [ShortcutAction.Kind] = [
-        .mouseClick, .movePointer, .system, .setVolume, .setBrightness, .soundOutput, .inputSource,
-        .pressKeys, .pressKeysInApp, .modifierKeys,
-        .appCommand, .moveWindow, .windowFrame, .moveToDisplay, .moveToDesktop, .focusWindow, .restoreLayout,
-        .openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText,
-        .showMessage, .notify, .speak, .playSound,
-        .menuItem, .clickButton, .clickMenuBarExtra,
-        .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification,
-        .clickText, 
-        .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, 
-        .remapKey, .openSettingsPane, .callService, 
-        .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, 
-        .cycle, 
-        .clickImage, 
-        .webView, .searchList, 
-        .ai, 
-        .otherRule, .pauseShortie, .steps, .showMenu,
+    /// The action types under plain headings, so the long menu is easy to scan.
+    static let groups: [(title: String, kinds: [ShortcutAction.Kind])] = [
+        ("Mouse & Keyboard", [.mouseClick, .customClick, .movePointer, .pointerSetting, .pressKeys, .pressKeysInApp, .modifierKeys, .remapKey]),
+        ("Windows", [.moveWindow, .windowFrame, .moveToDisplay, .moveToDesktop, .appCommand, .focusWindow, .restoreLayout]),
+        ("Apps & Controls", [.openApp, .appTask, .open, .runShortcut, .menuItem, .clickButton, .clickMenuBarExtra, .contextMenuItem, .slider, .clickText, .clickImage]),
+        ("Text & Clipboard", [.typeText, .pasteText, .copyText, .text, .transformText, .clipboardItem, .callService, .ai]),
+        ("System & Devices", [.system, .setVolume, .setBrightness, .externalBrightness, .keyboardBrightness, .soundOutput, .soundInput, .inputSource, .playSound, .bluetoothDevice]),
+        ("Show", [.showMessage, .notify, .speak, .webView, .searchList, .showMenu]),
+        ("Scripts & Network", [.appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .midi, .osc]),
+        ("Shortie", [.steps, .cycle, .otherRule, .pauseShortie, .openSettingsPane]),
     ]
+
+    static let order: [ShortcutAction.Kind] = groups.flatMap(\.kinds)
 
     /// What a single step can be.
     static let stepKinds: [ShortcutAction.Kind] = order.filter { $0 != .steps } + [.wait, .flow]
@@ -278,8 +273,18 @@ struct ActionKindPicker: View {
                 get: { action.kind },
                 set: { if $0 != action.kind { action = $0.emptyAction } }
             )) {
-                ForEach(forSteps ? Self.stepKinds : Self.order) { kind in
-                    Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
+                ForEach(Self.groups, id: \.title) { group in
+                    Section(group.title) {
+                        ForEach(group.kinds.filter { !forSteps || $0 != .steps }) { kind in
+                            Label(kind.editorTitle, systemImage: kind.systemImage).tag(kind)
+                        }
+                    }
+                }
+                if forSteps {
+                    Section("Steps") {
+                        Label(ShortcutAction.Kind.wait.editorTitle, systemImage: ShortcutAction.Kind.wait.systemImage).tag(ShortcutAction.Kind.wait)
+                        Label(ShortcutAction.Kind.flow.editorTitle, systemImage: ShortcutAction.Kind.flow.systemImage).tag(ShortcutAction.Kind.flow)
+                    }
                 }
             }
             .labelsHidden()

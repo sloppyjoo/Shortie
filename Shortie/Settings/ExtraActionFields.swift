@@ -395,7 +395,6 @@ struct ExtraActionFields: View {
                     ForEach(bluetooth) { Text($0.name).tag($0.id) }
                 }
                 .labelsHidden()
-                .fixedSize()
             }
             .onAppear { bluetooth = BluetoothDevices.paired() }
 

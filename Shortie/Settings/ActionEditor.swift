@@ -465,10 +465,18 @@ struct TriggerEditor<When: View>: View {
 
             EditorCard("Do") {
                 if action.kind.isSingleChoice {
-                    HStack {
-                        ActionKindPicker(action: $action)
-                        ActionFields(action: $action)
-                        Spacer(minLength: 0)
+                    // Side by side when both menus fit; otherwise one under the other,
+                    // so a long item name never pushes the sheet off the screen.
+                    ViewThatFits(in: .horizontal) {
+                        HStack {
+                            ActionKindPicker(action: $action)
+                            ActionFields(action: $action)
+                            Spacer(minLength: 0)
+                        }
+                        VStack(alignment: .leading, spacing: 10) {
+                            ActionKindPicker(action: $action)
+                            ActionFields(action: $action)
+                        }
                     }
                 } else {
                     ActionKindPicker(action: $action)
