@@ -87,7 +87,8 @@ final class ScrollEngine: NSObject {
     func updateNeed() {
         let smooth = UserDefaults.standard.object(forKey: DefaultsKey.smoothScrolling) as? Bool ?? true
         let direction = UserDefaults.standard.string(forKey: DefaultsKey.wheelDirection) ?? WheelDirection.system.rawValue
-        if let tap { CGEvent.tapEnable(tap: tap, enable: smooth || direction != WheelDirection.system.rawValue) }
+        let needed = smooth || direction != WheelDirection.system.rawValue || UIAutomation.isBlockingScroll
+        if let tap { CGEvent.tapEnable(tap: tap, enable: needed) }
     }
 
     fileprivate func reenable() {
@@ -213,6 +214,9 @@ private nonisolated func handleScrollEvent(
     guard type == .scrollWheel,
           event.getIntegerValueField(.eventSourceUserData) != SyntheticEvent.marker
     else { return Unmanaged.passUnretained(event) }
+
+    // "Block Scrolling": no scrolls get through, from a mouse or a trackpad.
+    if MainActor.assumeIsolated({ UIAutomation.isBlockingScroll }) { return nil }
 
     // Trackpads (and the Magic Mouse) scroll "continuously" and in phases as your
     // fingers touch and lift. A mouse wheel clicks in discrete steps with no phases.

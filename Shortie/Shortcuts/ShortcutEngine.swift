@@ -13,6 +13,9 @@ final class ShortcutEngine {
     /// recorder sees it (instead of an existing shortcut firing).
     var isRecording = false
 
+    /// Key presses so far, for the "A Key Was Pressed" condition.
+    private(set) var keyPressCount = 0
+
     private var tap: CFMachPort?
 
     /// Safe to call repeatedly; does nothing until Accessibility is granted.
@@ -54,6 +57,7 @@ final class ShortcutEngine {
         }
 
         guard !isRecording else { return false }
+        if !keyPress.isRepeat { keyPressCount += 1 }
         let isPaused = UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
 
         let modifiers = Modifiers(keyPress.flags)

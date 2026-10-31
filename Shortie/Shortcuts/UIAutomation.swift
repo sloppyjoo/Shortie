@@ -82,6 +82,17 @@ enum UIAutomation {
         }
     }
 
+    // MARK: - Blocking scrolling
+
+    private(set) static var isBlockingScroll = false
+
+    static func toggleScrollBlocking() {
+        isBlockingScroll.toggle()
+        ScrollEngine.shared.start()
+        ScrollEngine.shared.updateNeed()
+        HUD.show(isBlockingScroll ? "Scrolling Blocked" : "Scrolling Unblocked", systemImage: isBlockingScroll ? "scroll" : "scroll.fill")
+    }
+
     // MARK: - Smooth scrolling
 
     private static var scrollTimer: Timer?

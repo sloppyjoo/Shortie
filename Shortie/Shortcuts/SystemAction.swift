@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case blockScroll
     case externalBrightnessUp, externalBrightnessDown, rotateDisplayClockwise, rotateDisplayCounterClockwise, airplayMirroring, sidecarConnect, sidecarDisconnect, blockKeyboard, autoScrollDown, autoScrollUp, moveWindowWithPointer, resizeWindowWithPointer, dockIconUnderPointer, addSpace, startDictation, measureScreen
     case resetKeyRemaps, showAppMenus, showShortcutsMenu, showShortieMenu, cheatSheet, toggleGestures
     case functionKeysToggle, stageManagerToggle, ignoreTrackpadToggle
@@ -89,6 +90,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .blockScroll: "Block Scrolling On or Off"
         case .externalBrightnessUp: "External Display Brightness Up"
         case .externalBrightnessDown: "External Display Brightness Down"
         case .rotateDisplayClockwise: "Rotate Display Clockwise"
@@ -232,6 +234,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .blockScroll: "scroll"
         case .externalBrightnessUp: "sun.max"
         case .externalBrightnessDown: "sun.min"
         case .rotateDisplayClockwise: "rotate.right"
@@ -331,7 +334,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.zoomToggle, .zoomIn, .zoomOut],
         [.externalBrightnessUp, .externalBrightnessDown, .rotateDisplayClockwise, .rotateDisplayCounterClockwise, .airplayMirroring, .sidecarConnect, .sidecarDisconnect],
         [.moveWindowWithPointer, .resizeWindowWithPointer, .dockIconUnderPointer, .addSpace, .autoScrollDown, .autoScrollUp],
-        [.startDictation, .measureScreen, .blockKeyboard],
+        [.startDictation, .measureScreen, .blockKeyboard, .blockScroll],
         [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow, .screenshotAndEdit],
         [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .screenshotScreenToClipboard, .copyTextFromScreen, .pickColour],
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
@@ -636,6 +639,8 @@ enum SystemActionRunner {
             UIAutomation.startDictation()
         case .measureScreen:
             ScreenRuler.shared.show()
+        case .blockScroll:
+            UIAutomation.toggleScrollBlocking()
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

@@ -124,7 +124,7 @@ nonisolated enum FlowStep: Codable, Hashable {
 /// Something that's either true or false right now.
 nonisolated struct FlowCondition: Codable, Hashable {
     enum Kind: String, Codable, CaseIterable, Identifiable {
-        case appInFront, appRunning, variableIs, appleScript, javaScript, textOnScreen, clipboardChanged, windowChanged
+        case appInFront, appRunning, variableIs, appleScript, javaScript, textOnScreen, clipboardChanged, windowChanged, keyPressed
 
         var id: Self { self }
 
@@ -138,6 +138,7 @@ nonisolated struct FlowCondition: Codable, Hashable {
             case .textOnScreen: "Text Is on Screen"
             case .clipboardChanged: "Clipboard Has Changed"
             case .windowChanged: "Front Window Has Changed"
+            case .keyPressed: "A Key Was Pressed"
             }
         }
     }
@@ -151,7 +152,7 @@ nonisolated struct FlowCondition: Codable, Hashable {
 
     var isComplete: Bool {
         switch kind {
-        case .clipboardChanged, .windowChanged: true
+        case .clipboardChanged, .windowChanged, .keyPressed: true
         default: !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
@@ -236,6 +237,7 @@ enum StepRunner {
     struct Baseline {
         var clipboard = NSPasteboard.general.changeCount
         var window = Baseline.frontWindow()
+        var keyPresses = ShortcutEngine.shared.keyPressCount
 
         static func frontWindow() -> String {
             guard let app = NSWorkspace.shared.frontmostApplication else { return "" }
@@ -378,6 +380,8 @@ enum StepRunner {
             result = NSPasteboard.general.changeCount != (baseline?.clipboard ?? NSPasteboard.general.changeCount)
         case .windowChanged:
             result = Baseline.frontWindow() != (baseline?.window ?? Baseline.frontWindow())
+        case .keyPressed:
+            result = ShortcutEngine.shared.keyPressCount != (baseline?.keyPresses ?? ShortcutEngine.shared.keyPressCount)
         }
         return condition.isNegated ? !result : result
     }

@@ -155,7 +155,7 @@ struct ConditionEditor: View {
                 Text("Reads the screen, so macOS asks for Screen Recording permission the first time.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            case .clipboardChanged, .windowChanged:
+            case .clipboardChanged, .windowChanged, .keyPressed:
                 Text("Compared with when the steps started (or, for Wait Until, when the wait started).")
                     .font(.caption)
                     .foregroundStyle(.secondary)
