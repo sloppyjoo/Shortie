@@ -263,6 +263,7 @@ struct ActionKindPicker: View {
         .remapKey, .openSettingsPane, .callService, 
         .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, 
         .cycle, 
+        .clickImage, 
         .otherRule, .pauseShortie, .steps, .showMenu,
     ]
 

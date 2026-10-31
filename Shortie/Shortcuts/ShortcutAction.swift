@@ -113,6 +113,9 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Runs a different one of its actions each time, in turn.
     case cycle(actions: [ShortcutAction])
 
+    /// Finds a picture on screen (like a screenshot of a button) and clicks it.
+    case clickImage(path: String)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -125,6 +128,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case remapKey, openSettingsPane, callService
         case bluetoothDevice, midi, osc, externalBrightness, contextMenuItem, slider
         case cycle
+        case clickImage
         var id: Self { self }
     }
 
@@ -151,6 +155,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .clickImage: .clickImage
         case .cycle: .cycle
         case .bluetoothDevice: .bluetoothDevice
         case .midi: .midi
@@ -219,6 +224,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .clickImage(let path): path
         case .cycle(let actions): actions.isEmpty ? "" : "cycle"
         case .bluetoothDevice(let address, _, _): address
         case .midi(let destination, let bytes): destination.isEmpty || bytes.isEmpty ? "" : bytes
@@ -281,6 +287,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .clickImage: .clickImage(path: payload)
         case .externalBrightness: .externalBrightness(percent: Int(payload) ?? 50)
         case .contextMenuItem: .contextMenuItem(name: payload)
         case .openSettingsPane: .openSettingsPane(pane: payload)
@@ -381,6 +388,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .clickImage(let path):
+            "Click “\(((path as NSString).lastPathComponent as NSString).deletingPathExtension)” on Screen"
         case .cycle(let actions):
             "Each Time: " + actions.map(\.title).joined(separator: ", or ")
         case .bluetoothDevice(_, let name, let mode):
@@ -548,6 +557,14 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .clickImage(let path):
+            Task {
+                if let point = await ScreenImage.find(path) {
+                    MouseClicker.click(at: point)
+                } else {
+                    HUD.show("Picture Not Found on Screen", systemImage: "photo.badge.exclamationmark")
+                }
+            }
         case .cycle(let actions):
             ActionCycle.run(actions, target: target)
         case .bluetoothDevice(let address, let name, let mode):

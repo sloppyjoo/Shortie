@@ -137,6 +137,7 @@ extension ShortcutAction.Kind {
         case .speak: "say voice read aloud"
         case .setVolume: "sound audio volume"
         case .soundOutput: "sound audio speakers headphones output device"
+        case .clickImage: "image picture find screen click template"
         case .cycle: "cycle toggle alternate each time next action round"
         case .bluetoothDevice: "bluetooth device connect disconnect airpods headphones"
         case .midi: "midi note control change synth"

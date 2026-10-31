@@ -131,7 +131,7 @@ nonisolated enum FlowStep: Codable, Hashable {
 /// Something that's either true or false right now.
 nonisolated struct FlowCondition: Codable, Hashable {
     enum Kind: String, Codable, CaseIterable, Identifiable {
-        case appInFront, appRunning, variableIs, appleScript, javaScript, textOnScreen, clipboardChanged, windowChanged, keyPressed, ruleRan
+        case appInFront, appRunning, variableIs, appleScript, javaScript, textOnScreen, clipboardChanged, windowChanged, keyPressed, ruleRan, imageOnScreen
 
         var id: Self { self }
 
@@ -147,6 +147,7 @@ nonisolated struct FlowCondition: Codable, Hashable {
             case .windowChanged: "Front Window Has Changed"
             case .keyPressed: "A Key Was Pressed"
             case .ruleRan: "Another Rule Has Run"
+            case .imageOnScreen: "Picture Is on Screen"
             }
         }
     }
@@ -176,6 +177,8 @@ nonisolated struct FlowCondition: Codable, Hashable {
             return "\(text) Is \(not)“\(value)”"
         case .textOnScreen:
             return "“\(text)” Is \(not)on Screen"
+        case .imageOnScreen:
+            return "Picture Is \(not)on Screen"
         default:
             return isNegated ? "Not: \(kind.title)" : kind.title
         }
@@ -311,7 +314,7 @@ enum StepRunner {
                 let waitBaseline = Baseline()
                 while !(await isTrue(condition, baseline: waitBaseline)) {
                     if Task.isCancelled || Date.now.timeIntervalSince(start) > timeout { return }
-                    try? await Task.sleep(for: .milliseconds(condition.kind == .textOnScreen ? 1000 : 250))
+                    try? await Task.sleep(for: .milliseconds(condition.kind == .textOnScreen || condition.kind == .imageOnScreen ? 1000 : 250))
                 }
                 index += 1
             case .debounce(let seconds):
@@ -387,6 +390,8 @@ enum StepRunner {
             result = context?.evaluateScript("(function () {\n\(body)\n})()")?.toBool() ?? false
         case .textOnScreen:
             result = await ScreenOCR.find(Variables.expand(condition.text)) != nil
+        case .imageOnScreen:
+            result = await ScreenImage.find(condition.text) != nil
         case .clipboardChanged:
             result = NSPasteboard.general.changeCount != (baseline?.clipboard ?? NSPasteboard.general.changeCount)
         case .windowChanged:

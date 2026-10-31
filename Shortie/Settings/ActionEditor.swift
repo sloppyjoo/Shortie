@@ -192,6 +192,8 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .clickImage:
+            ImagePathField(path: Binding(get: { action.payload }, set: { action = .clickImage(path: $0) }))
         case .cycle:
             StepsEditor(action: Binding(get: { if case .cycle(let a) = action { .steps(actions: a) } else { .steps(actions: []) } }, set: { if case .steps(let a) = $0 { action = .cycle(actions: a) } }))
         case .bluetoothDevice:
@@ -385,6 +387,7 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .clickImage: "Find Picture on Screen and Click"
         case .cycle: "Cycle Through Actions"
         case .bluetoothDevice: "Bluetooth Device"
         case .midi: "Send MIDI"

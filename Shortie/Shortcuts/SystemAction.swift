@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case superBrightnessToggle, superBrightnessOn, superBrightnessOff, pinchOut, pinchIn, smartZoom, rotateGestureLeft, rotateGestureRight, smoothZoomIn, smoothZoomOut, smoothRotate
     case resetTypedText, notchBarToggle, notchBarOn, notchBarOff, hideCustomMenu, loginWindow, lockHorizontal, lockVertical
     case blockScroll
     case externalBrightnessUp, externalBrightnessDown, rotateDisplayClockwise, rotateDisplayCounterClockwise, airplayMirroring, sidecarConnect, sidecarDisconnect, blockKeyboard, autoScrollDown, autoScrollUp, moveWindowWithPointer, resizeWindowWithPointer, dockIconUnderPointer, addSpace, startDictation, measureScreen
@@ -91,6 +92,17 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .superBrightnessToggle: "Super Brightness On or Off (XDR)"
+        case .superBrightnessOn: "Super Brightness On (XDR)"
+        case .superBrightnessOff: "Super Brightness Off (XDR)"
+        case .pinchOut: "Pinch to Zoom In"
+        case .pinchIn: "Pinch to Zoom Out"
+        case .smartZoom: "Smart Zoom (Two-Finger Double Tap)"
+        case .rotateGestureLeft: "Rotate Gesture Anticlockwise"
+        case .rotateGestureRight: "Rotate Gesture Clockwise"
+        case .smoothZoomIn: "Start or Stop Zooming In"
+        case .smoothZoomOut: "Start or Stop Zooming Out"
+        case .smoothRotate: "Start or Stop Rotating"
         case .resetTypedText: "Forget What's Been Typed (Text Shortcuts)"
         case .notchBarToggle: "Black Menu Bar On or Off"
         case .notchBarOn: "Black Menu Bar On"
@@ -243,6 +255,17 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .superBrightnessToggle: "sun.max.circle"
+        case .superBrightnessOn: "sun.max.circle.fill"
+        case .superBrightnessOff: "sun.max.circle"
+        case .pinchOut: "arrow.up.left.and.arrow.down.right.magnifyingglass"
+        case .pinchIn: "arrow.down.right.and.arrow.up.left"
+        case .smartZoom: "plus.magnifyingglass"
+        case .rotateGestureLeft: "rotate.left"
+        case .rotateGestureRight: "rotate.right"
+        case .smoothZoomIn: "plus.magnifyingglass"
+        case .smoothZoomOut: "minus.magnifyingglass"
+        case .smoothRotate: "arrow.trianglehead.clockwise.rotate.90"
         case .resetTypedText: "eraser"
         case .notchBarToggle: "menubar.rectangle"
         case .notchBarOn: "menubar.rectangle"
@@ -349,6 +372,8 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.clearClipboard, .saveClipboard, .restoreClipboard, .hideClipboardHistory],
         [.releaseModifiers, .contextMenuKey, .lookUpSelection, .closeNotifications],
         [.zoomToggle, .zoomIn, .zoomOut],
+        [.pinchOut, .pinchIn, .smartZoom, .rotateGestureLeft, .rotateGestureRight, .smoothZoomIn, .smoothZoomOut, .smoothRotate],
+        [.superBrightnessToggle, .superBrightnessOn, .superBrightnessOff],
         [.externalBrightnessUp, .externalBrightnessDown, .rotateDisplayClockwise, .rotateDisplayCounterClockwise, .airplayMirroring, .sidecarConnect, .sidecarDisconnect],
         [.moveWindowWithPointer, .resizeWindowWithPointer, .dockIconUnderPointer, .addSpace, .autoScrollDown, .autoScrollUp],
         [.startDictation, .measureScreen, .blockKeyboard, .blockScroll, .lockHorizontal, .lockVertical],
@@ -675,6 +700,28 @@ enum SystemActionRunner {
             MouseAxisLock.toggle(.horizontal)
         case .lockVertical:
             MouseAxisLock.toggle(.vertical)
+        case .superBrightnessToggle:
+            SuperBrightness.toggle()
+        case .superBrightnessOn:
+            SuperBrightness.set(true)
+        case .superBrightnessOff:
+            SuperBrightness.set(false)
+        case .pinchOut:
+            GestureSynth.zoom(by: 0.5)
+        case .pinchIn:
+            GestureSynth.zoom(by: -0.5)
+        case .smartZoom:
+            GestureSynth.smartZoom()
+        case .rotateGestureLeft:
+            GestureSynth.rotate(by: 15)
+        case .rotateGestureRight:
+            GestureSynth.rotate(by: -15)
+        case .smoothZoomIn:
+            GestureSynth.toggleSmooth(zoom: true, step: 0.01)
+        case .smoothZoomOut:
+            GestureSynth.toggleSmooth(zoom: true, step: -0.01)
+        case .smoothRotate:
+            GestureSynth.toggleSmooth(zoom: false, step: -0.5)
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

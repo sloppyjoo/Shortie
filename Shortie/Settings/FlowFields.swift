@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The controls for a Control Flow step: which kind, then its details.
 struct FlowFields: View {
@@ -99,6 +100,38 @@ struct FlowFields: View {
     }
 }
 
+/// Chooses a picture to look for on screen.
+struct ImagePathField: View {
+    @Binding var path: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                if path.isEmpty {
+                    Text("No picture chosen").foregroundStyle(.secondary)
+                } else if let image = NSImage(contentsOfFile: (path as NSString).expandingTildeInPath) {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 120, maxHeight: 40)
+                    Text((path as NSString).lastPathComponent).lineLimit(1)
+                }
+                Spacer()
+                Button("Choose Picture…") {
+                    let panel = NSOpenPanel()
+                    panel.allowedContentTypes = [.image]
+                    if panel.runModal() == .OK, let url = panel.url {
+                        path = (url.path as NSString).abbreviatingWithTildeInPath
+                    }
+                }
+            }
+            Text("Take a screenshot of just the thing to find (⇧⌘4), at the same size it appears on screen. Needs Screen Recording permission.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
 /// Chooses what to test, and its details.
 struct ConditionEditor: View {
     @Binding var condition: FlowCondition
@@ -158,6 +191,8 @@ struct ConditionEditor: View {
                 Text("Reads the screen, so macOS asks for Screen Recording permission the first time.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            case .imageOnScreen:
+                ImagePathField(path: $condition.text)
             case .ruleRan:
                 Picker("Rule", selection: $condition.text) {
                     Text("Choose a Rule").tag("")
