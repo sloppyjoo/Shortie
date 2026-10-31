@@ -255,7 +255,7 @@ struct ActionKindPicker: View {
         .appCommand, .moveWindow, .windowFrame, .moveToDisplay, .restoreLayout,
         .openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text,
         .showMessage, .notify, .speak, .playSound,
-        .menuItem, .appleScript, .shellScript, .webRequest, .steps, .showMenu,
+        .menuItem, .appleScript, .javaScript, .shellScript, .webRequest, .steps, .showMenu,
     ]
 
     /// What a single step can be.

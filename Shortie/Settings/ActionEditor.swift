@@ -126,7 +126,7 @@ struct ActionFields: View {
                     .textFieldStyle(.roundedBorder)
                 InfoButton("Chooses this from the menus of the app in front. Separate menus with › or >. Capitals and a trailing … don't matter.")
             }
-        case .appleScript, .shellScript:
+        case .appleScript, .shellScript, .javaScript:
             TextEditor(text: payload)
                 .font(.body.monospaced())
                 .frame(height: 110)
@@ -361,6 +361,7 @@ extension ShortcutAction.Kind {
         case .webRequest: "Web Request"
         case .inputSource: "Input Source"
         case .playSound: "Play Sound"
+        case .javaScript: "Run JavaScript"
         }
     }
 }

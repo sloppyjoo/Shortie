@@ -61,13 +61,15 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Switches keyboard layout or input method. The ID picks it; the name is for lists.
     case inputSource(id: String, name: String)
     case playSound(name: String)
+    /// JavaScript for Automation (JXA), run like AppleScript.
+    case javaScript(source: String)
 
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
         case text, showMessage, speak, setVolume, soundOutput
         case appTask, setBrightness, windowFrame, moveToDisplay, movePointer
-        case copyText, pasteText, notify, webRequest, inputSource, playSound
+        case copyText, pasteText, notify, webRequest, inputSource, playSound, javaScript
         var id: Self { self }
     }
 
@@ -105,6 +107,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .webRequest: .webRequest
         case .inputSource: .inputSource
         case .playSound: .playSound
+        case .javaScript: .javaScript
         }
     }
 
@@ -143,6 +146,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .webRequest(let request): request.url
         case .inputSource(let id, _): id
         case .playSound(let name): name
+        case .javaScript(let source): source
         }
     }
 
@@ -170,6 +174,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .pasteText: .pasteText(text: payload)
         case .notify: .notify(text: payload)
         case .playSound: .playSound(name: payload)
+        case .javaScript: .javaScript(source: payload)
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
@@ -254,6 +259,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             id == InputSources.nextID ? "Next Input Source" : name.isEmpty ? "Input Source" : "Switch to \(name)"
         case .playSound(let name):
             "Play “\(name)” Sound"
+        case .javaScript:
+            "Run JavaScript"
         }
     }
 
@@ -359,6 +366,8 @@ enum ActionRunner {
             InputSources.select(id)
         case .playSound(let name):
             SystemSounds.play(name)
+        case .javaScript(let source):
+            ScriptRunner.runJavaScript(source)
         case .steps(let actions):
             Task {
                 for step in actions {

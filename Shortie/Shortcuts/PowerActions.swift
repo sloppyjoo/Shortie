@@ -61,6 +61,11 @@ enum ScriptRunner {
         run("/usr/bin/osascript", arguments: ["-"], input: source)
     }
 
+    /// JavaScript for Automation: the JavaScript version of AppleScript.
+    static func runJavaScript(_ source: String) {
+        run("/usr/bin/osascript", arguments: ["-l", "JavaScript", "-"], input: source)
+    }
+
     /// Runs with zsh, with Homebrew's folders added so your usual commands are found.
     static func runShellScript(_ source: String) {
         var environment = ProcessInfo.processInfo.environment

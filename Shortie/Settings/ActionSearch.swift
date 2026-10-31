@@ -144,6 +144,7 @@ extension ShortcutAction.Kind {
         case .webRequest: "http url webhook api request get post home automation"
         case .inputSource: "keyboard layout language input source"
         case .playSound: "sound alert beep play"
+        case .javaScript: "jxa javascript script automation"
         }
     }
 }

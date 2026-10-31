@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .pressKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .appleScript, .shellScript, .webRequest, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .pressKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .appleScript, .javaScript, .shellScript, .webRequest, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -349,6 +349,10 @@ struct ActionIcon: View {
             Image(nsImage: NSWorkspace.shared.icon(forFile: path))
                 .resizable()
                 .frame(width: 24, height: 24)
+        case .appTask(_, let path) where !path.isEmpty:
+            Image(nsImage: NSWorkspace.shared.icon(forFile: path))
+                .resizable()
+                .frame(width: 24, height: 24)
         case .moveWindow(let position):
             WindowPositionIcon(position: position)
                 .frame(width: 24, height: 24)
@@ -403,6 +407,7 @@ extension ShortcutAction.Kind {
         case .webRequest: "Web Request…"
         case .inputSource: "Input Source…"
         case .playSound: "Play Sound…"
+        case .javaScript: "Run JavaScript…"
         }
     }
 
@@ -449,6 +454,7 @@ extension ShortcutAction.Kind {
         case .webRequest: "network"
         case .inputSource: "globe"
         case .playSound: "music.note"
+        case .javaScript: "curlybraces"
         }
     }
 
@@ -486,6 +492,7 @@ extension ShortcutAction.Kind {
         case .webRequest: .teal
         case .inputSource: .gray
         case .playSound: .pink
+        case .javaScript: .yellow
         }
     }
 
@@ -523,6 +530,7 @@ extension ShortcutAction.Kind {
         case .webRequest: .webRequest(request: WebRequest())
         case .inputSource: .inputSource(id: InputSources.nextID, name: "")
         case .playSound: .playSound(name: "Glass")
+        case .javaScript: .javaScript(source: "")
         }
     }
 }
