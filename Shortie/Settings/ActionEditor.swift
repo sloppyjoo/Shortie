@@ -192,6 +192,18 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .bluetoothDevice:
+            ExtraActionFields(action: $action)
+        case .midi:
+            ExtraActionFields(action: $action)
+        case .osc:
+            ExtraActionFields(action: $action)
+        case .externalBrightness:
+            ExtraActionFields(action: $action)
+        case .contextMenuItem:
+            ExtraActionFields(action: $action)
+        case .slider:
+            ExtraActionFields(action: $action)
         case .remapKey:
             ExtraActionFields(action: $action)
         case .openSettingsPane:
@@ -371,6 +383,12 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .bluetoothDevice: "Bluetooth Device"
+        case .midi: "Send MIDI"
+        case .osc: "Send OSC Message"
+        case .externalBrightness: "Set External Display Brightness"
+        case .contextMenuItem: "Choose Context Menu Item"
+        case .slider: "Change a Slider"
         case .remapKey: "Remap a Key"
         case .openSettingsPane: "Open Shortie Settings At"
         case .callService: "Run a Service"

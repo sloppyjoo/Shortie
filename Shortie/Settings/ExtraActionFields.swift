@@ -383,9 +383,94 @@ struct ExtraActionFields: View {
                 InfoButton("Runs on the selected text. If the service changes the text, the result replaces the selection.")
             }
 
+        case .bluetoothDevice(let address, _, let mode):
+            HStack {
+                Picker("Mode", selection: Binding(get: { mode }, set: { action = .bluetoothDevice(address: address, name: bluetoothName(address), mode: $0) })) {
+                    ForEach(ConnectMode.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
+                Picker("Device", selection: Binding(get: { address }, set: { action = .bluetoothDevice(address: $0, name: bluetoothName($0), mode: mode) })) {
+                    Text("Choose a Device").tag("")
+                    ForEach(bluetooth) { Text($0.name).tag($0.id) }
+                }
+                .labelsHidden()
+                .fixedSize()
+            }
+            .onAppear { bluetooth = BluetoothDevices.paired() }
+
+        case .midi(let destination, let bytes):
+            VStack(alignment: .leading, spacing: 8) {
+                Picker("Destination", selection: Binding(get: { destination }, set: { action = .midi(destination: $0, bytes: bytes) })) {
+                    Text("Choose a Destination").tag("")
+                    ForEach(midiDestinations, id: \.self) { Text($0).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
+                .onAppear { midiDestinations = MIDI.destinations() }
+                TextField("Bytes", text: Binding(get: { bytes }, set: { action = .midi(destination: destination, bytes: $0) }), prompt: Text("90 3C 7F"))
+                    .textFieldStyle(.roundedBorder)
+                    .font(.body.monospaced())
+                Text("Hex bytes, like 90 3C 7F for note on, middle C, full velocity.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+        case .osc(let message):
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    TextField("Host", text: Binding(get: { message.host }, set: { var m = message; m.host = $0; action = .osc(message: m) }), prompt: Text("127.0.0.1"))
+                        .textFieldStyle(.roundedBorder)
+                    TextField("Port", value: Binding(get: { message.port }, set: { var m = message; m.port = $0; action = .osc(message: m) }), format: .number.grouping(.never))
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 70)
+                }
+                TextField("Address", text: Binding(get: { message.address }, set: { var m = message; m.address = $0; action = .osc(message: m) }), prompt: Text("/lights/1/on"))
+                    .textFieldStyle(.roundedBorder)
+                TextField("Arguments", text: Binding(get: { message.arguments }, set: { var m = message; m.arguments = $0; action = .osc(message: m) }), prompt: Text("1 0.5 \"some text\""))
+                    .textFieldStyle(.roundedBorder)
+            }
+
+        case .externalBrightness(let percent):
+            HStack {
+                Image(systemName: "sun.min.fill").foregroundStyle(.secondary)
+                Slider(value: Binding(get: { Double(percent) }, set: { action = .externalBrightness(percent: Int($0)) }), in: 0...100, step: 5)
+                Image(systemName: "sun.max.fill").foregroundStyle(.secondary)
+                Text("\(percent)%")
+                    .monospacedDigit()
+                    .frame(width: 44, alignment: .trailing)
+                InfoButton("For external displays on Apple silicon Macs, over the display cable. Not every display allows it.")
+            }
+
+        case .contextMenuItem:
+            TextField("Menu item", text: payload, prompt: Text("The item's name, like Copy Link"))
+                .textFieldStyle(.roundedBorder)
+
+        case .slider(let name, let value, let relative):
+            HStack {
+                TextField("Slider", text: Binding(get: { name }, set: { action = .slider(name: $0, value: value, relative: relative) }), prompt: Text("Its name, or blank for the first"))
+                    .textFieldStyle(.roundedBorder)
+                Picker("How", selection: Binding(get: { relative }, set: { action = .slider(name: name, value: value, relative: $0) })) {
+                    Text("Set to").tag(false)
+                    Text("Change by").tag(true)
+                }
+                .labelsHidden()
+                .fixedSize()
+                TextField("Value", value: Binding(get: { value }, set: { action = .slider(name: name, value: $0, relative: relative) }), format: .number)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 70)
+            }
+
         default:
             EmptyView()
         }
+    }
+
+    @State private var bluetooth: [BluetoothDevices.Device] = []
+    @State private var midiDestinations: [String] = []
+
+    private func bluetoothName(_ address: String) -> String {
+        bluetooth.first { $0.id == address }?.name ?? ""
     }
 
     private func keyPicker(_ keyCode: UInt16, set: @escaping (UInt16) -> Void) -> some View {

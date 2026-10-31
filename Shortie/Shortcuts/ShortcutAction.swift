@@ -98,6 +98,18 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Runs a macOS Service (Services menu) on the selected text.
     case callService(name: String)
 
+    /// Connects or disconnects a paired Bluetooth device. The address picks it; the name is for lists.
+    case bluetoothDevice(address: String, name: String, mode: ConnectMode)
+    /// Sends a MIDI message (hex bytes) to a MIDI destination.
+    case midi(destination: String, bytes: String)
+    /// Sends an Open Sound Control message over the network.
+    case osc(message: OSCMessage)
+    case externalBrightness(percent: Int)
+    /// Right-clicks where the pointer is and chooses the item with this name.
+    case contextMenuItem(name: String)
+    /// Sets (or changes, if relative) a slider in the front window.
+    case slider(name: String, value: Double, relative: Bool)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -108,6 +120,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case flow, clickText
         case soundInput, clipboardItem, pointerSetting, keyboardBrightness, customClick
         case remapKey, openSettingsPane, callService
+        case bluetoothDevice, midi, osc, externalBrightness, contextMenuItem, slider
         var id: Self { self }
     }
 
@@ -134,6 +147,12 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .bluetoothDevice: .bluetoothDevice
+        case .midi: .midi
+        case .osc: .osc
+        case .externalBrightness: .externalBrightness
+        case .contextMenuItem: .contextMenuItem
+        case .slider: .slider
         case .remapKey: .remapKey
         case .openSettingsPane: .openSettingsPane
         case .callService: .callService
@@ -195,6 +214,12 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .bluetoothDevice(let address, _, _): address
+        case .midi(let destination, let bytes): destination.isEmpty || bytes.isEmpty ? "" : bytes
+        case .osc(let message): message.host.isEmpty || message.address.count < 2 ? "" : message.address
+        case .externalBrightness(let percent): String(percent)
+        case .contextMenuItem(let name): name
+        case .slider(_, let value, _): String(value)
         case .remapKey(let from, let to): from == to ? "" : "\(from)>\(to)"
         case .openSettingsPane(let pane): pane
         case .callService(let name): name
@@ -250,6 +275,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .externalBrightness: .externalBrightness(percent: Int(payload) ?? 50)
+        case .contextMenuItem: .contextMenuItem(name: payload)
         case .openSettingsPane: .openSettingsPane(pane: payload)
         case .callService: .callService(name: payload)
         case .keyboardBrightness: .keyboardBrightness(percent: Int(payload) ?? 50)
@@ -273,6 +300,10 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
+             .bluetoothDevice,
+             .midi,
+             .osc,
+             .slider,
              .remapKey,
              .soundInput,
              .clipboardItem,
@@ -337,6 +368,18 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .bluetoothDevice(_, let name, let mode):
+            "\(mode.title) \(name.isEmpty ? "Bluetooth Device" : name)"
+        case .midi(let destination, let bytes):
+            "Send MIDI \(bytes) to \(destination)"
+        case .osc(let message):
+            "Send OSC \(message.address)"
+        case .externalBrightness(let percent):
+            "Set External Display Brightness to \(percent)%"
+        case .contextMenuItem(let name):
+            "Right-Click and Choose “\(name)”"
+        case .slider(let name, let value, let relative):
+            relative ? "Change \(name.isEmpty ? "Slider" : name) by \(value.formatted())" : "Set \(name.isEmpty ? "Slider" : name) to \(value.formatted())"
         case .remapKey(let from, let to):
             "Make \(KeyRemapper.name(for: from)) Act as \(KeyRemapper.name(for: to))"
         case .openSettingsPane(let pane):
@@ -490,6 +533,18 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .bluetoothDevice(let address, let name, let mode):
+            BluetoothDevices.run(mode, address: address, name: name)
+        case .midi(let destination, let bytes):
+            MIDI.send(bytes, to: destination)
+        case .osc(let message):
+            message.send()
+        case .externalBrightness(let percent):
+            ExternalBrightness.set(percent)
+        case .contextMenuItem(let name):
+            UIAutomation.chooseContextMenuItem(name)
+        case .slider(let name, let value, let relative):
+            UIAutomation.setSlider(named: name, value: value, relative: relative)
         case .remapKey(let from, let to):
             KeyRemapper.remap(from: from, to: to)
         case .openSettingsPane(let pane):

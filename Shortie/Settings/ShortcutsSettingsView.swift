@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .remapKey, .openSettingsPane, .callService, .bluetoothDevice, .midi, .osc, .externalBrightness, .contextMenuItem, .slider, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -396,6 +396,12 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .bluetoothDevice: "Bluetooth Device…"
+        case .midi: "Send MIDI…"
+        case .osc: "Send OSC Message…"
+        case .externalBrightness: "Set External Display Brightness…"
+        case .contextMenuItem: "Choose Context Menu Item…"
+        case .slider: "Change a Slider…"
         case .remapKey: "Remap a Key…"
         case .openSettingsPane: "Open Shortie Settings At…"
         case .callService: "Run a Service…"
@@ -465,6 +471,12 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .bluetoothDevice: "headphones"
+        case .midi: "pianokeys"
+        case .osc: "dot.radiowaves.left.and.right"
+        case .externalBrightness: "sun.max.fill"
+        case .contextMenuItem: "contextualmenu.and.cursorarrow"
+        case .slider: "slider.horizontal.3"
         case .remapKey: "arrow.left.arrow.right"
         case .openSettingsPane: "gearshape"
         case .callService: "gearshape.2"
@@ -525,6 +537,12 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .bluetoothDevice: .blue
+        case .midi: .purple
+        case .osc: .purple
+        case .externalBrightness: .yellow
+        case .contextMenuItem: .orange
+        case .slider: .orange
         case .remapKey: .gray
         case .openSettingsPane: .gray
         case .callService: .gray
@@ -585,6 +603,12 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .bluetoothDevice: .bluetoothDevice(address: "", name: "", mode: .toggle)
+        case .midi: .midi(destination: "", bytes: "90 3C 7F")
+        case .osc: .osc(message: OSCMessage())
+        case .externalBrightness: .externalBrightness(percent: 50)
+        case .contextMenuItem: .contextMenuItem(name: "")
+        case .slider: .slider(name: "", value: 0.5, relative: false)
         case .remapKey: .remapKey(from: 0x39, to: 0x35)
         case .openSettingsPane: .openSettingsPane(pane: "shortcuts")
         case .callService: .callService(name: "")

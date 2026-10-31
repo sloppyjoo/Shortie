@@ -58,6 +58,15 @@ final class ShortcutEngine {
 
         let modifiers = Modifiers(keyPress.flags)
         let keys = KeyCombo(keyCode: keyPress.keyCode, modifiers: modifiers, keyName: "")
+
+        // "Block Keyboard": swallow everything except the shortcut that unblocks it.
+        if UIAutomation.isBlockingKeyboard {
+            if !keyPress.isRepeat, let shortcut = ShortcutStore.shared.match(.keys(combo: keys), in: FrontmostApp.bundleID),
+               shortcut.action == .system(action: .blockKeyboard) {
+                DispatchQueue.main.async { ActionRunner.run(shortcut.action) }
+            }
+            return true
+        }
         guard let shortcut = ShortcutStore.shared.match(.keys(combo: keys), in: FrontmostApp.bundleID) else {
             if isPaused { return false }
             // Not a shortcut, so it's ordinary typing: maybe it finishes a text shortcut.

@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case externalBrightnessUp, externalBrightnessDown, rotateDisplayClockwise, rotateDisplayCounterClockwise, airplayMirroring, sidecarConnect, sidecarDisconnect, blockKeyboard, autoScrollDown, autoScrollUp, moveWindowWithPointer, resizeWindowWithPointer, dockIconUnderPointer, addSpace, startDictation, measureScreen
     case resetKeyRemaps, showAppMenus, showShortcutsMenu, showShortieMenu, cheatSheet, toggleGestures
     case functionKeysToggle, stageManagerToggle, ignoreTrackpadToggle
     case releaseModifiers, contextMenuKey, lookUpSelection, trueToneToggle, bluetoothOn, bluetoothOff, closeNotifications, saveClipboard, restoreClipboard, hideClipboardHistory, colourPanel, hapticTap, newFileInFinder, compressFinderSelection, screenshotAndEdit, quitShortie, restartShortie
@@ -88,6 +89,22 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .externalBrightnessUp: "External Display Brightness Up"
+        case .externalBrightnessDown: "External Display Brightness Down"
+        case .rotateDisplayClockwise: "Rotate Display Clockwise"
+        case .rotateDisplayCounterClockwise: "Rotate Display Anticlockwise"
+        case .airplayMirroring: "Screen Mirroring (AirPlay)"
+        case .sidecarConnect: "Connect Sidecar iPad"
+        case .sidecarDisconnect: "Disconnect Sidecar iPad"
+        case .blockKeyboard: "Block Keyboard On or Off (for Cleaning)"
+        case .autoScrollDown: "Start or Stop Scrolling Down"
+        case .autoScrollUp: "Start or Stop Scrolling Up"
+        case .moveWindowWithPointer: "Move Window with Pointer (Start/Stop)"
+        case .resizeWindowWithPointer: "Resize Window with Pointer (Start/Stop)"
+        case .dockIconUnderPointer: "Show or Hide App Under Pointer in Dock"
+        case .addSpace: "Add a Desktop"
+        case .startDictation: "Start Dictation"
+        case .measureScreen: "Measure on Screen"
         case .resetKeyRemaps: "Put All Remapped Keys Back"
         case .showAppMenus: "Show App's Menus at Pointer"
         case .showShortcutsMenu: "Show Shortcuts at Pointer"
@@ -215,6 +232,22 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .externalBrightnessUp: "sun.max"
+        case .externalBrightnessDown: "sun.min"
+        case .rotateDisplayClockwise: "rotate.right"
+        case .rotateDisplayCounterClockwise: "rotate.left"
+        case .airplayMirroring: "airplay.video"
+        case .sidecarConnect: "ipad.landscape"
+        case .sidecarDisconnect: "ipad.landscape"
+        case .blockKeyboard: "keyboard.badge.ellipsis"
+        case .autoScrollDown: "arrow.down.to.line.compact"
+        case .autoScrollUp: "arrow.up.to.line.compact"
+        case .moveWindowWithPointer: "arrow.up.and.down.and.arrow.left.and.right"
+        case .resizeWindowWithPointer: "arrow.up.left.and.arrow.down.right"
+        case .dockIconUnderPointer: "dock.arrow.up.rectangle"
+        case .addSpace: "plus.rectangle.on.rectangle"
+        case .startDictation: "mic.badge.plus"
+        case .measureScreen: "ruler"
         case .resetKeyRemaps: "keyboard"
         case .showAppMenus: "filemenu.and.selection"
         case .showShortcutsMenu: "bolt.fill"
@@ -296,6 +329,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.clearClipboard, .saveClipboard, .restoreClipboard, .hideClipboardHistory],
         [.releaseModifiers, .contextMenuKey, .lookUpSelection, .closeNotifications],
         [.zoomToggle, .zoomIn, .zoomOut],
+        [.externalBrightnessUp, .externalBrightnessDown, .rotateDisplayClockwise, .rotateDisplayCounterClockwise, .airplayMirroring, .sidecarConnect, .sidecarDisconnect],
+        [.moveWindowWithPointer, .resizeWindowWithPointer, .dockIconUnderPointer, .addSpace, .autoScrollDown, .autoScrollUp],
+        [.startDictation, .measureScreen, .blockKeyboard],
         [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow, .screenshotAndEdit],
         [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .screenshotScreenToClipboard, .copyTextFromScreen, .pickColour],
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
@@ -568,6 +604,38 @@ enum SystemActionRunner {
             let off = !UserDefaults.standard.bool(forKey: DefaultsKey.gesturesPaused)
             UserDefaults.standard.set(off, forKey: DefaultsKey.gesturesPaused)
             HUD.show(off ? "Gestures Off" : "Gestures On", systemImage: off ? "hand.raised.slash" : "hand.raised")
+        case .externalBrightnessUp:
+            ExternalBrightness.step(10)
+        case .externalBrightnessDown:
+            ExternalBrightness.step(-10)
+        case .rotateDisplayClockwise:
+            DisplayRotation.rotate(clockwise: true)
+        case .rotateDisplayCounterClockwise:
+            DisplayRotation.rotate(clockwise: false)
+        case .airplayMirroring:
+            if !MenuBarExtras.press(identifierContaining: "screenmirroring") { MenuBarExtras.press(identifierContaining: "controlcenter") }
+        case .sidecarConnect:
+            Sidecar.run(.connect)
+        case .sidecarDisconnect:
+            Sidecar.run(.disconnect)
+        case .blockKeyboard:
+            UIAutomation.toggleKeyboardBlocking()
+        case .autoScrollDown:
+            UIAutomation.toggleAutoScroll(up: false)
+        case .autoScrollUp:
+            UIAutomation.toggleAutoScroll(up: true)
+        case .moveWindowWithPointer:
+            UIAutomation.toggleFollowPointer(resize: false)
+        case .resizeWindowWithPointer:
+            UIAutomation.toggleFollowPointer(resize: true)
+        case .dockIconUnderPointer:
+            UIAutomation.dockIconUnderPointer()
+        case .addSpace:
+            UIAutomation.addSpace()
+        case .startDictation:
+            UIAutomation.startDictation()
+        case .measureScreen:
+            ScreenRuler.shared.show()
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)
