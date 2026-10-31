@@ -81,6 +81,16 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     /// Reads the screen, finds this text, and clicks it.
     case clickText(text: String)
 
+    /// Switches microphone or other input. The UID picks it; the name is for lists.
+    case soundInput(uid: String, name: String)
+    /// Pastes an item from clipboard history, 1 being the newest.
+    case clipboardItem(number: Int, remove: Bool)
+    /// Mouse or trackpad speed, or pointer size; with `alternate`, switches back and forth.
+    case pointerSetting(setting: PointerSetting, value: Double, alternate: Double?)
+    case keyboardBrightness(percent: Int)
+    /// Any mouse button, with any modifier keys, one to three times.
+    case customClick(click: CustomClick)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -89,6 +99,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case copyText, pasteText, notify, webRequest, inputSource, playSound, javaScript
         case pressKeysInApp, modifierKeys, moveToDesktop, focusWindow, transformText, browserJavaScript, runWorkflow, pauseShortie, clickButton, clickMenuBarExtra, distributedNotification, otherRule
         case flow, clickText
+        case soundInput, clipboardItem, pointerSetting, keyboardBrightness, customClick
         var id: Self { self }
     }
 
@@ -115,6 +126,11 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .soundInput: .soundInput
+        case .clipboardItem: .clipboardItem
+        case .pointerSetting: .pointerSetting
+        case .keyboardBrightness: .keyboardBrightness
+        case .customClick: .customClick
         case .flow: .flow
         case .clickText: .clickText
         case .appTask: .appTask
@@ -168,6 +184,11 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .soundInput(let uid, _): uid
+        case .clipboardItem(let number, _): String(number)
+        case .pointerSetting(let setting, _, _): setting.rawValue
+        case .keyboardBrightness(let percent): String(percent)
+        case .customClick(let click): click.title
         case .flow(let step): step.isComplete ? step.title : ""
         case .clickText(let text): text
         case .appTask(_, let path): path
@@ -215,6 +236,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .keyboardBrightness: .keyboardBrightness(percent: Int(payload) ?? 50)
         case .clickText: .clickText(text: payload)
         case .setBrightness: .setBrightness(percent: Int(payload) ?? 50)
         case .moveToDisplay: .moveToDisplay(number: Int(payload) ?? 1)
@@ -235,6 +257,10 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
+             .soundInput,
+             .clipboardItem,
+             .pointerSetting,
+             .customClick,
              .flow,
              .windowFrame, .movePointer, .webRequest, .inputSource, .pressKeysInApp, .modifierKeys, .otherRule: self
         }
@@ -294,6 +320,16 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .soundInput(let uid, let name):
+            uid == SoundInput.nextDeviceUID ? "Next Sound Input" : name.isEmpty ? "Sound Input" : "Record from \(name)"
+        case .clipboardItem(let number, let remove):
+            remove ? "Paste and Remove Clipboard Item \(number)" : "Paste Clipboard Item \(number)"
+        case .pointerSetting(let setting, let value, let alternate):
+            alternate.map { "Switch \(setting.title) Between \(value.formatted()) and \($0.formatted())" } ?? "Set \(setting.title) to \(value.formatted())"
+        case .keyboardBrightness(let percent):
+            "Set Keyboard Brightness to \(percent)%"
+        case .customClick(let click):
+            click.title
         case .flow(let step):
             step.title
         case .clickText(let text):
@@ -319,7 +355,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .inputSource(let id, let name):
             id == InputSources.nextID ? "Next Input Source" : name.isEmpty ? "Input Source" : "Switch to \(name)"
         case .playSound(let name):
-            "Play “\(name)” Sound"
+            "Play “\(((name as NSString).lastPathComponent as NSString).deletingPathExtension)” Sound"
         case .javaScript:
             "Run JavaScript"
         case .pressKeysInApp(let combo, let path):
@@ -431,6 +467,16 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .soundInput(let uid, let name):
+            SoundInput.select(uid: uid, name: name)
+        case .clipboardItem(let number, let remove):
+            ClipboardItems.paste(number: number, remove: remove)
+        case .pointerSetting(let setting, let value, let alternate):
+            PointerSettings.apply(setting, value: value, alternate: alternate)
+        case .keyboardBrightness(let percent):
+            KeyboardBacklight.set(percent)
+        case .customClick(let click):
+            MouseClicker.perform(click)
         case .flow:
             StepRunner.run([action], target: target)
         case .clickText(let text):

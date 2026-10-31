@@ -176,6 +176,21 @@ enum MouseClicker {
         event?.post(tap: .cghidEventTap)
     }
 
+    /// Any button, with any modifier keys, one to three times.
+    static func perform(_ custom: CustomClick) {
+        let location = CGEvent(source: nil)?.location ?? .zero
+        let flags = custom.modifiers.eventFlags
+        for count in 1...Int64(max(1, min(custom.count, 3))) {
+            switch custom.button {
+            case .left: click(.leftMouseDown, .leftMouseUp, .left, at: location, count: count, flags: flags)
+            case .right: click(.rightMouseDown, .rightMouseUp, .right, at: location, count: count, flags: flags)
+            case .middle: click(.otherMouseDown, .otherMouseUp, .center, at: location, count: count, flags: flags)
+            case .back: click(.otherMouseDown, .otherMouseUp, .center, at: location, count: count, flags: flags, buttonNumber: 3)
+            case .forward: click(.otherMouseDown, .otherMouseUp, .center, at: location, count: count, flags: flags, buttonNumber: 4)
+            }
+        }
+    }
+
     /// Moves the pointer to `point` and clicks there.
     static func click(at point: CGPoint) {
         move(to: point)

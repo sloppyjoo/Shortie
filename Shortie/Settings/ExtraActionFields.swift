@@ -147,12 +147,24 @@ struct ExtraActionFields: View {
             .onAppear { inputSources = InputSources.all() }
 
         case .playSound(let name):
-            Picker("Sound", selection: Binding(get: { name }, set: { SystemSounds.play($0); action = .playSound(name: $0) })) {
-                ForEach(sounds.contains(name) ? sounds : sounds + [name], id: \.self) { Text($0).tag($0) }
+            HStack {
+                Picker("Sound", selection: Binding(get: { name }, set: { SystemSounds.play($0); action = .playSound(name: $0) })) {
+                    ForEach(sounds.contains(name) ? sounds : sounds + [name], id: \.self) { sound in
+                        Text(((sound as NSString).lastPathComponent as NSString).deletingPathExtension).tag(sound)
+                    }
+                }
+                .labelsHidden()
+                .fixedSize()
+                .onAppear { sounds = SystemSounds.names() }
+                Button("Choose File…") {
+                    let panel = NSOpenPanel()
+                    panel.allowedContentTypes = [.audio]
+                    if panel.runModal() == .OK, let url = panel.url {
+                        action = .playSound(name: (url.path as NSString).abbreviatingWithTildeInPath)
+                        SystemSounds.play(url.path)
+                    }
+                }
             }
-            .labelsHidden()
-            .fixedSize()
-            .onAppear { sounds = SystemSounds.names() }
 
         case .pressKeysInApp(let combo, let path):
             VStack(alignment: .leading, spacing: 8) {
@@ -277,8 +289,90 @@ struct ExtraActionFields: View {
                 .labelsHidden()
             }
 
+        case .soundInput(let uid, _):
+            Picker("Input", selection: Binding(
+                get: { uid },
+                set: { newUID in action = .soundInput(uid: newUID, name: inputs.first { $0.uid == newUID }?.name ?? "") }
+            )) {
+                Text("Next Input").tag(SoundInput.nextDeviceUID)
+                Divider()
+                ForEach(inputs) { Text($0.name).tag($0.uid) }
+                if uid != SoundInput.nextDeviceUID, !inputs.contains(where: { $0.uid == uid }) {
+                    Text(action.title).tag(uid)
+                }
+            }
+            .labelsHidden()
+            .fixedSize()
+            .onAppear { inputs = SoundInput.devices() }
+
+        case .clipboardItem(let number, let remove):
+            HStack {
+                Stepper(value: Binding(get: { number }, set: { action = .clipboardItem(number: $0, remove: remove) }), in: 1...100) {
+                    Text(number == 1 ? "Newest item" : "Item \(number)").monospacedDigit()
+                }
+                .fixedSize()
+                Toggle("Remove it from history", isOn: Binding(get: { remove }, set: { action = .clipboardItem(number: number, remove: $0) }))
+            }
+
+        case .pointerSetting(let setting, let value, let alternate):
+            VStack(alignment: .leading, spacing: 8) {
+                Picker("Setting", selection: Binding(get: { setting }, set: {
+                    action = .pointerSetting(setting: $0, value: min(max(value, $0.range.lowerBound), $0.range.upperBound), alternate: nil)
+                })) {
+                    ForEach(PointerSetting.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
+                pointerSlider(setting, value) { action = .pointerSetting(setting: setting, value: $0, alternate: alternate) }
+                Toggle("Switch back and forth with another value", isOn: Binding(
+                    get: { alternate != nil },
+                    set: { action = .pointerSetting(setting: setting, value: value, alternate: $0 ? setting.range.upperBound : nil) }
+                ))
+                if let alternate {
+                    pointerSlider(setting, alternate) { action = .pointerSetting(setting: setting, value: value, alternate: $0) }
+                }
+            }
+
+        case .keyboardBrightness(let percent):
+            HStack {
+                Image(systemName: "light.min").foregroundStyle(.secondary)
+                Slider(value: Binding(get: { Double(percent) }, set: { action = .keyboardBrightness(percent: Int($0)) }), in: 0...100, step: 5)
+                Image(systemName: "light.max").foregroundStyle(.secondary)
+                Text("\(percent)%")
+                    .monospacedDigit()
+                    .frame(width: 44, alignment: .trailing)
+            }
+
+        case .customClick(let click):
+            HStack {
+                Picker("Button", selection: Binding(get: { click.button }, set: { var c = click; c.button = $0; action = .customClick(click: c) })) {
+                    ForEach(CustomClick.Button.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
+                Picker("Times", selection: Binding(get: { click.count }, set: { var c = click; c.count = $0; action = .customClick(click: c) })) {
+                    Text("Once").tag(1)
+                    Text("Twice").tag(2)
+                    Text("Three Times").tag(3)
+                }
+                .labelsHidden()
+                .fixedSize()
+                ModifierToggles(modifiers: Binding(get: { click.modifiers }, set: { var c = click; c.modifiers = $0; action = .customClick(click: c) }))
+            }
+
         default:
             EmptyView()
+        }
+    }
+
+    @State private var inputs: [SoundOutput.Device] = []
+
+    private func pointerSlider(_ setting: PointerSetting, _ value: Double, set: @escaping (Double) -> Void) -> some View {
+        HStack {
+            Slider(value: Binding(get: { value }, set: { set(($0 * 20).rounded() / 20) }), in: setting.range)
+            Text(value.formatted(.number.precision(.fractionLength(2))))
+                .monospacedDigit()
+                .frame(width: 44, alignment: .trailing)
         }
     }
 

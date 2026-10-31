@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case functionKeysToggle, stageManagerToggle, ignoreTrackpadToggle
     case releaseModifiers, contextMenuKey, lookUpSelection, trueToneToggle, bluetoothOn, bluetoothOff, closeNotifications, saveClipboard, restoreClipboard, hideClipboardHistory, colourPanel, hapticTap, newFileInFinder, compressFinderSelection, screenshotAndEdit, quitShortie, restartShortie
     case nightShiftToggle, nightShiftOn, nightShiftOff, toggleBluetooth, toggleMirroring, screenshotScreenToClipboard, desktop5, desktop6, desktop7, desktop8, desktop9
     case fastForward, rewind, keyboardBacklightToggle, muteOn, muteOff, toggleWiFi, lightMode, darkMode, desktop1, desktop2, desktop3, desktop4, openSystemSettings, newFinderWindow, openTerminalHere, copyFinderPath, quickLook, copyBrowserURL, restartFinder, restartDock, clearClipboard, typeDate, typeTime, showDateTime, showBattery, zoomToggle, zoomIn, zoomOut
@@ -86,6 +87,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .functionKeysToggle: "F1, F2… as Function Keys On or Off"
+        case .stageManagerToggle: "Stage Manager On or Off"
+        case .ignoreTrackpadToggle: "Ignore Trackpad While a Mouse Is Connected On or Off"
         case .releaseModifiers: "Let Go of All Modifier Keys"
         case .contextMenuKey: "Show Context Menu for Selection"
         case .lookUpSelection: "Look Up (⌃⌘D)"
@@ -204,6 +208,9 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .functionKeysToggle: "fn"
+        case .stageManagerToggle: "squares.leading.rectangle"
+        case .ignoreTrackpadToggle: "rectangle.and.hand.point.up.left"
         case .releaseModifiers: "keyboard.badge.ellipsis"
         case .contextMenuKey: "contextualmenu.and.cursorarrow"
         case .lookUpSelection: "character.book.closed"
@@ -270,7 +277,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.brightnessUp, .brightnessDown, .brightnessUpSmall, .brightnessDownSmall, .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBacklightToggle],
         [.windowSwitcher, .previousApp, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .siri, .emojiAndSymbols],
         [.spaceLeft, .spaceRight, .desktop1, .desktop2, .desktop3, .desktop4, .desktop5, .desktop6, .desktop7, .desktop8, .desktop9, .hideAllApps, .showAllApps],
-        [.toggleDarkMode, .lightMode, .darkMode, .nightShiftToggle, .nightShiftOn, .nightShiftOff, .trueToneToggle, .toggleWiFi, .toggleBluetooth, .bluetoothOn, .bluetoothOff, .toggleMirroring, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
+        [.toggleDarkMode, .lightMode, .darkMode, .nightShiftToggle, .nightShiftOn, .nightShiftOff, .trueToneToggle, .toggleWiFi, .toggleBluetooth, .bluetoothOn, .bluetoothOff, .toggleMirroring, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock, .functionKeysToggle, .stageManagerToggle, .ignoreTrackpadToggle],
         [.newFinderWindow, .newFileInFinder, .compressFinderSelection, .openTerminalHere, .copyFinderPath, .quickLook, .copyBrowserURL, .openSystemSettings],
         [.typeDate, .typeTime, .showDateTime, .showBattery, .colourPanel, .hapticTap],
         [.clearClipboard, .saveClipboard, .restoreClipboard, .hideClipboardHistory],
@@ -527,6 +534,12 @@ enum SystemActionRunner {
             NSApp.terminate(nil)
         case .restartShortie:
             ParityActions.restartShortie()
+        case .functionKeysToggle:
+            SettingToggles.toggleFunctionKeys()
+        case .stageManagerToggle:
+            SettingToggles.toggleStageManager()
+        case .ignoreTrackpadToggle:
+            SettingToggles.toggleIgnoreTrackpad()
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

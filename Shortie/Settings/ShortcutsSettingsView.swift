@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .soundInput, .clipboardItem, .pointerSetting, .keyboardBrightness, .customClick, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -396,6 +396,11 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .soundInput: "Sound Input…"
+        case .clipboardItem: "Paste from Clipboard History…"
+        case .pointerSetting: "Pointer Speed or Size…"
+        case .keyboardBrightness: "Set Keyboard Brightness…"
+        case .customClick: "Custom Click…"
         case .flow: "Control Flow…"
         case .clickText: "Find Text on Screen and Click…"
         case .appTask: "Show, Hide or Quit an App…"
@@ -457,6 +462,11 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .soundInput: "mic.fill"
+        case .clipboardItem: "list.clipboard"
+        case .pointerSetting: "cursorarrow.motionlines"
+        case .keyboardBrightness: "light.max"
+        case .customClick: "cursorarrow.click.badge.clock"
         case .flow: "arrow.triangle.branch"
         case .clickText: "text.magnifyingglass"
         case .appTask: "app.badge.checkmark"
@@ -509,6 +519,11 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .soundInput: .red
+        case .clipboardItem: .indigo
+        case .pointerSetting: .orange
+        case .keyboardBrightness: .yellow
+        case .customClick: .orange
         case .flow: .green
         case .clickText: .orange
         case .appTask: .blue
@@ -561,6 +576,11 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .soundInput: .soundInput(uid: SoundInput.nextDeviceUID, name: "")
+        case .clipboardItem: .clipboardItem(number: 1, remove: false)
+        case .pointerSetting: .pointerSetting(setting: .mouseSpeed, value: 1, alternate: nil)
+        case .keyboardBrightness: .keyboardBrightness(percent: 50)
+        case .customClick: .customClick(click: CustomClick())
         case .flow: .flow(step: .ifCondition(condition: FlowCondition()))
         case .clickText: .clickText(text: "")
         case .appTask: .appTask(task: .toggle, path: "")

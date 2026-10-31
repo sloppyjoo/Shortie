@@ -202,8 +202,13 @@ enum SystemSounds {
         return files.map { $0.deletingPathExtension().lastPathComponent }.sorted()
     }
 
+    /// A system sound by name, or any sound file by its path.
     static func play(_ name: String) {
-        if let sound = NSSound(named: NSSound.Name(name)) {
+        let isFile = name.hasPrefix("/") || name.hasPrefix("~")
+        let sound = isFile
+            ? NSSound(contentsOfFile: (name as NSString).expandingTildeInPath, byReference: true)
+            : NSSound(named: NSSound.Name(name))
+        if let sound {
             sound.play()
         } else {
             NSSound.beep()

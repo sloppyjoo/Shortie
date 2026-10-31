@@ -192,6 +192,16 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .soundInput:
+            ExtraActionFields(action: $action)
+        case .clipboardItem:
+            ExtraActionFields(action: $action)
+        case .pointerSetting:
+            ExtraActionFields(action: $action)
+        case .keyboardBrightness:
+            ExtraActionFields(action: $action)
+        case .customClick:
+            ExtraActionFields(action: $action)
         case .flow:
             FlowFields(action: $action)
         case .clickText:
@@ -355,6 +365,11 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .soundInput: "Sound Input"
+        case .clipboardItem: "Paste from Clipboard History"
+        case .pointerSetting: "Pointer Speed or Size"
+        case .keyboardBrightness: "Set Keyboard Brightness"
+        case .customClick: "Custom Click"
         case .flow: "Control Flow"
         case .clickText: "Find Text on Screen and Click"
         case .appTask: "Show, Hide or Quit an App"
