@@ -89,6 +89,29 @@ final class WindowMover: NSObject {
             default: moved.origin.y = area.maxY - moved.height
             }
             target = moved
+        case .nudgeLeft, .nudgeRight, .nudgeUp, .nudgeDown:
+            // A twentieth of the screen per press.
+            var moved = current
+            switch position {
+            case .nudgeLeft: moved.origin.x -= area.width / 20
+            case .nudgeRight: moved.origin.x += area.width / 20
+            case .nudgeUp: moved.origin.y -= area.height / 20
+            default: moved.origin.y += area.height / 20
+            }
+            target = moved.kept(inside: area)
+        case .centerOnNextDisplay, .maximizeOnNextDisplay:
+            guard screens.count > 1 else {
+                NSSound.beep()
+                return
+            }
+            let destination = Self.usableArea(of: screens[(screenIndex + 1) % screens.count])
+            if position == .maximizeOnNextDisplay {
+                target = destination
+            } else {
+                let width = min(current.width, destination.width)
+                let height = min(current.height, destination.height)
+                target = CGRect(x: destination.midX - width / 2, y: destination.midY - height / 2, width: width, height: height)
+            }
         case .nextDisplay, .previousDisplay:
             guard screens.count > 1 else {
                 NSSound.beep()

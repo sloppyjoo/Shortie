@@ -49,6 +49,11 @@ enum Bluetooth {
     private static let handle = dlopen("/System/Library/Frameworks/IOBluetooth.framework/IOBluetooth", RTLD_LAZY)
 
     static func toggle() {
+        set(nil)
+    }
+
+    /// `nil` switches it the other way.
+    static func set(_ on: Bool?) {
         guard let handle,
               let get = dlsym(handle, "IOBluetoothPreferenceGetControllerPowerState"),
               let set = dlsym(handle, "IOBluetoothPreferenceSetControllerPowerState")
@@ -56,9 +61,9 @@ enum Bluetooth {
             NSSound.beep()
             return
         }
-        let isOn = unsafeBitCast(get, to: GetPower.self)() != 0
-        unsafeBitCast(set, to: SetPower.self)(isOn ? 0 : 1)
-        HUD.show(isOn ? "Bluetooth Off" : "Bluetooth On", systemImage: "antenna.radiowaves.left.and.right")
+        let turnOn = on ?? (unsafeBitCast(get, to: GetPower.self)() == 0)
+        unsafeBitCast(set, to: SetPower.self)(turnOn ? 1 : 0)
+        HUD.show(turnOn ? "Bluetooth On" : "Bluetooth Off", systemImage: "antenna.radiowaves.left.and.right")
     }
 }
 

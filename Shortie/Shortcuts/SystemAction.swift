@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case releaseModifiers, contextMenuKey, lookUpSelection, trueToneToggle, bluetoothOn, bluetoothOff, closeNotifications, saveClipboard, restoreClipboard, hideClipboardHistory, colourPanel, hapticTap, newFileInFinder, compressFinderSelection, screenshotAndEdit, quitShortie, restartShortie
     case nightShiftToggle, nightShiftOn, nightShiftOff, toggleBluetooth, toggleMirroring, screenshotScreenToClipboard, desktop5, desktop6, desktop7, desktop8, desktop9
     case fastForward, rewind, keyboardBacklightToggle, muteOn, muteOff, toggleWiFi, lightMode, darkMode, desktop1, desktop2, desktop3, desktop4, openSystemSettings, newFinderWindow, openTerminalHere, copyFinderPath, quickLook, copyBrowserURL, restartFinder, restartDock, clearClipboard, typeDate, typeTime, showDateTime, showBattery, zoomToggle, zoomIn, zoomOut
 
@@ -85,6 +86,23 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .releaseModifiers: "Let Go of All Modifier Keys"
+        case .contextMenuKey: "Show Context Menu for Selection"
+        case .lookUpSelection: "Look Up (⌃⌘D)"
+        case .trueToneToggle: "True Tone On or Off"
+        case .bluetoothOn: "Bluetooth On"
+        case .bluetoothOff: "Bluetooth Off"
+        case .closeNotifications: "Close All Notifications"
+        case .saveClipboard: "Save Clipboard for Later"
+        case .restoreClipboard: "Restore Saved Clipboard"
+        case .hideClipboardHistory: "Hide Clipboard History"
+        case .colourPanel: "Show Colour Picker"
+        case .hapticTap: "Haptic Tap on Trackpad"
+        case .newFileInFinder: "New File in Finder's Folder"
+        case .compressFinderSelection: "Compress Selected Files"
+        case .screenshotAndEdit: "Screenshot and Edit in Preview"
+        case .quitShortie: "Quit Shortie"
+        case .restartShortie: "Restart Shortie"
         case .nightShiftToggle: "Night Shift On or Off"
         case .nightShiftOn: "Night Shift On"
         case .nightShiftOff: "Night Shift Off"
@@ -186,6 +204,23 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .releaseModifiers: "keyboard.badge.ellipsis"
+        case .contextMenuKey: "contextualmenu.and.cursorarrow"
+        case .lookUpSelection: "character.book.closed"
+        case .trueToneToggle: "sun.max.trianglebadge.exclamationmark"
+        case .bluetoothOn: "antenna.radiowaves.left.and.right"
+        case .bluetoothOff: "antenna.radiowaves.left.and.right.slash"
+        case .closeNotifications: "bell.slash"
+        case .saveClipboard: "tray.and.arrow.down"
+        case .restoreClipboard: "tray.and.arrow.up"
+        case .hideClipboardHistory: "doc.on.clipboard"
+        case .colourPanel: "paintpalette"
+        case .hapticTap: "hand.tap"
+        case .newFileInFinder: "doc.badge.plus"
+        case .compressFinderSelection: "doc.zipper"
+        case .screenshotAndEdit: "pencil.and.outline"
+        case .quitShortie: "xmark.circle"
+        case .restartShortie: "arrow.clockwise"
         case .nightShiftToggle: "moon.circle"
         case .nightShiftOn: "moon.circle.fill"
         case .nightShiftOff: "moon.circle"
@@ -235,15 +270,17 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         [.brightnessUp, .brightnessDown, .brightnessUpSmall, .brightnessDownSmall, .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBacklightToggle],
         [.windowSwitcher, .previousApp, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .siri, .emojiAndSymbols],
         [.spaceLeft, .spaceRight, .desktop1, .desktop2, .desktop3, .desktop4, .desktop5, .desktop6, .desktop7, .desktop8, .desktop9, .hideAllApps, .showAllApps],
-        [.toggleDarkMode, .lightMode, .darkMode, .nightShiftToggle, .nightShiftOn, .nightShiftOff, .toggleWiFi, .toggleBluetooth, .toggleMirroring, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
-        [.newFinderWindow, .openTerminalHere, .copyFinderPath, .quickLook, .copyBrowserURL, .openSystemSettings],
-        [.typeDate, .typeTime, .showDateTime, .showBattery, .clearClipboard],
+        [.toggleDarkMode, .lightMode, .darkMode, .nightShiftToggle, .nightShiftOn, .nightShiftOff, .trueToneToggle, .toggleWiFi, .toggleBluetooth, .bluetoothOn, .bluetoothOff, .toggleMirroring, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
+        [.newFinderWindow, .newFileInFinder, .compressFinderSelection, .openTerminalHere, .copyFinderPath, .quickLook, .copyBrowserURL, .openSystemSettings],
+        [.typeDate, .typeTime, .showDateTime, .showBattery, .colourPanel, .hapticTap],
+        [.clearClipboard, .saveClipboard, .restoreClipboard, .hideClipboardHistory],
+        [.releaseModifiers, .contextMenuKey, .lookUpSelection, .closeNotifications],
         [.zoomToggle, .zoomIn, .zoomOut],
-        [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow],
+        [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow, .screenshotAndEdit],
         [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .screenshotScreenToClipboard, .copyTextFromScreen, .pickColour],
         [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
-        [.openDashboard, .togglePause],
+        [.openDashboard, .togglePause, .restartShortie, .quitShortie],
     ]
 }
 
@@ -456,6 +493,40 @@ enum SystemActionRunner {
             MoreActions.switchToDesktop(8)
         case .desktop9:
             MoreActions.switchToDesktop(9)
+        case .releaseModifiers:
+            ParityActions.releaseAllModifiers()
+        case .contextMenuKey:
+            ParityActions.showContextMenuForFocus()
+        case .lookUpSelection:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_D), modifiers: [.control, .command], keyName: "D"))
+        case .trueToneToggle:
+            TrueTone.toggle()
+        case .bluetoothOn:
+            Bluetooth.set(true)
+        case .bluetoothOff:
+            Bluetooth.set(false)
+        case .closeNotifications:
+            ParityActions.closeAllNotifications()
+        case .saveClipboard:
+            ParityActions.saveClipboard()
+        case .restoreClipboard:
+            ParityActions.restoreClipboard()
+        case .hideClipboardHistory:
+            ClipboardPanel.shared.close()
+        case .colourPanel:
+            ParityActions.showColourPanel()
+        case .hapticTap:
+            Haptics.tap(.medium)
+        case .newFileInFinder:
+            ParityActions.newFileInFinder()
+        case .compressFinderSelection:
+            ParityActions.compressFinderSelection()
+        case .screenshotAndEdit:
+            ParityActions.screenshotAndEdit()
+        case .quitShortie:
+            NSApp.terminate(nil)
+        case .restartShortie:
+            ParityActions.restartShortie()
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

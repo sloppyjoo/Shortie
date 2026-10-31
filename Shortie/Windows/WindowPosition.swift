@@ -13,7 +13,8 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
     case maximize, almostMaximize, maximizeHeight, maximizeWidth, center, restore
     case larger, smaller
     case moveLeft, moveRight, moveUp, moveDown
-    case nextDisplay, previousDisplay
+    case nextDisplay, previousDisplay, centerOnNextDisplay, maximizeOnNextDisplay
+    case nudgeLeft, nudgeRight, nudgeUp, nudgeDown
 
     var id: Self { self }
 
@@ -65,6 +66,12 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         case .moveDown: "Move to Bottom Edge"
         case .nextDisplay: "Next Display"
         case .previousDisplay: "Previous Display"
+        case .centerOnNextDisplay: "Centre on Next Display"
+        case .maximizeOnNextDisplay: "Maximise on Next Display"
+        case .nudgeLeft: "Nudge Left"
+        case .nudgeRight: "Nudge Right"
+        case .nudgeUp: "Nudge Up"
+        case .nudgeDown: "Nudge Down"
         }
     }
 
@@ -80,7 +87,8 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         [.maximize, .almostMaximize, .maximizeHeight, .maximizeWidth, .center, .restore],
         [.larger, .smaller],
         [.moveLeft, .moveRight, .moveUp, .moveDown],
-        [.nextDisplay, .previousDisplay],
+        [.nudgeLeft, .nudgeRight, .nudgeUp, .nudgeDown],
+        [.nextDisplay, .previousDisplay, .centerOnNextDisplay, .maximizeOnNextDisplay],
     ]
 
     /// Halves and corners get narrower or wider each time you press them again.
@@ -139,7 +147,8 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         case .almostMaximize: return CGRect(x: 0.05, y: 0.05, width: 0.9, height: 0.9)
         // These depend on where the window is now, so `WindowMover` works them out.
         case .maximizeHeight, .maximizeWidth, .center, .restore, .larger, .smaller,
-             .moveLeft, .moveRight, .moveUp, .moveDown, .nextDisplay, .previousDisplay: return nil
+             .moveLeft, .moveRight, .moveUp, .moveDown, .nextDisplay, .previousDisplay,
+             .centerOnNextDisplay, .maximizeOnNextDisplay, .nudgeLeft, .nudgeRight, .nudgeUp, .nudgeDown: return nil
         }
     }
 

@@ -8,6 +8,8 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     case closeOtherWindows, unminimizeAllWindows, bringAllWindowsForward, nextWindowOfApp
     case forceQuitApp, restartApp
     case moveToNextSpace, moveToPreviousSpace
+    case previousWindow, sideBySide, saveWindowFrame, restoreWindowFrame, saveActiveWindow, returnToSavedWindow
+    case gatherWindowsOnPointerDisplay, maximizeAllOnPointerDisplay
     case hideApp, hideOtherApps, quitApp, quitOtherApps
     case closeWindowOrQuit
     case closePointerWindow, minimizePointerWindow, zoomPointerWindow, raisePointerWindow
@@ -30,6 +32,14 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .restartApp: "Restart App"
         case .moveToNextSpace: "Move Window to Next Space"
         case .moveToPreviousSpace: "Move Window to Previous Space"
+        case .previousWindow: "Go to Previous Window"
+        case .sideBySide: "Put Front Two Windows Side by Side"
+        case .saveWindowFrame: "Remember Window Position and Size"
+        case .restoreWindowFrame: "Put Window Back to Remembered Position"
+        case .saveActiveWindow: "Remember This Window"
+        case .returnToSavedWindow: "Go Back to Remembered Window"
+        case .gatherWindowsOnPointerDisplay: "Move All Windows to Pointer's Display"
+        case .maximizeAllOnPointerDisplay: "Move and Maximise All Windows on Pointer's Display"
         case .hideApp: "Hide App"
         case .hideOtherApps: "Hide Other Apps"
         case .quitApp: "Quit App"
@@ -59,6 +69,14 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .restartApp: "arrow.clockwise.circle"
         case .moveToNextSpace: "arrow.right.square"
         case .moveToPreviousSpace: "arrow.left.square"
+        case .previousWindow: "arrow.uturn.backward"
+        case .sideBySide: "rectangle.split.2x1"
+        case .saveWindowFrame: "square.and.arrow.down"
+        case .restoreWindowFrame: "square.and.arrow.up"
+        case .saveActiveWindow: "bookmark"
+        case .returnToSavedWindow: "bookmark.fill"
+        case .gatherWindowsOnPointerDisplay: "rectangle.stack"
+        case .maximizeAllOnPointerDisplay: "rectangle.stack.fill"
         case .hideApp: "eye.slash"
         case .hideOtherApps: "eye.slash.fill"
         case .quitApp: "power"
@@ -77,7 +95,9 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     static let groups: [[AppCommand]] = [
         [.closeWindow, .minimizeWindow, .toggleFullScreen],
         [.closeAllWindows, .minimizeAllWindows, .closeOtherWindows, .unminimizeAllWindows],
-        [.bringAllWindowsForward, .nextWindowOfApp, .moveToNextSpace, .moveToPreviousSpace],
+        [.bringAllWindowsForward, .nextWindowOfApp, .previousWindow, .moveToNextSpace, .moveToPreviousSpace],
+        [.sideBySide, .gatherWindowsOnPointerDisplay, .maximizeAllOnPointerDisplay],
+        [.saveWindowFrame, .restoreWindowFrame, .saveActiveWindow, .returnToSavedWindow],
         [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps, .closeWindowOrQuit, .forceQuitApp, .restartApp],
         [.closePointerWindow, .minimizePointerWindow, .zoomPointerWindow, .raisePointerWindow, .hidePointerApp, .quitPointerApp],
     ]
@@ -179,6 +199,20 @@ enum AppCommandRunner {
                 AXUIElementSetAttributeValue(back, kAXMainAttribute as CFString, kCFBooleanTrue)
                 app?.activate()
             }
+        case .previousWindow:
+            WindowOrder.focusPrevious()
+        case .sideBySide:
+            WindowOrder.sideBySide()
+        case .gatherWindowsOnPointerDisplay, .maximizeAllOnPointerDisplay:
+            WindowOrder.gatherOnPointerDisplay(maximize: command == .maximizeAllOnPointerDisplay)
+        case .saveWindowFrame:
+            target.window.map(SavedWindows.saveFrame)
+        case .restoreWindowFrame:
+            SavedWindows.restoreFrame(fallback: target.window)
+        case .saveActiveWindow:
+            SavedWindows.saveActive(target)
+        case .returnToSavedWindow:
+            SavedWindows.returnToSaved()
         case .moveToNextSpace, .moveToPreviousSpace:
             target.window.map { SpaceMover.move($0, right: command == .moveToNextSpace) }
         case .forceQuitApp:

@@ -9,7 +9,9 @@ nonisolated enum SyntheticEvent {
 /// Mouse clicks a shortcut or gesture can make, wherever the pointer is.
 nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
     case leftClick, rightClick, middleClick, doubleClick, tripleClick
-    case leftButtonDown, leftButtonUp
+    case leftButtonDown, leftButtonUp, doubleClickDrag
+    case leftClickNoModifiers, commandDoubleClick, commandShiftClick
+    case savePointer, restorePointer
     case commandClick, optionClick, shiftClick, controlClick
     case backButton, forwardButton
     case scrollUp, scrollDown, scrollLeft, scrollRight
@@ -26,6 +28,12 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
         case .tripleClick: "Triple Click"
         case .leftButtonDown: "Hold Left Button Down"
         case .leftButtonUp: "Let Go of Left Button"
+        case .doubleClickDrag: "Double-Click and Hold"
+        case .leftClickNoModifiers: "Left Click Without Modifier Keys"
+        case .commandDoubleClick: "⌘-Double-Click"
+        case .commandShiftClick: "⇧⌘-Click"
+        case .savePointer: "Remember Pointer Position"
+        case .restorePointer: "Move Pointer to Remembered Position"
         case .commandClick: "⌘-Click"
         case .optionClick: "⌥-Click"
         case .shiftClick: "⇧-Click"
@@ -51,6 +59,12 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
         case .tripleClick: "cursorarrow.click.2"
         case .leftButtonDown: "arrow.down.to.line"
         case .leftButtonUp: "arrow.up.to.line"
+        case .doubleClickDrag: "hand.draw"
+        case .leftClickNoModifiers: "cursorarrow.click"
+        case .commandDoubleClick: "command"
+        case .commandShiftClick: "command"
+        case .savePointer: "mappin"
+        case .restorePointer: "mappin.and.ellipse"
         case .commandClick: "command"
         case .optionClick: "option"
         case .shiftClick: "shift"
@@ -69,16 +83,18 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
 
     /// For menus, so related actions sit together.
     static let groups: [[MouseAction]] = [
-        [.leftClick, .rightClick, .middleClick, .doubleClick, .tripleClick],
-        [.commandClick, .optionClick, .shiftClick, .controlClick],
-        [.leftButtonDown, .leftButtonUp],
+        [.leftClick, .leftClickNoModifiers, .rightClick, .middleClick, .doubleClick, .tripleClick],
+        [.commandClick, .optionClick, .shiftClick, .controlClick, .commandDoubleClick, .commandShiftClick],
+        [.leftButtonDown, .leftButtonUp, .doubleClickDrag],
         [.backButton, .forwardButton],
         [.scrollUp, .scrollDown, .scrollLeft, .scrollRight],
-        [.moveToScreenCentre, .moveToWindowCentre, .moveToNextDisplay],
+        [.moveToScreenCentre, .moveToWindowCentre, .moveToNextDisplay, .savePointer, .restorePointer],
     ]
 }
 
 enum MouseClicker {
+    private static var savedPointer: CGPoint?
+
     static func perform(_ action: MouseAction) {
         let location = CGEvent(source: nil)?.location ?? .zero
         switch action {
@@ -101,6 +117,25 @@ enum MouseClicker {
             post(.leftMouseDown, at: location)
         case .leftButtonUp:
             post(.leftMouseUp, at: location)
+        case .doubleClickDrag:
+            // A double click whose second press stays down: drags select word by word.
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, count: 1)
+            let event = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: location, mouseButton: .left)
+            event?.setIntegerValueField(.mouseEventClickState, value: 2)
+            event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
+            event?.post(tap: .cghidEventTap)
+        case .leftClickNoModifiers:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: [])
+        case .commandDoubleClick:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, count: 1, flags: .maskCommand)
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, count: 2, flags: .maskCommand)
+        case .commandShiftClick:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: [.maskCommand, .maskShift])
+        case .savePointer:
+            savedPointer = location
+            HUD.show("Pointer Position Saved", systemImage: "mappin")
+        case .restorePointer:
+            if let savedPointer { move(to: savedPointer) } else { NSSound.beep() }
         case .commandClick:
             click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: .maskCommand)
         case .optionClick:
@@ -157,12 +192,12 @@ enum MouseClicker {
 
     private static func click(
         _ down: CGEventType, _ up: CGEventType, _ button: CGMouseButton, at location: CGPoint, count: Int64 = 1,
-        flags: CGEventFlags = [], buttonNumber: Int64? = nil
+        flags: CGEventFlags? = nil, buttonNumber: Int64? = nil
     ) {
         for type in [down, up] {
             let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: location, mouseButton: button)
             event?.setIntegerValueField(.mouseEventClickState, value: count)
-            if !flags.isEmpty { event?.flags = flags }
+            if let flags { event?.flags = flags }
             if let buttonNumber { event?.setIntegerValueField(.mouseEventButtonNumber, value: buttonNumber) }
             event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
             event?.post(tap: .cghidEventTap)
