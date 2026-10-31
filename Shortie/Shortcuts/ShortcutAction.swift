@@ -76,6 +76,11 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
     case distributedNotification(name: String)
     case otherRule(id: UUID?, name: String, mode: RuleMode)
 
+    /// Repeats, if/else, waits and variables, inside "Several Actions".
+    case flow(step: FlowStep)
+    /// Reads the screen, finds this text, and clicks it.
+    case clickText(text: String)
+
     enum Kind: CaseIterable, Identifiable {
         case openApp, runShortcut, open, typeText, moveWindow, appCommand, mouseClick, system, pressKeys
         case menuItem, appleScript, shellScript, wait, steps, showMenu, restoreLayout
@@ -83,6 +88,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case appTask, setBrightness, windowFrame, moveToDisplay, movePointer
         case copyText, pasteText, notify, webRequest, inputSource, playSound, javaScript
         case pressKeysInApp, modifierKeys, moveToDesktop, focusWindow, transformText, browserJavaScript, runWorkflow, pauseShortie, clickButton, clickMenuBarExtra, distributedNotification, otherRule
+        case flow, clickText
         var id: Self { self }
     }
 
@@ -109,6 +115,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak: .speak
         case .setVolume: .setVolume
         case .soundOutput: .soundOutput
+        case .flow: .flow
+        case .clickText: .clickText
         case .appTask: .appTask
         case .setBrightness: .setBrightness
         case .windowFrame: .windowFrame
@@ -160,6 +168,8 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .speak(let text): text
         case .setVolume(let percent): String(percent)
         case .soundOutput(let uid, _): uid
+        case .flow(let step): step.isComplete ? step.title : ""
+        case .clickText(let text): text
         case .appTask(_, let path): path
         case .setBrightness(let percent): String(percent)
         case .windowFrame(let frame): frame.width > 0 && frame.height > 0 ? frame.summary : ""
@@ -205,6 +215,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .showMessage: .showMessage(text: payload)
         case .speak: .speak(text: payload)
         case .setVolume: .setVolume(percent: Int(payload) ?? 50)
+        case .clickText: .clickText(text: payload)
         case .setBrightness: .setBrightness(percent: Int(payload) ?? 50)
         case .moveToDisplay: .moveToDisplay(number: Int(payload) ?? 1)
         case .copyText: .copyText(text: payload)
@@ -224,6 +235,7 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
         case .appTask(let task, _): .appTask(task: task, path: payload)
         // Keys and steps are edited directly (see `ActionFields`), not as text.
         case .pressKeys, .steps, .showMenu, .restoreLayout, .soundOutput,
+             .flow,
              .windowFrame, .movePointer, .webRequest, .inputSource, .pressKeysInApp, .modifierKeys, .otherRule: self
         }
     }
@@ -282,6 +294,10 @@ nonisolated indirect enum ShortcutAction: Codable, Hashable {
             "Set Volume to \(percent)%"
         case .soundOutput(let uid, let name):
             uid == SoundOutput.nextDeviceUID ? "Next Sound Output" : name.isEmpty ? "Sound Output" : "Play Sound on \(name)"
+        case .flow(let step):
+            step.title
+        case .clickText(let text):
+            "Click “\(text)” on Screen"
         case .appTask(let task, let path):
             task.describe(path.isEmpty ? "App" : FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))
         case .setBrightness(let percent):
@@ -362,6 +378,8 @@ enum ActionRunner {
     /// Runs an action. Window actions apply to `target`'s window, or to the
     /// window you're using if there's no target.
     static func run(_ action: ShortcutAction, on target: ActionTarget? = nil) {
+        // Fill in {{variables}} wherever the action carries text.
+        let action = Variables.expanded(action)
         switch action {
         case .openApp(let path):
             // Opens the app, or brings it to the front if it's already running.
@@ -413,6 +431,16 @@ enum ActionRunner {
             SoundOutput.setVolume(percent)
         case .soundOutput(let uid, let name):
             SoundOutput.select(uid: uid, name: name)
+        case .flow:
+            StepRunner.run([action], target: target)
+        case .clickText(let text):
+            Task {
+                if let point = await ScreenOCR.find(text) {
+                    MouseClicker.click(at: point)
+                } else {
+                    HUD.show("“\(text)” Not Found", systemImage: "text.magnifyingglass")
+                }
+            }
         case .appTask(let task, let path):
             AppTaskRunner.run(task, path: path)
         case .setBrightness(let percent):
@@ -462,17 +490,7 @@ enum ActionRunner {
         case .otherRule(let id, _, let mode):
             MoreActionKindsRunner.otherRule(id, mode: mode)
         case .steps(let actions):
-            Task {
-                for step in actions {
-                    if case .wait(let seconds) = step {
-                        try? await Task.sleep(for: .seconds(seconds))
-                    } else {
-                        run(step, on: target)
-                        // A moment for each step to take effect before the next.
-                        try? await Task.sleep(for: .milliseconds(80))
-                    }
-                }
-            }
+            StepRunner.run(actions, target: target)
         }
     }
 }

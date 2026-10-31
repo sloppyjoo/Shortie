@@ -258,11 +258,12 @@ struct ActionKindPicker: View {
         .showMessage, .notify, .speak, .playSound,
         .menuItem, .clickButton, .clickMenuBarExtra,
         .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification,
+        .clickText, 
         .otherRule, .pauseShortie, .steps, .showMenu,
     ]
 
     /// What a single step can be.
-    static let stepKinds: [ShortcutAction.Kind] = order.filter { $0 != .steps } + [.wait]
+    static let stepKinds: [ShortcutAction.Kind] = order.filter { $0 != .steps } + [.wait, .flow]
 
     var body: some View {
         HStack(spacing: 6) {

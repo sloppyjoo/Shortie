@@ -95,6 +95,10 @@ struct ActionChoice: Identifiable {
                 for menu in CustomMenuStore.shared.menus {
                     choices.append(ActionChoice("Show “\(menu.name)”", group: group, action: .showMenu(id: menu.id, name: menu.name), keywords: keywords))
                 }
+            case .flow:
+                for flowKind in FlowStep.Kind.groups.joined() {
+                    choices.append(ActionChoice(flowKind.title, group: group, action: .flow(step: flowKind.template), keywords: keywords))
+                }
             case .soundOutput:
                 choices.append(ActionChoice("Next Sound Output", group: group, action: .soundOutput(uid: SoundOutput.nextDeviceUID, name: ""), keywords: keywords))
                 for device in SoundOutput.devices() {
@@ -133,6 +137,8 @@ extension ShortcutAction.Kind {
         case .speak: "say voice read aloud"
         case .setVolume: "sound audio volume"
         case .soundOutput: "sound audio speakers headphones output device"
+        case .flow: "if else repeat loop condition variable wait debounce stop ask input"
+        case .clickText: "ocr find text screen click read"
         case .appTask: "app application toggle show hide quit restart force"
         case .setBrightness: "display screen brightness dim"
         case .windowFrame: "window custom position size resize move"

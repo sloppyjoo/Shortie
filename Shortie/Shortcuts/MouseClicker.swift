@@ -176,6 +176,12 @@ enum MouseClicker {
         event?.post(tap: .cghidEventTap)
     }
 
+    /// Moves the pointer to `point` and clicks there.
+    static func click(at point: CGPoint) {
+        move(to: point)
+        click(.leftMouseDown, .leftMouseUp, .left, at: point)
+    }
+
     /// Lines to scroll; positive is up or left.
     private static func scroll(vertical: Int32 = 0, horizontal: Int32 = 0) {
         let event = CGEvent(scrollWheelEvent2Source: nil, units: .line, wheelCount: 2, wheel1: vertical, wheel2: horizontal, wheel3: 0)

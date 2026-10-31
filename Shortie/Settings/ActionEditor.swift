@@ -192,6 +192,10 @@ struct ActionFields: View {
             }
         case .soundOutput:
             SoundOutputPicker(action: $action)
+        case .flow:
+            FlowFields(action: $action)
+        case .clickText:
+            ExtraActionFields(action: $action)
         case .appTask, .setBrightness, .windowFrame, .moveToDisplay, .movePointer,
              .copyText, .pasteText, .notify, .webRequest, .inputSource, .playSound,
              .pressKeysInApp, .modifierKeys, .moveToDesktop, .focusWindow, .transformText, .browserJavaScript, .runWorkflow, .pauseShortie, .clickButton, .clickMenuBarExtra, .distributedNotification, .otherRule:
@@ -351,6 +355,8 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text"
         case .setVolume: "Set Volume"
         case .soundOutput: "Sound Output"
+        case .flow: "Control Flow"
+        case .clickText: "Find Text on Screen and Click"
         case .appTask: "Show, Hide or Quit an App"
         case .setBrightness: "Set Brightness"
         case .windowFrame: "Custom Window Position"
@@ -476,6 +482,7 @@ struct StepsEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            let depths = Self.depths(of: steps)
             ForEach(Array(steps.indices), id: \.self) { index in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -500,10 +507,22 @@ struct StepsEditor: View {
                 }
                 .padding(10)
                 .background(.background.opacity(0.6), in: .rect(cornerRadius: 9, style: .continuous))
+                // Steps inside a repeat or an if sit further in.
+                .padding(.leading, CGFloat(depths.indices.contains(index) ? depths[index] : 0) * 18)
             }
 
             Menu("Add Step", systemImage: "plus") {
-                ForEach(ActionKindPicker.stepKinds) { kind in
+                Menu("Control Flow", systemImage: "arrow.triangle.branch") {
+                    ForEach(FlowStep.Kind.groups, id: \.self) { group in
+                        Section {
+                            ForEach(group) { kind in
+                                Button(kind.title) { set(steps + [.flow(step: kind.template)]) }
+                            }
+                        }
+                    }
+                }
+                Divider()
+                ForEach(ActionKindPicker.stepKinds.filter { $0 != .flow }) { kind in
                     Button(kind.editorTitle, systemImage: kind.systemImage) {
                         set(steps + [kind.emptyAction])
                     }
@@ -512,6 +531,26 @@ struct StepsEditor: View {
             .fixedSize()
         }
         .animation(.smooth(duration: 0.2), value: steps)
+    }
+
+    /// How far in each step sits: one level for each repeat or if it's inside.
+    static func depths(of steps: [ShortcutAction]) -> [Int] {
+        var depth = 0
+        return steps.map { step in
+            guard case .flow(let flow) = step else { return depth }
+            switch flow.kind {
+            case .repeatStart, .ifCondition:
+                depth += 1
+                return depth - 1
+            case .repeatEnd, .endIf:
+                depth = max(depth - 1, 0)
+                return depth
+            case .elseBranch:
+                return max(depth - 1, 0)
+            default:
+                return depth
+            }
+        }
     }
 
     private func step(_ index: Int) -> Binding<ShortcutAction> {

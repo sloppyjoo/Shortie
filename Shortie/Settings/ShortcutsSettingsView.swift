@@ -6,7 +6,7 @@ struct ShortcutsSettingsView: View {
     var body: some View {
         ShortcutListView(
             pane: .shortcuts,
-            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .steps, .showMenu],
+            kinds: [.openApp, .appTask, .runShortcut, .open, .typeText, .pasteText, .copyText, .text, .transformText, .pressKeys, .pressKeysInApp, .modifierKeys, .system, .setVolume, .setBrightness, .soundOutput, .inputSource, .playSound, .mouseClick, .movePointer, .showMessage, .notify, .speak, .menuItem, .clickButton, .clickMenuBarExtra, .appleScript, .javaScript, .browserJavaScript, .shellScript, .runWorkflow, .webRequest, .distributedNotification, .otherRule, .pauseShortie, .clickText, .steps, .showMenu],
             emptyText: "No shortcuts yet."
         ) {
             EmptyView()
@@ -396,6 +396,8 @@ extension ShortcutAction.Kind {
         case .speak: "Speak Text…"
         case .setVolume: "Set Volume…"
         case .soundOutput: "Sound Output…"
+        case .flow: "Control Flow…"
+        case .clickText: "Find Text on Screen and Click…"
         case .appTask: "Show, Hide or Quit an App…"
         case .setBrightness: "Set Brightness…"
         case .windowFrame: "Custom Window Position…"
@@ -455,6 +457,8 @@ extension ShortcutAction.Kind {
         case .speak: "waveform"
         case .setVolume: "speaker.wave.2.fill"
         case .soundOutput: "hifispeaker.fill"
+        case .flow: "arrow.triangle.branch"
+        case .clickText: "text.magnifyingglass"
         case .appTask: "app.badge.checkmark"
         case .setBrightness: "sun.max.fill"
         case .windowFrame: "rectangle.dashed"
@@ -505,6 +509,8 @@ extension ShortcutAction.Kind {
         case .speak: .pink
         case .setVolume: .red
         case .soundOutput: .red
+        case .flow: .green
+        case .clickText: .orange
         case .appTask: .blue
         case .setBrightness: .yellow
         case .windowFrame: .blue
@@ -555,6 +561,8 @@ extension ShortcutAction.Kind {
         case .speak: .speak(text: "")
         case .setVolume: .setVolume(percent: 50)
         case .soundOutput: .soundOutput(uid: "", name: "")
+        case .flow: .flow(step: .ifCondition(condition: FlowCondition()))
+        case .clickText: .clickText(text: "")
         case .appTask: .appTask(task: .toggle, path: "")
         case .setBrightness: .setBrightness(percent: 50)
         case .windowFrame: .windowFrame(frame: WindowFrame(x: 10, y: 10, width: 80, height: 80))
