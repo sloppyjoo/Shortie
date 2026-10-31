@@ -21,6 +21,7 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
     case previousApp, hideAllApps, showAllApps, siri, spaceLeft, spaceRight
     case screenshotWindow, screenshotSelectionToClipboard, screenshotWindowToClipboard, copyTextFromScreen, pickColour
     case toggleCapsLock, emptyTrash
+    case fastForward, rewind, keyboardBacklightToggle, muteOn, muteOff, toggleWiFi, lightMode, darkMode, desktop1, desktop2, desktop3, desktop4, openSystemSettings, newFinderWindow, openTerminalHere, copyFinderPath, quickLook, copyBrowserURL, restartFinder, restartDock, clearClipboard, typeDate, typeTime, showDateTime, showBattery, zoomToggle, zoomIn, zoomOut
 
     var id: Self { self }
 
@@ -83,6 +84,34 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "Pick Colour from Screen"
         case .toggleCapsLock: "Caps Lock On or Off"
         case .emptyTrash: "Empty Bin…"
+        case .fastForward: "Fast Forward"
+        case .rewind: "Rewind"
+        case .keyboardBacklightToggle: "Keyboard Backlight On or Off"
+        case .muteOn: "Mute Sound"
+        case .muteOff: "Unmute Sound"
+        case .toggleWiFi: "Wi-Fi On or Off"
+        case .lightMode: "Light Mode"
+        case .darkMode: "Dark Mode"
+        case .desktop1: "Switch to Desktop 1"
+        case .desktop2: "Switch to Desktop 2"
+        case .desktop3: "Switch to Desktop 3"
+        case .desktop4: "Switch to Desktop 4"
+        case .openSystemSettings: "Open System Settings"
+        case .newFinderWindow: "New Finder Window"
+        case .openTerminalHere: "Open Terminal in Finder's Folder"
+        case .copyFinderPath: "Copy Path of Selected Files"
+        case .quickLook: "Quick Look Selected Files"
+        case .copyBrowserURL: "Copy Current Web Page Address"
+        case .restartFinder: "Restart Finder"
+        case .restartDock: "Restart Dock"
+        case .clearClipboard: "Clear Clipboard"
+        case .typeDate: "Type Today's Date"
+        case .typeTime: "Type the Time"
+        case .showDateTime: "Show Date and Time"
+        case .showBattery: "Show Battery Level"
+        case .zoomToggle: "Zoom In or Out (Accessibility)"
+        case .zoomIn: "Zoom In (Accessibility)"
+        case .zoomOut: "Zoom Out (Accessibility)"
         }
     }
 
@@ -145,20 +174,51 @@ nonisolated enum SystemAction: String, Codable, CaseIterable, Identifiable {
         case .pickColour: "eyedropper"
         case .toggleCapsLock: "capslock"
         case .emptyTrash: "trash"
+        case .fastForward: "forward.end.fill"
+        case .rewind: "backward.end.fill"
+        case .keyboardBacklightToggle: "light.max"
+        case .muteOn: "speaker.slash"
+        case .muteOff: "speaker.wave.2"
+        case .toggleWiFi: "wifi"
+        case .lightMode: "sun.max"
+        case .darkMode: "moon"
+        case .desktop1: "1.square"
+        case .desktop2: "2.square"
+        case .desktop3: "3.square"
+        case .desktop4: "4.square"
+        case .openSystemSettings: "gear"
+        case .newFinderWindow: "folder"
+        case .openTerminalHere: "terminal"
+        case .copyFinderPath: "doc.on.doc"
+        case .quickLook: "eye.circle"
+        case .copyBrowserURL: "link"
+        case .restartFinder: "arrow.clockwise.circle"
+        case .restartDock: "arrow.clockwise.square"
+        case .clearClipboard: "clipboard"
+        case .typeDate: "calendar"
+        case .typeTime: "clock"
+        case .showDateTime: "clock.fill"
+        case .showBattery: "battery.75percent"
+        case .zoomToggle: "plus.magnifyingglass"
+        case .zoomIn: "plus.magnifyingglass"
+        case .zoomOut: "minus.magnifyingglass"
         }
     }
 
     /// For menus, so related actions sit together.
     static let groups: [[SystemAction]] = [
-        [.playPause, .nextTrack, .previousTrack],
-        [.volumeUp, .volumeDown, .volumeUpSmall, .volumeDownSmall, .mute, .toggleMicrophone],
-        [.brightnessUp, .brightnessDown, .brightnessUpSmall, .brightnessDownSmall, .keyboardBrightnessUp, .keyboardBrightnessDown],
+        [.playPause, .nextTrack, .previousTrack, .fastForward, .rewind],
+        [.volumeUp, .volumeDown, .volumeUpSmall, .volumeDownSmall, .mute, .muteOn, .muteOff, .toggleMicrophone],
+        [.brightnessUp, .brightnessDown, .brightnessUpSmall, .brightnessDownSmall, .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBacklightToggle],
         [.windowSwitcher, .previousApp, .clipboardHistory, .controlCentre, .notificationCentre, .missionControl, .appExpose, .showDesktop, .apps, .spotlight, .siri, .emojiAndSymbols],
-        [.spaceLeft, .spaceRight, .hideAllApps, .showAllApps],
-        [.toggleDarkMode, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
+        [.spaceLeft, .spaceRight, .desktop1, .desktop2, .desktop3, .desktop4, .hideAllApps, .showAllApps],
+        [.toggleDarkMode, .lightMode, .darkMode, .toggleWiFi, .toggleDockHiding, .toggleMenuBarHiding, .toggleHiddenFiles, .toggleDesktopIcons, .toggleCapsLock],
+        [.newFinderWindow, .openTerminalHere, .copyFinderPath, .quickLook, .copyBrowserURL, .openSystemSettings],
+        [.typeDate, .typeTime, .showDateTime, .showBattery, .clearClipboard],
+        [.zoomToggle, .zoomIn, .zoomOut],
         [.screenshotTool, .screenshotSelection, .screenshotScreen, .screenshotWindow],
         [.screenshotSelectionToClipboard, .screenshotWindowToClipboard, .copyTextFromScreen, .pickColour],
-        [.screenSaver, .forceQuit, .ejectAll, .emptyTrash],
+        [.screenSaver, .forceQuit, .ejectAll, .emptyTrash, .restartFinder, .restartDock],
         [.lockScreen, .sleepDisplay, .sleep, .logOut, .restart, .shutDown],
         [.openDashboard, .togglePause],
     ]
@@ -295,6 +355,62 @@ enum SystemActionRunner {
             // Finder asks first, unless you've turned that off in Finder's settings.
             ScriptRunner.runAppleScript(#"tell application "Finder" to empty trash"#)
 
+        case .fastForward:
+            MediaKey.press(NX_KEYTYPE_FAST)
+        case .rewind:
+            MediaKey.press(NX_KEYTYPE_REWIND)
+        case .keyboardBacklightToggle:
+            MediaKey.press(NX_KEYTYPE_ILLUMINATION_TOGGLE)
+        case .muteOn:
+            ScriptRunner.runAppleScript("set volume with output muted")
+        case .muteOff:
+            ScriptRunner.runAppleScript("set volume without output muted")
+        case .toggleWiFi:
+            MoreActions.toggleWiFi()
+        case .lightMode:
+            ScriptRunner.runAppleScript(#"tell application "System Events" to tell appearance preferences to set dark mode to false"#)
+        case .darkMode:
+            ScriptRunner.runAppleScript(#"tell application "System Events" to tell appearance preferences to set dark mode to true"#)
+        case .desktop1:
+            MoreActions.switchToDesktop(1)
+        case .desktop2:
+            MoreActions.switchToDesktop(2)
+        case .desktop3:
+            MoreActions.switchToDesktop(3)
+        case .desktop4:
+            MoreActions.switchToDesktop(4)
+        case .openSystemSettings:
+            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/System Settings.app"))
+        case .newFinderWindow:
+            ScriptRunner.runAppleScript("tell application \"Finder\"\nactivate\nmake new Finder window\nend tell")
+        case .openTerminalHere:
+            MoreActions.openTerminalHere()
+        case .copyFinderPath:
+            MoreActions.copyFinderPaths()
+        case .quickLook:
+            MoreActions.quickLook()
+        case .copyBrowserURL:
+            MoreActions.copyBrowserURL()
+        case .restartFinder:
+            run("/usr/bin/killall", ["Finder"])
+        case .restartDock:
+            run("/usr/bin/killall", ["Dock"])
+        case .clearClipboard:
+            NSPasteboard.general.clearContents()
+        case .typeDate:
+            Task { await TextTyper.type(Date.now.formatted(date: .long, time: .omitted)) }
+        case .typeTime:
+            Task { await TextTyper.type(Date.now.formatted(date: .omitted, time: .shortened)) }
+        case .showDateTime:
+            HUD.show(Date.now.formatted(date: .complete, time: .shortened), systemImage: "clock.fill")
+        case .showBattery:
+            MoreActions.showBattery()
+        case .zoomToggle:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_8), modifiers: [.option, .command], keyName: "8"))
+        case .zoomIn:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_Equal), modifiers: [.option, .command], keyName: "="))
+        case .zoomOut:
+            KeyPresser.press(KeyCombo(keyCode: UInt16(kVK_ANSI_Minus), modifiers: [.option, .command], keyName: "-"))
         case .togglePause:
             let isPaused = !UserDefaults.standard.bool(forKey: DefaultsKey.isPaused)
             UserDefaults.standard.set(isPaused, forKey: DefaultsKey.isPaused)

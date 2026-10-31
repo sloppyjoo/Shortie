@@ -5,9 +5,13 @@ import Carbon.HIToolbox
 /// Things to do with the text you've selected in any app.
 nonisolated enum TextAction: String, Codable, CaseIterable, Identifiable {
     case uppercase, lowercase, titleCase, sentenceCase
+    case camelCase, snakeCase, kebabCase
     case trimSpaces, joinLines, sortLines, removeDuplicateLines
+    case reverseLines, shuffleLines, numberLines, removeEmptyLines, reverseText
     case urlEncode, urlDecode
+    case base64Encode, base64Decode, prettifyJSON
     case searchWeb, speak, countWords
+    case countCharacters, lookUp, translate, openAsLink
     case pasteAsPlainText
 
     var id: Self { self }
@@ -18,6 +22,21 @@ nonisolated enum TextAction: String, Codable, CaseIterable, Identifiable {
         case .lowercase: "Make lowercase"
         case .titleCase: "Make Title Case"
         case .sentenceCase: "Make Sentence case"
+        case .camelCase: "Make camelCase"
+        case .snakeCase: "Make snake_case"
+        case .kebabCase: "Make kebab-case"
+        case .reverseLines: "Reverse Lines"
+        case .shuffleLines: "Shuffle Lines"
+        case .numberLines: "Number Lines"
+        case .removeEmptyLines: "Remove Empty Lines"
+        case .reverseText: "Reverse Text"
+        case .base64Encode: "Base64-Encode"
+        case .base64Decode: "Base64-Decode"
+        case .prettifyJSON: "Format JSON"
+        case .countCharacters: "Count Characters in Selection"
+        case .lookUp: "Look Up in Dictionary"
+        case .translate: "Translate Selection"
+        case .openAsLink: "Open Selection as a Link"
         case .trimSpaces: "Trim Spaces"
         case .joinLines: "Join Lines"
         case .sortLines: "Sort Lines"
@@ -33,10 +52,12 @@ nonisolated enum TextAction: String, Codable, CaseIterable, Identifiable {
 
     /// For menus, so related actions sit together.
     static let groups: [[TextAction]] = [
-        [.uppercase, .lowercase, .titleCase, .sentenceCase],
+        [.uppercase, .lowercase, .titleCase, .sentenceCase, .camelCase, .snakeCase, .kebabCase],
         [.trimSpaces, .joinLines, .sortLines, .removeDuplicateLines],
-        [.urlEncode, .urlDecode],
-        [.searchWeb, .speak, .countWords],
+        [.reverseLines, .shuffleLines, .numberLines, .removeEmptyLines, .reverseText],
+        [.urlEncode, .urlDecode, .base64Encode, .base64Decode, .prettifyJSON],
+        [.searchWeb, .lookUp, .translate, .openAsLink],
+        [.speak, .countWords, .countCharacters],
         [.pasteAsPlainText],
     ]
 
@@ -77,9 +98,60 @@ nonisolated enum TextAction: String, Codable, CaseIterable, Identifiable {
             return text.addingPercentEncoding(withAllowedCharacters: unreserved) ?? text
         case .urlDecode:
             return text.removingPercentEncoding ?? text
-        case .searchWeb, .speak, .countWords, .pasteAsPlainText:
+        case .camelCase:
+            let words = Self.words(of: text).map { $0.lowercased() }
+            guard let first = words.first else { return text }
+            return first + words.dropFirst().map(\.capitalized).joined()
+        case .snakeCase:
+            return Self.words(of: text).map { $0.lowercased() }.joined(separator: "_")
+        case .kebabCase:
+            return Self.words(of: text).map { $0.lowercased() }.joined(separator: "-")
+        case .reverseLines:
+            return lines(of: text).reversed().joined(separator: "\n")
+        case .shuffleLines:
+            return lines(of: text).shuffled().joined(separator: "\n")
+        case .numberLines:
+            return lines(of: text).enumerated().map { "\($0.offset + 1). \($0.element)" }.joined(separator: "\n")
+        case .removeEmptyLines:
+            return lines(of: text).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.joined(separator: "\n")
+        case .reverseText:
+            return String(text.reversed())
+        case .base64Encode:
+            return Data(text.utf8).base64EncodedString()
+        case .base64Decode:
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return Data(base64Encoded: trimmed, options: .ignoreUnknownCharacters).flatMap { String(data: $0, encoding: .utf8) } ?? text
+        case .prettifyJSON:
+            guard let object = try? JSONSerialization.jsonObject(with: Data(text.utf8), options: .fragmentsAllowed),
+                  let data = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+            else { return text }
+            return String(decoding: data, as: UTF8.self)
+        case .searchWeb, .speak, .countWords, .pasteAsPlainText, .countCharacters, .lookUp, .translate, .openAsLink:
             return nil
         }
+    }
+
+    /// Splits "someText here_and-there" into ["some", "Text", "here", "and", "there"].
+    private static func words(of text: String) -> [String] {
+        var words: [String] = []
+        var current = ""
+        var previous: Character?
+        for character in text {
+            if character.isLetter || character.isNumber {
+                // A capital after a small letter starts a new word, as in camelCase.
+                if character.isUppercase, let previous, previous.isLowercase || previous.isNumber, !current.isEmpty {
+                    words.append(current)
+                    current = ""
+                }
+                current.append(character)
+            } else if !current.isEmpty {
+                words.append(current)
+                current = ""
+            }
+            previous = character
+        }
+        if !current.isEmpty { words.append(current) }
+        return words
     }
 
     private func lines(of text: String) -> [String] {
@@ -135,6 +207,23 @@ enum SelectedText {
             var words = 0
             text.enumerateSubstrings(in: text.startIndex..., options: .byWords) { _, _, _, _ in words += 1 }
             HUD.show(words == 1 ? "1 Word" : "\(words.formatted()) Words", systemImage: "textformat.123")
+        case .countCharacters:
+            HUD.show(text.count == 1 ? "1 Character" : "\(text.count.formatted()) Characters", systemImage: "textformat.abc")
+        case .lookUp:
+            let word = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let url = URL(string: "dict://" + (word.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? word)) {
+                NSWorkspace.shared.open(url)
+            }
+        case .translate:
+            var components = URLComponents(string: "https://translate.google.com/")
+            components?.queryItems = [
+                URLQueryItem(name: "sl", value: "auto"),
+                URLQueryItem(name: "tl", value: Locale.current.language.languageCode?.identifier ?? "en"),
+                URLQueryItem(name: "text", value: text),
+            ]
+            if let url = components?.url { NSWorkspace.shared.open(url) }
+        case .openAsLink:
+            if let url = ShortcutAction.url(for: text) { NSWorkspace.shared.open(url) } else { NSSound.beep() }
         default:
             break
         }

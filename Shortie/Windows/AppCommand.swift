@@ -5,6 +5,8 @@ import ApplicationServices
 nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     case closeWindow, minimizeWindow, toggleFullScreen
     case closeAllWindows, minimizeAllWindows
+    case closeOtherWindows, unminimizeAllWindows, bringAllWindowsForward, nextWindowOfApp
+    case forceQuitApp, restartApp
     case hideApp, hideOtherApps, quitApp, quitOtherApps
     case closeWindowOrQuit
     case closePointerWindow, minimizePointerWindow, zoomPointerWindow, raisePointerWindow
@@ -19,6 +21,12 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .toggleFullScreen: "Enter or Exit Full Screen"
         case .closeAllWindows: "Close All of the App's Windows"
         case .minimizeAllWindows: "Minimise All of the App's Windows"
+        case .closeOtherWindows: "Close the App's Other Windows"
+        case .unminimizeAllWindows: "Bring Back the App's Minimised Windows"
+        case .bringAllWindowsForward: "Bring All of the App's Windows Forward"
+        case .nextWindowOfApp: "Next Window of the App"
+        case .forceQuitApp: "Force Quit App"
+        case .restartApp: "Restart App"
         case .hideApp: "Hide App"
         case .hideOtherApps: "Hide Other Apps"
         case .quitApp: "Quit App"
@@ -40,6 +48,12 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
         case .toggleFullScreen: "arrow.up.left.and.arrow.down.right"
         case .closeAllWindows: "xmark.rectangle"
         case .minimizeAllWindows: "minus.rectangle"
+        case .closeOtherWindows: "xmark.rectangle.portrait"
+        case .unminimizeAllWindows: "plus.rectangle"
+        case .bringAllWindowsForward: "square.stack.3d.up"
+        case .nextWindowOfApp: "rectangle.2.swap"
+        case .forceQuitApp: "xmark.octagon"
+        case .restartApp: "arrow.clockwise.circle"
         case .hideApp: "eye.slash"
         case .hideOtherApps: "eye.slash.fill"
         case .quitApp: "power"
@@ -57,8 +71,9 @@ nonisolated enum AppCommand: String, Codable, CaseIterable, Identifiable {
     /// For menus, so related commands sit together.
     static let groups: [[AppCommand]] = [
         [.closeWindow, .minimizeWindow, .toggleFullScreen],
-        [.closeAllWindows, .minimizeAllWindows],
-        [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps, .closeWindowOrQuit],
+        [.closeAllWindows, .minimizeAllWindows, .closeOtherWindows, .unminimizeAllWindows],
+        [.bringAllWindowsForward, .nextWindowOfApp],
+        [.hideApp, .hideOtherApps, .quitApp, .quitOtherApps, .closeWindowOrQuit, .forceQuitApp, .restartApp],
         [.closePointerWindow, .minimizePointerWindow, .zoomPointerWindow, .raisePointerWindow, .hidePointerApp, .quitPointerApp],
     ]
 
@@ -140,6 +155,38 @@ enum AppCommandRunner {
             AX.windows(of: target.processID).forEach(AX.close)
         case .minimizeAllWindows:
             AX.windows(of: target.processID).forEach(AX.minimize)
+        case .closeOtherWindows:
+            for window in AX.windows(of: target.processID) where target.window.map({ !CFEqual($0, window) }) ?? true {
+                AX.close(window)
+            }
+        case .unminimizeAllWindows:
+            for window in AX.windows(of: target.processID) {
+                AXUIElementSetAttributeValue(window, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
+            }
+            app?.activate()
+        case .bringAllWindowsForward:
+            app?.activate(options: .activateAllWindows)
+        case .nextWindowOfApp:
+            // Windows are listed front to back, so raising the back one cycles through them all.
+            let windows = AX.windows(of: target.processID).filter { AX.bool($0, kAXMinimizedAttribute) != true }
+            if windows.count > 1, let back = windows.last {
+                AXUIElementPerformAction(back, kAXRaiseAction as CFString)
+                AXUIElementSetAttributeValue(back, kAXMainAttribute as CFString, kCFBooleanTrue)
+                app?.activate()
+            }
+        case .forceQuitApp:
+            if app?.bundleIdentifier != "com.apple.finder" { app?.forceTerminate() }
+        case .restartApp:
+            guard let app, let url = app.bundleURL, app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
+            app.terminate()
+            Task {
+                // Give it up to ten seconds to quit (it may ask to save first).
+                for _ in 0..<100 where !app.isTerminated {
+                    try? await Task.sleep(for: .milliseconds(100))
+                }
+                guard app.isTerminated else { return }
+                _ = try? await NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+            }
         case .hideApp:
             app?.hide()
         case .hideOtherApps:
