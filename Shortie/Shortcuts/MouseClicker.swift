@@ -1,4 +1,4 @@
-import CoreGraphics
+import AppKit
 
 /// Marks events Shortie makes itself (scrolls, clicks), so Shortie's own event taps
 /// recognise them and let them straight through.
@@ -8,7 +8,11 @@ nonisolated enum SyntheticEvent {
 
 /// Mouse clicks a shortcut or gesture can make, wherever the pointer is.
 nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
-    case leftClick, rightClick, middleClick, doubleClick
+    case leftClick, rightClick, middleClick, doubleClick, tripleClick
+    case commandClick, optionClick, shiftClick, controlClick
+    case backButton, forwardButton
+    case scrollUp, scrollDown, scrollLeft, scrollRight
+    case moveToScreenCentre, moveToWindowCentre, moveToNextDisplay
 
     var id: Self { self }
 
@@ -18,6 +22,20 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
         case .rightClick: "Right Click"
         case .middleClick: "Middle Click"
         case .doubleClick: "Double Click"
+        case .tripleClick: "Triple Click"
+        case .commandClick: "⌘-Click"
+        case .optionClick: "⌥-Click"
+        case .shiftClick: "⇧-Click"
+        case .controlClick: "⌃-Click"
+        case .backButton: "Mouse Back Button"
+        case .forwardButton: "Mouse Forward Button"
+        case .scrollUp: "Scroll Up"
+        case .scrollDown: "Scroll Down"
+        case .scrollLeft: "Scroll Left"
+        case .scrollRight: "Scroll Right"
+        case .moveToScreenCentre: "Move Pointer to Centre of Screen"
+        case .moveToWindowCentre: "Move Pointer to Centre of Window"
+        case .moveToNextDisplay: "Move Pointer to Next Display"
         }
     }
 
@@ -27,8 +45,31 @@ nonisolated enum MouseAction: String, Codable, CaseIterable, Identifiable {
         case .rightClick: "contextualmenu.and.cursorarrow"
         case .middleClick: "computermouse"
         case .doubleClick: "cursorarrow.click.2"
+        case .tripleClick: "cursorarrow.click.2"
+        case .commandClick: "command"
+        case .optionClick: "option"
+        case .shiftClick: "shift"
+        case .controlClick: "control"
+        case .backButton: "chevron.backward.circle"
+        case .forwardButton: "chevron.forward.circle"
+        case .scrollUp: "arrow.up.circle"
+        case .scrollDown: "arrow.down.circle"
+        case .scrollLeft: "arrow.left.circle"
+        case .scrollRight: "arrow.right.circle"
+        case .moveToScreenCentre: "dot.scope.display"
+        case .moveToWindowCentre: "dot.scope"
+        case .moveToNextDisplay: "display.2"
         }
     }
+
+    /// For menus, so related actions sit together.
+    static let groups: [[MouseAction]] = [
+        [.leftClick, .rightClick, .middleClick, .doubleClick, .tripleClick],
+        [.commandClick, .optionClick, .shiftClick, .controlClick],
+        [.backButton, .forwardButton],
+        [.scrollUp, .scrollDown, .scrollLeft, .scrollRight],
+        [.moveToScreenCentre, .moveToWindowCentre, .moveToNextDisplay],
+    ]
 }
 
 enum MouseClicker {
@@ -45,15 +86,67 @@ enum MouseClicker {
             // Apps tell a double click by the second click's "click count" of 2.
             click(.leftMouseDown, .leftMouseUp, .left, at: location, count: 1)
             click(.leftMouseDown, .leftMouseUp, .left, at: location, count: 2)
+        case .tripleClick:
+            for count in Int64(1)...3 {
+                click(.leftMouseDown, .leftMouseUp, .left, at: location, count: count)
+            }
+        case .commandClick:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: .maskCommand)
+        case .optionClick:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: .maskAlternate)
+        case .shiftClick:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: .maskShift)
+        case .controlClick:
+            click(.leftMouseDown, .leftMouseUp, .left, at: location, flags: .maskControl)
+        // Mice number their thumb buttons 3 (back) and 4 (forward).
+        case .backButton:
+            click(.otherMouseDown, .otherMouseUp, .center, at: location, buttonNumber: 3)
+        case .forwardButton:
+            click(.otherMouseDown, .otherMouseUp, .center, at: location, buttonNumber: 4)
+        case .scrollUp: scroll(vertical: 5)
+        case .scrollDown: scroll(vertical: -5)
+        case .scrollLeft: scroll(horizontal: 5)
+        case .scrollRight: scroll(horizontal: -5)
+        case .moveToScreenCentre:
+            let screen = NSScreen.screens.first { WindowMover.flipped($0.frame).contains(location) } ?? NSScreen.main
+            if let screen { move(to: CGPoint(x: WindowMover.flipped(screen.frame).midX, y: WindowMover.flipped(screen.frame).midY)) }
+        case .moveToWindowCentre:
+            if let window = ActionTarget.frontmost?.window,
+               let frame = WindowMover.shared.frame(of: window) {
+                move(to: CGPoint(x: frame.midX, y: frame.midY))
+            }
+        case .moveToNextDisplay:
+            let screens = NSScreen.screens.map { WindowMover.flipped($0.frame) }
+            guard screens.count > 1 else { return NSSound.beep() }
+            let index = screens.firstIndex { $0.contains(location) } ?? 0
+            let next = screens[(index + 1) % screens.count]
+            move(to: CGPoint(x: next.midX, y: next.midY))
         }
     }
 
+    /// Lines to scroll; positive is up or left.
+    private static func scroll(vertical: Int32 = 0, horizontal: Int32 = 0) {
+        let event = CGEvent(scrollWheelEvent2Source: nil, units: .line, wheelCount: 2, wheel1: vertical, wheel2: horizontal, wheel3: 0)
+        event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
+        event?.post(tap: .cghidEventTap)
+    }
+
+    /// Moves the pointer, as if you'd moved the mouse there.
+    private static func move(to point: CGPoint) {
+        let event = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)
+        event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
+        event?.post(tap: .cghidEventTap)
+    }
+
     private static func click(
-        _ down: CGEventType, _ up: CGEventType, _ button: CGMouseButton, at location: CGPoint, count: Int64 = 1
+        _ down: CGEventType, _ up: CGEventType, _ button: CGMouseButton, at location: CGPoint, count: Int64 = 1,
+        flags: CGEventFlags = [], buttonNumber: Int64? = nil
     ) {
         for type in [down, up] {
             let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: location, mouseButton: button)
             event?.setIntegerValueField(.mouseEventClickState, value: count)
+            if !flags.isEmpty { event?.flags = flags }
+            if let buttonNumber { event?.setIntegerValueField(.mouseEventButtonNumber, value: buttonNumber) }
             event?.setIntegerValueField(.eventSourceUserData, value: SyntheticEvent.marker)
             event?.post(tap: .cghidEventTap)
         }

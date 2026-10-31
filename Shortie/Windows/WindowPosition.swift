@@ -6,7 +6,10 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
     case leftHalf, rightHalf, topHalf, bottomHalf
     case topLeft, topRight, bottomLeft, bottomRight
     case leftThird, centerThird, rightThird, leftTwoThirds, rightTwoThirds
-    case firstFourth, secondFourth, thirdFourth, lastFourth
+    case firstFourth, secondFourth, thirdFourth, lastFourth, leftThreeFourths, rightThreeFourths
+    case topThird, middleThird, bottomThird, topTwoThirds, bottomTwoThirds
+    case topLeftSixth, topCenterSixth, topRightSixth, bottomLeftSixth, bottomCenterSixth, bottomRightSixth
+    case centerHalf, centerTwoThirds
     case maximize, almostMaximize, maximizeHeight, maximizeWidth, center, restore
     case larger, smaller
     case moveLeft, moveRight, moveUp, moveDown
@@ -33,6 +36,21 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         case .secondFourth: "Second Fourth"
         case .thirdFourth: "Third Fourth"
         case .lastFourth: "Last Fourth"
+        case .leftThreeFourths: "Left Three Fourths"
+        case .rightThreeFourths: "Right Three Fourths"
+        case .topThird: "Top Third"
+        case .middleThird: "Middle Third"
+        case .bottomThird: "Bottom Third"
+        case .topTwoThirds: "Top Two Thirds"
+        case .bottomTwoThirds: "Bottom Two Thirds"
+        case .topLeftSixth: "Top Left Sixth"
+        case .topCenterSixth: "Top Centre Sixth"
+        case .topRightSixth: "Top Right Sixth"
+        case .bottomLeftSixth: "Bottom Left Sixth"
+        case .bottomCenterSixth: "Bottom Centre Sixth"
+        case .bottomRightSixth: "Bottom Right Sixth"
+        case .centerHalf: "Centre Half"
+        case .centerTwoThirds: "Centre Two Thirds"
         case .maximize: "Maximise"
         case .almostMaximize: "Almost Maximise"
         case .maximizeHeight: "Maximise Height"
@@ -55,7 +73,10 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         [.leftHalf, .rightHalf, .topHalf, .bottomHalf],
         [.topLeft, .topRight, .bottomLeft, .bottomRight],
         [.leftThird, .centerThird, .rightThird, .leftTwoThirds, .rightTwoThirds],
-        [.firstFourth, .secondFourth, .thirdFourth, .lastFourth],
+        [.topThird, .middleThird, .bottomThird, .topTwoThirds, .bottomTwoThirds],
+        [.firstFourth, .secondFourth, .thirdFourth, .lastFourth, .leftThreeFourths, .rightThreeFourths],
+        [.topLeftSixth, .topCenterSixth, .topRightSixth, .bottomLeftSixth, .bottomCenterSixth, .bottomRightSixth],
+        [.centerHalf, .centerTwoThirds],
         [.maximize, .almostMaximize, .maximizeHeight, .maximizeWidth, .center, .restore],
         [.larger, .smaller],
         [.moveLeft, .moveRight, .moveUp, .moveDown],
@@ -96,6 +117,23 @@ nonisolated enum WindowPosition: String, Codable, CaseIterable, Identifiable {
         case .secondFourth: return CGRect(x: 1 / 4, y: 0, width: 1 / 4, height: 1)
         case .thirdFourth: return CGRect(x: 2 / 4, y: 0, width: 1 / 4, height: 1)
         case .lastFourth: return CGRect(x: 3 / 4, y: 0, width: 1 / 4, height: 1)
+        case .leftThreeFourths: return CGRect(x: 0, y: 0, width: 3 / 4, height: 1)
+        case .rightThreeFourths: return CGRect(x: 1 / 4, y: 0, width: 3 / 4, height: 1)
+        // Thirds stacked top to bottom, handy on a portrait display.
+        case .topThird: return CGRect(x: 0, y: 0, width: 1, height: 1 / 3)
+        case .middleThird: return CGRect(x: 0, y: 1 / 3, width: 1, height: 1 / 3)
+        case .bottomThird: return CGRect(x: 0, y: 2 / 3, width: 1, height: 1 / 3)
+        case .topTwoThirds: return CGRect(x: 0, y: 0, width: 1, height: 2 / 3)
+        case .bottomTwoThirds: return CGRect(x: 0, y: 1 / 3, width: 1, height: 2 / 3)
+        // A 3 × 2 grid.
+        case .topLeftSixth: return CGRect(x: 0, y: 0, width: 1 / 3, height: 0.5)
+        case .topCenterSixth: return CGRect(x: 1 / 3, y: 0, width: 1 / 3, height: 0.5)
+        case .topRightSixth: return CGRect(x: 2 / 3, y: 0, width: 1 / 3, height: 0.5)
+        case .bottomLeftSixth: return CGRect(x: 0, y: 0.5, width: 1 / 3, height: 0.5)
+        case .bottomCenterSixth: return CGRect(x: 1 / 3, y: 0.5, width: 1 / 3, height: 0.5)
+        case .bottomRightSixth: return CGRect(x: 2 / 3, y: 0.5, width: 1 / 3, height: 0.5)
+        case .centerHalf: return CGRect(x: 1 / 4, y: 0, width: 1 / 2, height: 1)
+        case .centerTwoThirds: return CGRect(x: 1 / 6, y: 0, width: 2 / 3, height: 1)
         case .maximize: return CGRect(x: 0, y: 0, width: 1, height: 1)
         // Rectangle's "Almost Maximise": 90% of the screen, centred.
         case .almostMaximize: return CGRect(x: 0.05, y: 0.05, width: 0.9, height: 0.9)
