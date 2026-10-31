@@ -237,10 +237,10 @@ struct ActionFields: View {
                     Picker("Shortcut", selection: payload) {
                         ForEach(availableShortcuts, id: \.self) { Text($0).tag($0) }
                     }
-                    InfoButton("Tip: to switch Do Not Disturb or another Focus, make a shortcut in the Shortcuts app with its \"Set Focus\" action, then pick it here.")
+                    InfoButton("To turn on Do Not Disturb or another Focus, make a shortcut with the Set Focus action in the Shortcuts app, then choose it here.")
                 }
             } else if availableShortcuts != nil {
-                Text("You don't have any shortcuts yet. Make one in the Shortcuts app, then come back.")
+                Text("No shortcuts found. Make one in the Shortcuts app first.")
                     .foregroundStyle(.secondary)
             } else {
                 ProgressView("Loading your shortcuts…")

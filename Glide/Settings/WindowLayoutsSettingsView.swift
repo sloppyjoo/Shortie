@@ -25,8 +25,7 @@ private struct SavedLayoutsSection: View {
     var body: some View {
         Section {
             if store.layouts.isEmpty {
-                Text("No layouts yet. Arrange your windows how you like them, then save.")
-                    .foregroundStyle(.secondary)
+                EmptyState("No layouts yet. Arrange your windows how you like them, then save.", pixels: PixelArt.layout)
             }
             ForEach(store.layouts) { layout in
                 LayoutRow(

@@ -15,8 +15,7 @@ struct AutomationsSettingsView: View {
 
             Section {
                 if !store.shortcuts.contains(where: { $0.event != nil }) {
-                    Text("No automations yet.")
-                        .foregroundStyle(.secondary)
+                    EmptyState("No automations yet.", pixels: PixelArt.bolt)
                 }
                 ForEach($store.shortcuts) { $shortcut in
                     if let event = shortcut.event {

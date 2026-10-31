@@ -81,8 +81,7 @@ struct MouseSettingsView: View {
 
         Section {
             if !store.shortcuts.contains(where: { $0.mouseButtonClick != nil }) {
-                Text("No button actions yet.")
-                    .foregroundStyle(.secondary)
+                EmptyState("No button actions yet.", pixels: PixelArt.mouse)
             }
             ForEach($store.shortcuts) { $shortcut in
                 if let click = shortcut.mouseButtonClick {

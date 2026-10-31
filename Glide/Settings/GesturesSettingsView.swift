@@ -49,8 +49,7 @@ struct GesturesSettingsView: View {
 
         Section {
             if !store.shortcuts.contains(where: { $0.gesture != nil }) {
-                Text("No gestures yet. Try a two-finger tap for Right Click.")
-                    .foregroundStyle(.secondary)
+                EmptyState("No gestures yet.", pixels: PixelArt.hand)
             }
             ForEach($store.shortcuts) { $shortcut in
                 if let gesture = shortcut.gesture {
@@ -94,7 +93,7 @@ struct GesturesSettingsView: View {
                     .padding(.vertical, 8)
 
                 if engine.recentGestures.isEmpty {
-                    Text("Nothing recognised yet. Try a three-finger tap.")
+                    Text("Nothing yet. Do a gesture on the trackpad.")
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(engine.recentGestures) { recognized in
@@ -211,7 +210,7 @@ struct GestureRecorder: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(isRecording ? "Do the gesture on your trackpad…" : gesture.title)
                     .font(.title3)
-                Text(isRecording ? "Any tap, swipe, pinch, rotation, click or TipTap." : "Record it, or choose below.")
+                Text(isRecording ? "Do the gesture on the trackpad." : "Record it, or choose below.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -9,6 +9,7 @@ struct WindowsSettingsView: View {
             pane: .windows,
             kinds: [.moveWindow, .appCommand],
             emptyText: "No window shortcuts yet.",
+            emptyIcon: PixelArt.layout,
             info: "Press a half or corner shortcut again to cycle its width: ½ → ⅓ → ⅔."
         ) {
             Button("Standard Set", action: addStandardShortcuts)

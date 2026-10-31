@@ -14,8 +14,7 @@ struct TextShortcutsSettingsView: View {
 
             Section {
                 if !store.shortcuts.contains(where: { $0.abbreviation != nil }) {
-                    Text("No text shortcuts yet. Try ;email for your address.")
-                        .foregroundStyle(.secondary)
+                    EmptyState("No text shortcuts yet.", pixels: PixelArt.typing)
                 }
                 ForEach($store.shortcuts) { $shortcut in
                     if let abbreviation = shortcut.abbreviation {
@@ -38,7 +37,7 @@ struct TextShortcutsSettingsView: View {
             } header: {
                 HStack {
                     SectionTitle("Text Shortcuts")
-                    InfoButton("Only the last few characters you type are kept, in memory, to spot abbreviations. Nothing is saved or sent anywhere, and password fields are never seen.")
+                    InfoButton("Shortie keeps only the last few characters you typed, in memory, to spot abbreviations. It never sees what you type into password fields.")
                     Spacer()
                     Button("Add", systemImage: "plus") {
                         editing = TextShortcutEditorRequest(shortcutID: nil, abbreviation: ";", action: .typeText(text: ""))
@@ -97,7 +96,7 @@ struct TextShortcutEditor: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 180)
             }
-            Text(problem ?? "Starting with ; keeps it out of ordinary writing.")
+            Text(problem ?? "Start it with ; so it doesn't go off in normal writing.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

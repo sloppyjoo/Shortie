@@ -55,7 +55,7 @@ extension PermissionRow {
     static func accessibility(_ permissions: Permissions) -> PermissionRow {
         PermissionRow(
             title: "Accessibility",
-            explanation: "Lets Shortie respond to your gestures and shortcuts, and move windows for you.",
+            explanation: "Needed to see your gestures and key presses, and to move windows.",
             systemImage: "accessibility",
             isGranted: permissions.accessibility,
             // macOS sometimes keeps an old, stale entry for Glide (for example after

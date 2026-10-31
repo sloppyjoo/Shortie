@@ -41,16 +41,14 @@ struct OnboardingView: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            Image(systemName: "hand.draw.fill")
-                .font(.system(size: 56))
+            PixelIcon(pixels: PixelArt.hand, size: 64)
                 .foregroundStyle(.tint)
-                .symbolRenderingMode(.hierarchical)
                 .padding(.bottom, 6)
 
             Text("Welcome to Shortie")
                 .font(.largeTitle.bold())
 
-            Text("Gestures, shortcuts and window snapping that feel like they came with your Mac.")
+            Text("Customise your keyboard shortcuts, trackpad gestures and mouse buttons.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

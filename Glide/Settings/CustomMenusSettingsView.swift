@@ -14,8 +14,7 @@ struct CustomMenusSettingsView: View {
 
             Section {
                 if store.menus.isEmpty {
-                    Text("No menus yet.")
-                        .foregroundStyle(.secondary)
+                    EmptyState("No menus yet.", pixels: PixelArt.menu)
                 }
                 ForEach($store.menus) { $menu in
                     CustomMenuRow(menu: $menu, edit: { editing = menu }, delete: { store.delete(id: menu.id) })

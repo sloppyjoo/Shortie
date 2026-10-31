@@ -137,8 +137,7 @@ struct ClipboardPanelView: View {
                             .onTapGesture { paste(entry) }
                     }
                     if entries.isEmpty {
-                        Text(state.query.isEmpty ? "Nothing copied yet" : "No matches")
-                            .foregroundStyle(.secondary)
+                        EmptyState(state.query.isEmpty ? "Nothing copied yet" : "No matches", pixels: PixelArt.clipboard)
                             .padding(.top, 40)
                     }
                 }

@@ -153,36 +153,38 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     var subtitle: String {
         switch self {
         case .general: "Start-up, pausing and the Hyper key."
-        case .shortcuts: "Press keys to open apps, control your Mac and more."
-        case .textShortcuts: "Type a short abbreviation to expand it."
-        case .gestures: "Taps, swipes, pinches and clicks that do things."
-        case .mouse: "Extra buttons and smoother scrolling."
-        case .automations: "Do things when apps open or your Mac wakes."
+        case .shortcuts: "Key combinations that run actions."
+        case .textShortcuts: "Abbreviations that expand as you type."
+        case .gestures: "Trackpad taps, swipes, pinches and clicks."
+        case .mouse: "Extra buttons and scrolling."
+        case .automations: "Actions that run when apps open or your Mac wakes."
         case .windows: "Snap windows with keys or by dragging."
-        case .layouts: "Save how your windows are arranged and bring it back."
-        case .trafficLights: "New tricks for the red, yellow and green buttons."
-        case .clipboard: "Everything you copy, ready to paste again."
+        case .layouts: "Save where your windows are, and put them back."
+        case .trafficLights: "Actions for the red, yellow and green buttons."
+        case .clipboard: "What you've copied, to paste again."
         case .menus: "Your own menus, in the menu bar or at the pointer."
         case .menuBar: "Hide the notch with a black menu bar."
-        case .permissions: "What Shortie needs to work."
+        case .permissions: "Access Shortie needs from macOS."
         }
     }
 
-    var systemImage: String {
+
+    /// The pixel picture for the sidebar and the top of the page.
+    var pixels: [String] {
         switch self {
-        case .general: "gearshape.fill"
-        case .shortcuts: "command"
-        case .windows: "macwindow"
-        case .layouts: "rectangle.split.2x1.fill"
-        case .trafficLights: "circle.fill"
-        case .mouse: "computermouse.fill"
-        case .textShortcuts: "character.cursor.ibeam"
-        case .automations: "gearshape.2.fill"
-        case .clipboard: "doc.on.clipboard.fill"
-        case .menus: "list.bullet.rectangle.fill"
-        case .menuBar: "menubar.rectangle"
-        case .gestures: "hand.draw.fill"
-        case .permissions: "lock.fill"
+        case .general: PixelArt.mac
+        case .shortcuts: PixelArt.key
+        case .textShortcuts: PixelArt.typing
+        case .gestures: PixelArt.hand
+        case .mouse: PixelArt.mouse
+        case .automations: PixelArt.bolt
+        case .windows: PixelArt.snap
+        case .layouts: PixelArt.layout
+        case .trafficLights: PixelArt.windowButtons
+        case .clipboard: PixelArt.clipboard
+        case .menus: PixelArt.menu
+        case .menuBar: PixelArt.notch
+        case .permissions: PixelArt.lock
         }
     }
 
@@ -205,18 +207,15 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     }
 }
 
-/// A section's icon: a coloured rounded tile, in the sidebar or (larger) at
-/// the top of its page.
+/// A section's icon: its pixel picture in its colour, in the sidebar or
+/// (larger) at the top of its page. Sizes are multiples of 16 so every pixel is square.
 struct PaneIcon: View {
     let pane: SettingsPane
-    var size: CGFloat = 20
+    var size: CGFloat = 16
 
     var body: some View {
-        if pane == .trafficLights {
-            TrafficLightsSidebarIcon(size: size)
-        } else {
-            SettingsIcon(systemImage: pane.systemImage, color: pane.color, size: size)
-        }
+        PixelIcon(pixels: pane.pixels, size: size)
+            .foregroundStyle(pane == .menuBar ? Color.primary : pane.color)
     }
 }
 
@@ -278,22 +277,6 @@ struct SettingsIcon: View {
     }
 }
 
-/// The icon for Window Buttons: the three window buttons on a dark tile.
-struct TrafficLightsSidebarIcon: View {
-    var size: CGFloat = 20
-
-    var body: some View {
-        HStack(spacing: size * 0.075) {
-            ForEach(TrafficLightButton.allCases) { button in
-                Circle()
-                    .fill(button.color)
-                    .frame(width: size * 0.225, height: size * 0.225)
-            }
-        }
-        .frame(width: size, height: size)
-        .background(Color(white: 0.3).gradient, in: .rect(cornerRadius: size * 0.25, style: .continuous))
-    }
-}
 
 #Preview {
     SettingsView()

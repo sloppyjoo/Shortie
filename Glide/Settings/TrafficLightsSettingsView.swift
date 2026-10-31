@@ -14,8 +14,7 @@ struct TrafficLightsSettingsView: View {
 
             Section {
                 if !store.shortcuts.contains(where: { $0.trafficLightClick != nil }) {
-                    Text("No window button actions yet.")
-                        .foregroundStyle(.secondary)
+                    EmptyState("No window button actions yet.", pixels: PixelArt.windowButtons)
                 }
                 ForEach($store.shortcuts) { $shortcut in
                     if let click = shortcut.trafficLightClick {

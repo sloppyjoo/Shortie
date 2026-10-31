@@ -19,6 +19,8 @@ struct ShortcutListView<Extra: View, Top: View>: View {
     let pane: SettingsPane
     let kinds: [ShortcutAction.Kind]
     let emptyText: String
+    /// The pixel icon above `emptyText`.
+    var emptyIcon: [String] = PixelArt.key
     /// A detail worth knowing, behind an ⓘ next to the list's heading.
     var info: String?
     /// Extra buttons shown next to "Add".
@@ -36,6 +38,7 @@ struct ShortcutListView<Extra: View, Top: View>: View {
         pane: SettingsPane,
         kinds: [ShortcutAction.Kind],
         emptyText: String,
+        emptyIcon: [String] = PixelArt.key,
         info: String? = nil,
         @ViewBuilder extraActions: () -> Extra = { EmptyView() },
         @ViewBuilder topSections: () -> Top = { EmptyView() }
@@ -43,6 +46,7 @@ struct ShortcutListView<Extra: View, Top: View>: View {
         self.pane = pane
         self.kinds = kinds
         self.emptyText = emptyText
+        self.emptyIcon = emptyIcon
         self.info = info
         self.extraActions = extraActions()
         self.topSections = topSections()
@@ -73,8 +77,7 @@ struct ShortcutListView<Extra: View, Top: View>: View {
 
         return Section {
             if !store.shortcuts.contains(where: belongsHere) {
-                Text(emptyText)
-                    .foregroundStyle(.secondary)
+                EmptyState(emptyText, pixels: emptyIcon)
             }
             ForEach($store.shortcuts) { $shortcut in
                 if belongsHere(shortcut) {
