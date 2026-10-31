@@ -37,8 +37,8 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Toggle Caps Lock | ✅ |
 | Remap Key | ✅ Remap a Key |
 | Reset All Key Remappings | ✅ Put All Remapped Keys Back |
-| Act as Hyper Key | 🟡 Caps Lock as Hyper, in General |
-| Reset Current Key Sequence | ⬜ Needs key-sequence triggers |
+| Act as Hyper Key | ✅ Remap a Key › Hyper (any key), or Caps Lock in General |
+| Reset Current Key Sequence | ✅ Forget What's Been Typed |
 | Press Context Menu Key | ✅ Show Context Menu for Selection |
 
 ## Window Management (26)
@@ -74,7 +74,7 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Character Viewer, Siri, Eject | ✅ |
 | Refresh Status Bar Items | ➖ |
 | Search Selected Text With Google | ✅ |
-| Switch to Login Screen | 🟡 Lock Screen |
+| Switch to Login Screen | ✅ Switch to Login Window |
 
 ## Application Control (20)
 
@@ -111,7 +111,7 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Keyboard Illumination Up / Down, Set Keyboard Brightness | ✅ |
 | Toggle Mirroring | ✅ |
 | AirPlay Mirroring | ✅ Screen Mirroring |
-| Super Brightness (3) | ⬜ |
+| Super Brightness (3) | ✅ Super Brightness On / Off / Toggle (XDR displays) |
 | Move (& Maximize) All Windows to Mouse Display | ✅ |
 | Rotate Display Clockwise / Counter-Clockwise | ✅ |
 
@@ -149,7 +149,8 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Delete Items from Clipboard Manager | 🟡 In the clipboard window |
 | Enable/Disable Clipboard Manager Watcher | 🟡 Clipboard settings |
 | Custom Paste, Copy/Paste Text Style, Change Formatting | ✅ |
-| Upload to Imgur, ChatGPT, Snippet Groups | ➖ |
+| Transform Clipboard with ChatGPT | ✅ Ask Claude (AI) › Reads Clipboard |
+| Upload to Imgur, Snippet Groups | ➖ |
 
 ## Text & Typing (10)
 
@@ -159,7 +160,10 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | OCR Area on Screen | ✅ Copy Text from Screen |
 | Find Text on Screen (and click it) | ✅ Find Text on Screen and Click |
 | Wait for Text on Screen | ✅ Control Flow › Wait Until Text Is on Screen |
-| ChatGPT actions, Force Check Selection | ➖ |
+| Transform Selected Text with ChatGPT | ✅ Ask Claude (AI) › Replace the Selection |
+| ChatGPT Selection to Clipboard & Variable | ✅ Ask Claude (AI) › Put It in the Variable “ai” |
+| Reset ChatGPT Conversation, Cancel ChatGPT Request | ✅ Clear Claude Conversation, Cancel Claude Request |
+| Force Check Selection Change | ➖ |
 
 ## Script Execution (12)
 
@@ -186,7 +190,9 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 
 ## Touch Bar, Notch Bar, Stream Deck, Floating Menus (41)
 
-➖ These control BetterTouchTool's own Touch Bar, Notch Bar, Stream Deck and floating-menu features. Shortie's equivalent of floating menus is Custom Menus (✅ Show Custom Menu).
+- **Floating menus:** ✅ Show Custom Menu, Hide Custom Menu. The rest (submenus, web-view items, item properties) are for BTT's own menu designer. ➖
+- **Notch Bar:** ✅ Black Menu Bar On / Off / On or Off (Shortie's notch bar). BTT's notch-bar groups ➖.
+- **Touch Bar and Stream Deck:** ➖ BTT's own Touch Bar and Stream Deck features, and hardware Shortie doesn't drive.
 
 ## Control Flow (33)
 
@@ -197,7 +203,7 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | IF Condition / ELSE / END IF | ✅ If, Otherwise, End If |
 | IF JavaScript True / IF AppleScript True | ✅ |
 | IF Text Visible | ✅ Text Is on Screen |
-| IF Image Visible, Wait For Image | ⬜ |
+| IF Image Visible, Wait For Image | ✅ If / Wait Until Picture Is on Screen |
 | Wait for Conditions (and cancel) | ✅ Wait Until |
 | Wait for Change Of Focused Window | ✅ Wait Until Front Window Has Changed |
 | Wait For App Launch/Terminate | ✅ Wait Until App Is (Not) Running |
@@ -205,7 +211,7 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Stop All Action Sequences | ✅ |
 | Ask For Input & Save To Variable | ✅ Ask for Text |
 | Wait for Keyboard Input | ✅ Wait Until A Key Was Pressed |
-| Wait For Other Trigger To Fire | ⬜ |
+| Wait For Other Trigger To Fire | ✅ Wait Until Another Rule Has Run |
 | Debounce | ✅ Skip If Run Recently |
 
 ## Variables (8)
@@ -215,7 +221,7 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Increase / Toggle / Toggle On/Off Variable | ✅ |
 | Ask For Input & Save to Variable | ✅ |
 | Show Variables View | ✅ Show Variables |
-| Toggle Multiple Variables / Cycle Through Actions | 🟡 If + Toggle Variable |
+| Toggle Multiple Variables / Cycle Through Actions | ✅ Cycle Through Actions |
 | Refresh Condition Values | ➖ |
 
 ## Device Control (26)
@@ -239,13 +245,15 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Click Status Bar Item | ✅ Click a Menu Bar Icon |
 | Click Button in Active Window | ✅ Click a Button by Name |
 | Change Slider Value | ✅ Change a Slider |
-| Interact with UI Element | 🟡 Click a Button, Change a Slider, Choose Menu Item |
+| Interact with UI Element | ✅ Click a Button by Name (any pressable element), Change a Slider |
 | Start/End Keyboard Input Blocking | ✅ Block Keyboard (for Cleaning) |
 | Start / Stop Smooth Scroll | ✅ Start or Stop Scrolling Up/Down |
 | Start Dictation | ✅ |
-| Zoom Pinch, Rotate, Smart Zoom, smooth zoom/rotate/space switch | ⬜ |
+| Zoom Pinch, Rotate, Smart Zoom | ✅ Pinch to Zoom In/Out, Rotate Gesture, Smart Zoom |
+| Start / Stop Smooth Zoom, Smooth Rotate | ✅ Start or Stop Zooming / Rotating |
+| Start / Stop Smooth Space Switch | 🟡 Space to the Left / Right |
 | Start/Stop Scroll Blocking | ✅ Block Scrolling On or Off |
-| Lock Mouse Axis Movement | ⬜ |
+| Lock Mouse Axis Movement | ✅ Lock Pointer to Left–Right / Up–Down |
 | Status bar item management, UI viewers, hovered link | ➖ |
 
 ## Custom & More (64)
@@ -261,6 +269,12 @@ Every action in BetterTouchTool's catalogue ([folivora.ai/features/actions](http
 | Stage Manager Actions | ✅ Stage Manager On or Off |
 | Ignore Built-In Trackpad While Mouse Present | ✅ |
 | Remap Key, OCR, Zoom, Window Snapping, Fullscreen, Advanced Clicks | ✅ |
-| Snap areas (3) | 🟡 Drag-to-snap zones |
+| Snap areas (3) | 🟡 Drag-to-snap zones, Custom Window Position |
+| Show Searchable List | ✅ |
+| Show / Close Floating Web View | ✅ Show Floating Web Page, Close Floating Web Page |
+| Show / Hide / Toggle Launcher | ✅ Launcher |
+| AI Actions, AI Chat Window | ✅ Ask Claude (AI), Chat with Claude |
+| Comment, Separator, No Action | ✅ Control Flow › Comment |
 | Dock App Click: Activate / Restore / Minimize | ✅ Show or Hide App Under Pointer in Dock |
-| HTML menus, web views, launcher, plugins, AI and Codex actions, BTT Mobile, macro pads, Unlock with Password | ➖ |
+| HTML menus, plugins, Codex and h@llo.ai actions, BTT Mobile, macro pads | ➖ |
+| Unlock Screen with Password | ➖ Won't do: needs your password stored in Shortie |
